@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hide Zero Cards - Place Value Teaching Tool
 
-## Getting Started
+A digital educational tool designed by Donray Williams for his wife, a fourth-grade teacher, to help students understand place values through interactive, draggable number cards.
 
-First, run the development server:
+## 🎯 Purpose
+
+This application helps fourth-grade students learn and practice place value concepts by:
+
+- **Visualizing Numbers**: Breaking down large numbers into their individual place value components
+- **Interactive Learning**: Allowing students to drag and rearrange number cards
+- **Zero Place Value Understanding**: Teaching students that zeros in different positions have different values
+- **Hands-on Practice**: Providing a tactile digital experience for number manipulation
+
+## ✨ Features
+
+### 🎲 Number Generation
+
+- **Manual Input**: Enter any number from 1 to 1,000,000,000
+- **Random Generation**: Generate random numbers for practice
+- **Customizable Range**: Set upper limits for random number generation (1,000 to 1,000,000,000)
+
+### 🃏 Interactive Cards
+
+- **Color-Coded Place Values**: Each place value has a distinct color for easy identification
+  - Ones/Tens: Red shades
+  - Hundreds/Thousands: Orange shades
+  - Ten Thousands/Hundred Thousands: Yellow shades
+  - Millions: Green shades
+  - Billions: Blue shades
+- **Draggable Interface**: Students can drag cards around the workspace
+- **Zero Representation**: Zero digits are shown as placeholder zeros (0, 00, 000, etc.)
+- **Formatted Display**: Numbers are displayed with proper comma formatting
+
+### 🎮 Interactive Controls
+
+- **Reset Cards**: Return all cards to their original positions
+- **Randomize Positions**: Scatter cards randomly for a challenge
+- **Randomize Number**: Generate a new random number for practice
+
+## 🎓 Educational Benefits
+
+### For Students:
+
+- **Visual Learning**: See how large numbers are composed of smaller parts
+- **Kinesthetic Learning**: Physical interaction with number components
+- **Place Value Mastery**: Understand the difference between 100, 1,000, and 10,000
+- **Zero Understanding**: Learn that zeros have different values in different positions
+
+### For Teachers:
+
+- **Classroom Demonstration**: Use on interactive whiteboards or projectors
+- **Individual Practice**: Students can practice independently
+- **Assessment Tool**: Observe how students manipulate and understand number components
+- **Differentiated Learning**: Adjust number ranges for different skill levels
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (version 18 or higher)
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd c-hide-zero-cards
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 🛠️ Technology Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework**: Next.js 15 with React 19
+- **Styling**: Tailwind CSS 4
+- **UI Components**: Radix UI primitives
+- **Language**: TypeScript
+- **Development**: ESLint, Prettier, Husky for code quality
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📱 Usage Instructions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Basic Usage:
 
-## Deploy on Vercel
+1. **Enter a Number**: Type any number from 1 to 1,000,000,000 in the input field
+2. **Observe Cards**: Each digit appears as a separate, color-coded card
+3. **Drag Cards**: Click and drag cards to rearrange them
+4. **Practice**: Try dragging cards to different positions and see how the number changes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Advanced Features:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Random Number**: Click "🎲 Randomize number" to generate a random number
+- **Adjust Range**: Click "🔽" to show range controls and set maximum values
+- **Scatter Cards**: Click "🔀 Randomize positions" to scatter cards randomly
+- **Reset**: Click "🔄 Reset cards" to return cards to original positions
+
+## 🎨 Design Philosophy
+
+The application uses a clean, educational design with:
+
+- **Large, readable fonts** for classroom visibility
+- **Color-coded place values** for easy identification
+- **Intuitive drag-and-drop** interface
+- **Responsive design** that works on various screen sizes
+- **Accessible controls** suitable for young learners
+
+## 🤝 Contributing
+
+This is a personal project created for educational purposes. If you find bugs or have suggestions for improvements, feel free to open an issue or submit a pull request.
+
+## 📄 License
+
+This project is created for educational use. Please respect the educational purpose and use appropriately in classroom settings.
+
+---
+
+**Created with ❤️ by Donray Williams for his wife's fourth-grade classroom**
