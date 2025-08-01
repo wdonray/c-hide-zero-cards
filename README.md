@@ -94,7 +94,7 @@ npm start
 
 - **Framework**: Next.js 15 with React 19
 - **Styling**: Tailwind CSS 4
-- **UI Components**: Radix UI primitives
+- **UI Components**: Shadcn/ui (built on Radix UI primitives)
 - **Language**: TypeScript
 - **Development**: ESLint, Prettier, Husky for code quality
 
