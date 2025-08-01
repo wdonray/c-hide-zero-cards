@@ -1,0 +1,42 @@
+import { Input } from '@/components/ui/input'
+import { useMemo } from 'react'
+
+interface NumberInputProps {
+  value: number | null
+  onChange: (value: number | null) => void
+}
+
+export function NumberInput({ value, onChange }: NumberInputProps) {
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const inputValue = e.target.value
+    const cleanValue = inputValue.replace(/[^\d]/g, '')
+
+    if (!cleanValue) {
+      onChange(null)
+    } else {
+      const numValue = Number(cleanValue)
+      if (!isNaN(numValue) && numValue >= 1 && numValue <= 1_000_000_000) {
+        onChange(numValue)
+      }
+    }
+  }
+
+  const formattedNumber = useMemo(() => {
+    if (!value) return ''
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+  }, [value])
+
+  return (
+    <Input
+      type="text"
+      inputMode="numeric"
+      value={formattedNumber}
+      placeholder="Enter a number"
+      onChange={handleInputChange}
+      className="!text-4xl !font-semibold !h-16 !px-6 w-full"
+    />
+  )
+}

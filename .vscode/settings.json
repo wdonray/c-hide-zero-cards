@@ -1,0 +1,33 @@
+{
+  "eslint.useFlatConfig": true,
+  "cssVariables.lookupFiles": ["src/styles/colors.css", "src/styles/spacing.css", "src/styles/easing.css"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "eslint.validate": ["vue", "javascript", "javascriptreact"],
+  "stylelint.validate": ["vue", "css", "postcss"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "vetur.validation.template": false,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
+  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "testing.automaticallyOpenPeekView": "never",
+  "liveServer.settings.port": 5501,
+  "i18n-ally.localesPaths": ["public/locales"],
+  "i18n-ally.translate.fallbackToKey": true,
+  "i18n-ally.translate.deepl.useFreeApiEntry": true,
+  "i18n-ally.translate.engines": ["deepl"],
+  "i18n-ally.translate.deepl.apiKey": "79b768f1-3a7d-7d2d-a89f-9845464b398e:fx",
+  "i18n-ally.enabledFrameworks": ["vue"],
+  "i18n-ally.sortKeys": true,
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.editor.preferEditor": true,
+  "i18n-ally.disablePathParsing": true
+}
