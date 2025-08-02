@@ -5,12 +5,13 @@ import { NumberInput } from '@/components/NumberInput'
 import { Button } from '@/components/ui/button'
 import { DraggableCard } from '@/components/DraggableCard'
 import { Separator } from '@/components/ui/separator'
+import { FAKE_ZERO_NUMBERS, PLACE_VALUES, MAX_NUMBER } from '@/lib/constants'
 
 export default function Home() {
   const [inputNumber, setInputNumber] = useState<number | null>(null)
   const [resetTrigger, setResetTrigger] = useState(0)
   const [randomizeTrigger, setRandomizeTrigger] = useState(0)
-  const [randomNumberRange, setRandomNumberRange] = useState<[number, number]>([1, 1_000_000_000])
+  const [randomNumberRange, setRandomNumberRange] = useState<[number, number]>([1, MAX_NUMBER])
   const [showRandomRange, setShowRandomRange] = useState(false)
 
   function handleRandomNumber() {
@@ -23,7 +24,7 @@ export default function Home() {
   }
 
   function handleResetRandomNumberRange() {
-    setRandomNumberRange([1, 1_000_000_000])
+    setRandomNumberRange([1, MAX_NUMBER])
   }
 
   function handleResetCardPosition() {
@@ -35,41 +36,8 @@ export default function Home() {
     setRandomizeTrigger((prev) => prev + 1)
   }
 
-  const placeValue: Record<number, number> = useMemo(
-    () => ({
-      0: 1,
-      1: 10,
-      2: 100,
-      3: 1000,
-      4: 10000,
-      5: 100000,
-      6: 1000000,
-      7: 10000000,
-      8: 100000000,
-      9: 1000000000,
-    }),
-    []
-  )
-
-  const fakeNumbers: Record<number, string | null> = useMemo(
-    () => ({
-      0: '0',
-      1: '00',
-      2: '000',
-      3: '0,000',
-      4: '00,000',
-      5: '000,000',
-      6: '0,000,000',
-      7: '00,000,000',
-      8: '000,000,000',
-      9: '0,000,000,000',
-    }),
-    []
-  )
-
-  const placeValueKeys = useMemo(
-    () => Object.values(placeValue).filter((value) => value !== 1 && value !== 10),
-    [placeValue]
+  const randomNumberRangeKeys = Object.values(PLACE_VALUES).filter(
+    (value) => value !== PLACE_VALUES[0] && value !== PLACE_VALUES[1]
   )
 
   const cards = useMemo(() => {
@@ -78,11 +46,11 @@ export default function Home() {
     const digits = numberString.split('')
     const cards = digits.toReversed().map((digit, index) => ({
       firstDigit: parseInt(digit) || 0,
-      placeValue: placeValue[index],
-      fakeNumbers: digit === '0' ? fakeNumbers[index] : null,
+      placeValue: PLACE_VALUES[index],
+      fakeNumbers: digit === '0' ? FAKE_ZERO_NUMBERS[index] : null,
     }))
     return cards.toReversed()
-  }, [inputNumber, placeValue, fakeNumbers])
+  }, [inputNumber])
 
   useEffect(() => {
     if (inputNumber === null) {
@@ -92,8 +60,8 @@ export default function Home() {
   }, [inputNumber])
 
   return (
-    <div className="bg-background h-screen w-screen">
-      <div className="flex flex-col items-center h-screen max-w-4xl mx-auto gap-8 pt-16">
+    <div className="bg-background">
+      <div className="flex flex-col items-center lg:max-w-4xl mx-auto gap-8 pt-16">
         <h1 className="text-5xl font-bold">Hide Zero Cards</h1>
         <Separator />
         <div className="flex flex-col gap-4">
@@ -120,7 +88,7 @@ export default function Home() {
               <div className="flex flex-col items-center gap-2 w-full">
                 <div className="flex items-start gap-8 justify-between w-full">
                   <div className="grid grid-cols-3 items-center gap-2 w-full">
-                    {placeValueKeys.map((value) => (
+                    {randomNumberRangeKeys.map((value) => (
                       <Button
                         key={value}
                         size="sm"
@@ -139,7 +107,7 @@ export default function Home() {
             </div>
           )}
         </div>
-        <div className="w-full h-96 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+        <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
           {cards.map((card, index) => (
             <DraggableCard
               key={`${card.firstDigit}-${card.placeValue}-${index}`}

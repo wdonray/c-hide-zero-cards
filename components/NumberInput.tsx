@@ -1,4 +1,5 @@
 import { Input } from '@/components/ui/input'
+import { MAX_NUMBER } from '@/lib/constants'
 import { useMemo } from 'react'
 
 interface NumberInputProps {
@@ -15,7 +16,7 @@ export function NumberInput({ value, onChange }: NumberInputProps) {
       onChange(null)
     } else {
       const numValue = Number(cleanValue)
-      if (!isNaN(numValue) && numValue >= 1 && numValue <= 1_000_000_000) {
+      if (!isNaN(numValue) && numValue >= 1 && numValue <= MAX_NUMBER) {
         onChange(numValue)
       }
     }
@@ -36,7 +37,7 @@ export function NumberInput({ value, onChange }: NumberInputProps) {
       value={formattedNumber}
       placeholder="Enter a number"
       onChange={handleInputChange}
-      className="!text-4xl !font-semibold !h-16 !px-6 w-full"
+      className="!text-4xl !font-semibold !h-16 !px-6"
     />
   )
 }
