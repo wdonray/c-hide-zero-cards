@@ -120,3 +120,53 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+    }
+  }
+
+  @keyframes collapsible-up {
+    from {
+      height: var(--radix-collapsible-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  .animate-collapsible-down {
+    animation: collapsible-down 300ms ease-out;
+  }
+
+  .animate-collapsible-up {
+    animation: collapsible-up 300ms ease-out;
+  }
+
+  @keyframes dice-roll {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    25% {
+      transform: rotate(90deg) scale(1.1);
+    }
+    50% {
+      transform: rotate(180deg) scale(0.9);
+    }
+    75% {
+      transform: rotate(270deg) scale(1.1);
+    }
+    100% {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+
+  .animate-dice-roll {
+    animation: dice-roll 0.5s ease-in-out;
+  }
+}

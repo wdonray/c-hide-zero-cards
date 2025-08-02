@@ -5,6 +5,7 @@ import { NumberInput } from '@/components/NumberInput'
 import { Button } from '@/components/ui/button'
 import { DraggableCard } from '@/components/DraggableCard'
 import { Separator } from '@/components/ui/separator'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { FAKE_ZERO_NUMBERS, PLACE_VALUES, MAX_NUMBER } from '@/lib/constants'
 
 export default function Home() {
@@ -13,10 +14,18 @@ export default function Home() {
   const [randomizeTrigger, setRandomizeTrigger] = useState(0)
   const [randomNumberRange, setRandomNumberRange] = useState<[number, number]>([1, MAX_NUMBER])
   const [showRandomRange, setShowRandomRange] = useState(false)
+  const [isDiceRolling, setIsDiceRolling] = useState(false)
 
   function handleRandomNumber() {
-    setInputNumber(Math.floor(Math.random() * (randomNumberRange[1] - randomNumberRange[0] + 1)) + randomNumberRange[0])
-    handleResetCardPosition()
+    setIsDiceRolling(true)
+    // Simulate dice rolling for 1 second
+    setTimeout(() => {
+      setInputNumber(
+        Math.floor(Math.random() * (randomNumberRange[1] - randomNumberRange[0] + 1)) + randomNumberRange[0]
+      )
+      handleResetCardPosition()
+      setIsDiceRolling(false)
+    }, 500)
   }
 
   function handleRandomNumberRange(value: number[]) {
@@ -65,11 +74,16 @@ export default function Home() {
         <NumberInput value={inputNumber} onChange={setInputNumber} />
         <div className="flex w-full items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setShowRandomRange(!showRandomRange)}>
-              {showRandomRange ? '🔼' : '🔽'}
-            </Button>
-            <Button size="sm" onClick={handleRandomNumber}>
-              🎲 Randomize number
+            <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
+              <CollapsibleTrigger asChild>
+                <Button size="sm" variant="ghost">
+                  {showRandomRange ? '🔼' : '🔽'}
+                </Button>
+              </CollapsibleTrigger>
+            </Collapsible>
+            <Button size="sm" onClick={handleRandomNumber} disabled={isDiceRolling}>
+              <span className={isDiceRolling ? 'animate-dice-roll inline-block' : 'inline-block'}>🎲</span> Randomize
+              number
             </Button>
           </div>
           <Button size="sm" disabled={!inputNumber} variant="outline" onClick={handleRandomizeCardPosition}>
@@ -79,30 +93,32 @@ export default function Home() {
             🔄 Reset cards
           </Button>
         </div>
-        {showRandomRange && (
-          <div className="flex flex-col gap-2">
-            <Separator />
-            <div className="flex flex-col items-center gap-2 w-full">
-              <div className="flex items-start gap-8 justify-between w-full">
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  {randomNumberRangeKeys.map((value) => (
-                    <Button
-                      key={value}
-                      size="sm"
-                      variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
-                      onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
-                    >
-                      {value.toLocaleString()}
-                    </Button>
-                  ))}
+        <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
+          <CollapsibleContent>
+            <div className="flex flex-col gap-2">
+              <Separator />
+              <div className="flex flex-col items-center gap-2 w-full">
+                <div className="flex items-start gap-8 justify-between w-full">
+                  <div className="grid grid-cols-3 items-center gap-2 w-full">
+                    {randomNumberRangeKeys.map((value) => (
+                      <Button
+                        key={value}
+                        size="sm"
+                        variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
+                        onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
+                      >
+                        {value.toLocaleString()}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange}>
+                    🔄 Reset
+                  </Button>
                 </div>
-                <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange}>
-                  🔄 Reset
-                </Button>
               </div>
             </div>
-          </div>
-        )}
+          </CollapsibleContent>
+        </Collapsible>
       </div>
       <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
         {cards.map((card, index) => (
