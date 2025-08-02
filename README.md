@@ -1,10 +1,10 @@
 # Hide Zero Cards - Place Value Teaching Tool
 
-A digital educational tool designed by Donray Williams for his wife, a fourth-grade teacher, to help students understand place values through interactive, draggable number cards.
+A digital educational tool designed by Donray Williams for his wife, a fourth-grade teacher, that transforms abstract place value concepts into tangible, interactive learning experiences through draggable number cards.
 
 ## 🎯 Purpose
 
-This application helps fourth-grade students learn and practice place value concepts by:
+This application transforms how fourth-grade students learn and practice place value concepts by:
 
 - **Visualizing Numbers**: Breaking down large numbers into their individual place value components
 - **Interactive Learning**: Allowing students to drag and rearrange number cards
@@ -16,7 +16,7 @@ This application helps fourth-grade students learn and practice place value conc
 ### 🎲 Number Generation
 
 - **Manual Input**: Enter any number from 1 to 1,000,000,000
-- **Random Generation**: Generate random numbers for practice
+- **Random Generation**: Generate random numbers for practice with animated dice roll
 - **Customizable Range**: Set upper limits for random number generation (1,000 to 1,000,000,000)
 
 ### 🃏 Interactive Cards
@@ -36,6 +36,13 @@ This application helps fourth-grade students learn and practice place value conc
 - **Reset Cards**: Return all cards to their original positions
 - **Randomize Positions**: Scatter cards randomly for a challenge
 - **Randomize Number**: Generate a new random number for practice
+- **Collapsible Range Controls**: Expandable interface for customizing random number ranges
+
+### 🎨 User Experience
+
+- **Light/Dark Theme Toggle**: Switch between light and dark modes for comfortable viewing
+- **Instructional Guide**: Built-in help system with step-by-step instructions
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 
 ## 🎓 Educational Benefits
 
@@ -95,10 +102,17 @@ npm start
 - **Framework**: Next.js 15 with React 19
 - **Styling**: Tailwind CSS 4
 - **UI Components**: Shadcn/ui (built on Radix UI primitives)
+- **Theme Management**: next-themes for light/dark mode support
 - **Language**: TypeScript
 - **Development**: ESLint, Prettier, Husky for code quality
 
 ## 📱 Usage Instructions
+
+### Getting Started:
+
+1. **Open the Tool**: Navigate to the application in your browser
+2. **Choose Your Theme**: Use the theme toggle in the header to select light or dark mode
+3. **Get Help**: Click "❓ How to Use" in the header for detailed instructions
 
 ### Basic Usage:
 
@@ -109,7 +123,7 @@ npm start
 
 ### Advanced Features:
 
-- **Random Number**: Click "🎲 Randomize number" to generate a random number
+- **Random Number**: Click "🎲 Randomize number" to generate a random number (with animated dice)
 - **Adjust Range**: Click "🔽" to show range controls and set maximum values
 - **Scatter Cards**: Click "🔀 Randomize positions" to scatter cards randomly
 - **Reset**: Click "🔄 Reset cards" to return cards to original positions

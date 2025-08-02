@@ -17,15 +17,14 @@ export default function Home() {
   const [isDiceRolling, setIsDiceRolling] = useState(false)
 
   function handleRandomNumber() {
+    const randomNumber =
+      Math.floor(Math.random() * (randomNumberRange[1] - randomNumberRange[0] + 1)) + randomNumberRange[0]
     setIsDiceRolling(true)
-    // Simulate dice rolling for 1 second
     setTimeout(() => {
-      setInputNumber(
-        Math.floor(Math.random() * (randomNumberRange[1] - randomNumberRange[0] + 1)) + randomNumberRange[0]
-      )
+      setInputNumber(randomNumber)
       handleResetCardPosition()
       setIsDiceRolling(false)
-    }, 500)
+    }, 200)
   }
 
   function handleRandomNumberRange(value: number[]) {

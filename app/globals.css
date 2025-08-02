@@ -167,6 +167,6 @@
   }
 
   .animate-dice-roll {
-    animation: dice-roll 0.5s ease-in-out;
+    animation: dice-roll 0.2s ease-in-out;
   }
 }
