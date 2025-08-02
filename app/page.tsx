@@ -60,67 +60,63 @@ export default function Home() {
   }, [inputNumber])
 
   return (
-    <div className="bg-background">
-      <div className="flex flex-col items-center lg:max-w-4xl mx-auto gap-8 pt-16">
-        <h1 className="text-5xl font-bold">Hide Zero Cards</h1>
-        <Separator />
-        <div className="flex flex-col gap-4">
-          <NumberInput value={inputNumber} onChange={setInputNumber} />
-          <div className="flex w-full items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="ghost" onClick={() => setShowRandomRange(!showRandomRange)}>
-                {showRandomRange ? '🔼' : '🔽'}
-              </Button>
-              <Button size="sm" onClick={handleRandomNumber}>
-                🎲 Randomize number
-              </Button>
-            </div>
-            <Button size="sm" disabled={!inputNumber} variant="outline" onClick={handleRandomizeCardPosition}>
-              🔀 Randomize positions
+    <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col gap-4">
+        <NumberInput value={inputNumber} onChange={setInputNumber} />
+        <div className="flex w-full items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setShowRandomRange(!showRandomRange)}>
+              {showRandomRange ? '🔼' : '🔽'}
             </Button>
-            <Button variant="destructive" disabled={!inputNumber} size="sm" onClick={handleResetCardPosition}>
-              🔄 Reset cards
+            <Button size="sm" onClick={handleRandomNumber}>
+              🎲 Randomize number
             </Button>
           </div>
-          {showRandomRange && (
-            <div className="flex flex-col gap-2">
-              <Separator />
-              <div className="flex flex-col items-center gap-2 w-full">
-                <div className="flex items-start gap-8 justify-between w-full">
-                  <div className="grid grid-cols-3 items-center gap-2 w-full">
-                    {randomNumberRangeKeys.map((value) => (
-                      <Button
-                        key={value}
-                        size="sm"
-                        variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
-                        onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
-                      >
-                        {value.toLocaleString()}
-                      </Button>
-                    ))}
-                  </div>
-                  <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange}>
-                    🔄 Reset
-                  </Button>
+          <Button size="sm" disabled={!inputNumber} variant="outline" onClick={handleRandomizeCardPosition}>
+            🔀 Randomize positions
+          </Button>
+          <Button variant="destructive" disabled={!inputNumber} size="sm" onClick={handleResetCardPosition}>
+            🔄 Reset cards
+          </Button>
+        </div>
+        {showRandomRange && (
+          <div className="flex flex-col gap-2">
+            <Separator />
+            <div className="flex flex-col items-center gap-2 w-full">
+              <div className="flex items-start gap-8 justify-between w-full">
+                <div className="grid grid-cols-3 items-center gap-2 w-full">
+                  {randomNumberRangeKeys.map((value) => (
+                    <Button
+                      key={value}
+                      size="sm"
+                      variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
+                      onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
+                    >
+                      {value.toLocaleString()}
+                    </Button>
+                  ))}
                 </div>
+                <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange}>
+                  🔄 Reset
+                </Button>
               </div>
             </div>
-          )}
-        </div>
-        <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
-          {cards.map((card, index) => (
-            <DraggableCard
-              key={`${card.firstDigit}-${card.placeValue}-${index}`}
-              firstDigit={card.firstDigit}
-              placeValue={card.placeValue}
-              fakeNumbers={card.fakeNumbers}
-              index={index}
-              totalCards={cards.length}
-              resetTrigger={resetTrigger}
-              randomizeTrigger={randomizeTrigger}
-            />
-          ))}
-        </div>
+          </div>
+        )}
+      </div>
+      <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
+        {cards.map((card, index) => (
+          <DraggableCard
+            key={`${card.firstDigit}-${card.placeValue}-${index}`}
+            firstDigit={card.firstDigit}
+            placeValue={card.placeValue}
+            fakeNumbers={card.fakeNumbers}
+            index={index}
+            totalCards={cards.length}
+            resetTrigger={resetTrigger}
+            randomizeTrigger={randomizeTrigger}
+          />
+        ))}
       </div>
     </div>
   )
