@@ -39,5 +39,7 @@ export const FAKE_ZERO_NUMBERS: Record<number, string> = {
 
 export const CARD_X_OFFSET = 38
 export const CARD_Y_OFFSET = 0
+export const CARD_RANDOM_X_OFFSET = 400
+export const CARD_RANDOM_Y_OFFSET = 175
 
 export const MAX_NUMBER = 1_000_000_000

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import { CARD_RANDOM_X_OFFSET, CARD_RANDOM_Y_OFFSET } from './constants'
 
 interface UseDraggableOptions {
   initialX: number
@@ -110,9 +111,12 @@ export function useDraggable({
 
   useEffect(() => {
     if (randomizeTrigger !== 0) {
-      setPosition({ x: Math.floor(Math.random() * 100), y: Math.floor(Math.random() * 100) })
+      setPosition({
+        x: initialX + Math.floor((Math.random() - 0.5) * CARD_RANDOM_X_OFFSET),
+        y: initialY + Math.floor((Math.random() - 0.5) * CARD_RANDOM_Y_OFFSET),
+      })
     }
-  }, [randomizeTrigger])
+  }, [randomizeTrigger, initialX, initialY])
 
   const handlers = useMemo(
     () => ({
