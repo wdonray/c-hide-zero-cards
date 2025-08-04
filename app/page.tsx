@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button'
 import { DraggableCard } from '@/components/DraggableCard'
 import { Separator } from '@/components/ui/separator'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { FAKE_ZERO_NUMBERS, PLACE_VALUES, MAX_NUMBER } from '@/lib/constants'
+import { FAKE_ZERO_NUMBERS, PLACE_VALUES, DEFAULT_MAX_RANDOM_NUMBER } from '@/lib/constants'
+import { DiceSix, Shuffle, ArrowClockwise, Target, Funnel } from '@phosphor-icons/react'
 
 export default function Home() {
   const [inputNumber, setInputNumber] = useState<number | null>(null)
   const [resetTrigger, setResetTrigger] = useState(0)
   const [randomizeTrigger, setRandomizeTrigger] = useState(0)
-  const [randomNumberRange, setRandomNumberRange] = useState<[number, number]>([1, MAX_NUMBER])
+  const [randomNumberRange, setRandomNumberRange] = useState<[number, number]>([1, DEFAULT_MAX_RANDOM_NUMBER])
   const [showRandomRange, setShowRandomRange] = useState(false)
   const [isDiceRolling, setIsDiceRolling] = useState(false)
 
@@ -32,7 +33,7 @@ export default function Home() {
   }
 
   function handleResetRandomNumberRange() {
-    setRandomNumberRange([1, MAX_NUMBER])
+    setRandomNumberRange([1, DEFAULT_MAX_RANDOM_NUMBER])
   }
 
   function handleResetCardPosition() {
@@ -75,21 +76,23 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
               <CollapsibleTrigger asChild>
-                <Button size="sm" variant="ghost">
-                  {showRandomRange ? '🔼' : '🔽'}
+                <Button size="sm" variant="outline">
+                  <Funnel className="h-4 w-4" />
                 </Button>
               </CollapsibleTrigger>
             </Collapsible>
             <Button size="sm" onClick={handleRandomNumber} disabled={isDiceRolling}>
-              <span className={isDiceRolling ? 'animate-dice-roll inline-block' : 'inline-block'}>🎲</span> Randomize
-              number
+              <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
+              Roll a new number
             </Button>
           </div>
           <Button size="sm" disabled={!inputNumber} variant="outline" onClick={handleRandomizeCardPosition}>
-            🔀 Randomize positions
+            <Shuffle className="h-4 w-4" />
+            Mix up cards
           </Button>
           <Button variant="destructive" disabled={!inputNumber} size="sm" onClick={handleResetCardPosition}>
-            🔄 Reset cards
+            <ArrowClockwise className="h-4 w-4" />
+            Put cards back
           </Button>
         </div>
         <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
@@ -111,7 +114,8 @@ export default function Home() {
                     ))}
                   </div>
                   <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange}>
-                    🔄 Reset
+                    <ArrowClockwise className="h-4 w-4" />
+                    Start over
                   </Button>
                 </div>
               </div>
@@ -120,18 +124,28 @@ export default function Home() {
         </Collapsible>
       </div>
       <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
-        {cards.map((card, index) => (
-          <DraggableCard
-            key={`${card.firstDigit}-${card.placeValue}-${index}`}
-            firstDigit={card.firstDigit}
-            placeValue={card.placeValue}
-            fakeNumbers={card.fakeNumbers}
-            index={index}
-            totalCards={cards.length}
-            resetTrigger={resetTrigger}
-            randomizeTrigger={randomizeTrigger}
-          />
-        ))}
+        {cards.length === 0 ? (
+          <div className="flex flex-col items-center gap-2">
+            <Target className="h-16 w-16 text-muted-foreground" />
+            <span className="text-2xl text-muted-foreground text-center">Type a number above to see your cards!</span>
+            <span className="text-sm text-muted-foreground text-center">
+              Try numbers like 123, 1,000, or even 1,000,000!
+            </span>
+          </div>
+        ) : (
+          cards.map((card, index) => (
+            <DraggableCard
+              key={`${card.firstDigit}-${card.placeValue}-${index}`}
+              firstDigit={card.firstDigit}
+              placeValue={card.placeValue}
+              fakeNumbers={card.fakeNumbers}
+              index={index}
+              totalCards={cards.length}
+              resetTrigger={resetTrigger}
+              randomizeTrigger={randomizeTrigger}
+            />
+          ))
+        )}
       </div>
     </div>
   )

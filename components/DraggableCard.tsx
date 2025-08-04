@@ -37,7 +37,7 @@ export function DraggableCard({
   return (
     <div
       ref={dragRef}
-      className={`flex items-center justify-center gap-0 px-2 py-10 text-6xl font-bold border border-border cursor-move select-none tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
+      className={`flex items-center justify-center gap-0 px-2 py-10 text-6xl font-bold cursor-move select-none tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
       style={{
         position: 'absolute',
         transform: `translate(${position.x}px, ${position.y}px)`,

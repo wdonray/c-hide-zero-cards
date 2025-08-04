@@ -1,3 +1,5 @@
+'use client'
+
 import { InstructionalGuide } from '@/components/InstructionalGuide'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import Image from 'next/image'

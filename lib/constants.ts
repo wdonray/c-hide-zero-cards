@@ -1,13 +1,16 @@
 export const CARD_COLORS: Record<number, string> = {
   1: 'bg-red-400',
   10: 'bg-red-500',
-  100: 'bg-orange-500',
-  1000: 'bg-orange-400',
+  100: 'bg-red-600',
+
+  1000: 'bg-yellow-300',
   10000: 'bg-yellow-400',
   100000: 'bg-yellow-500',
-  1000000: 'bg-green-500',
-  10000000: 'bg-green-400',
-  100000000: 'bg-blue-400',
+
+  1000000: 'bg-green-400',
+  10000000: 'bg-green-500',
+  100000000: 'bg-green-600',
+
   1000000000: 'bg-blue-500',
 }
 
@@ -42,4 +45,5 @@ export const CARD_Y_OFFSET = 0
 export const CARD_RANDOM_X_OFFSET = 400
 export const CARD_RANDOM_Y_OFFSET = 175
 
+export const DEFAULT_MAX_RANDOM_NUMBER = 1_000_000
 export const MAX_NUMBER = 1_000_000_000

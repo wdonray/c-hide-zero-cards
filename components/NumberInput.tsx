@@ -35,7 +35,7 @@ export function NumberInput({ value, onChange }: NumberInputProps) {
       type="text"
       inputMode="numeric"
       value={formattedNumber}
-      placeholder="Enter a number"
+      placeholder="Type a number here!"
       onChange={handleInputChange}
       className="!text-4xl !font-semibold !h-16 !px-6"
     />
