@@ -3,6 +3,7 @@
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -27,6 +28,7 @@ import {
   Lightbulb,
   Clock,
   Users,
+  X,
 } from '@phosphor-icons/react'
 import { Separator } from './ui/separator'
 
@@ -40,8 +42,16 @@ export function InstructionalGuide() {
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="text-2xl flex items-center gap-2">
+        <AlertDialogHeader className="relative">
+          <div className="absolute top-0 right-0">
+            <AlertDialogCancel asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <span className="sr-only">Close</span>
+                <X className="h-4 w-4" />
+              </Button>
+            </AlertDialogCancel>
+          </div>
+          <AlertDialogTitle className="text-2xl flex items-center gap-2 pr-8">
             <GraduationCap className="h-6 w-6 text-blue-600" />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-bold">
               Hide Zero Cards - Teacher&apos;s Guide

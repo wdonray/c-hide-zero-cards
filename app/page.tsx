@@ -6,7 +6,15 @@ import { Button } from '@/components/ui/button'
 import { DraggableCard } from '@/components/DraggableCard'
 import { Separator } from '@/components/ui/separator'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { FAKE_ZERO_NUMBERS, PLACE_VALUES, DEFAULT_MAX_RANDOM_NUMBER } from '@/lib/constants'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { FAKE_ZERO_NUMBERS, PLACE_VALUES, DEFAULT_MAX_RANDOM_NUMBER, MOBILE_WIDTH } from '@/lib/constants'
 import { DiceSix, Shuffle, ArrowClockwise, Target, Funnel } from '@phosphor-icons/react'
 
 export default function Home() {
@@ -16,6 +24,30 @@ export default function Home() {
   const [randomNumberRange, setRandomNumberRange] = useState<[number, number]>([1, DEFAULT_MAX_RANDOM_NUMBER])
   const [showRandomRange, setShowRandomRange] = useState(false)
   const [isDiceRolling, setIsDiceRolling] = useState(false)
+  const [showMobileAlert, setShowMobileAlert] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      const wasMobile = isMobile
+      const isNowMobile = window.innerWidth < MOBILE_WIDTH
+      setIsMobile(isNowMobile)
+
+      if (!wasMobile && isNowMobile) {
+        setShowMobileAlert(true)
+      }
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    if (window.innerWidth < MOBILE_WIDTH) {
+      setShowMobileAlert(true)
+    }
+
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [isMobile])
 
   function handleRandomNumber() {
     const randomNumber =
@@ -69,84 +101,99 @@ export default function Home() {
   }, [inputNumber])
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="flex flex-col gap-4">
-        <NumberInput value={inputNumber} onChange={setInputNumber} />
-        <div className="flex w-full items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
-              <CollapsibleTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <Funnel className="h-4 w-4" />
-                </Button>
-              </CollapsibleTrigger>
-            </Collapsible>
-            <Button size="sm" onClick={handleRandomNumber} disabled={isDiceRolling}>
-              <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
-              Roll a new number
+    <>
+      <div className="flex flex-col items-center gap-8">
+        <div className="flex flex-col gap-4">
+          <NumberInput value={inputNumber} onChange={setInputNumber} />
+          <div className="flex w-full flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
+                <CollapsibleTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Funnel className="h-4 w-4" />
+                  </Button>
+                </CollapsibleTrigger>
+              </Collapsible>
+              <Button size="sm" onClick={handleRandomNumber} disabled={isDiceRolling}>
+                <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
+                Roll a new number
+              </Button>
+            </div>
+            <Button size="sm" disabled={!inputNumber} variant="outline" onClick={handleRandomizeCardPosition}>
+              <Shuffle className="h-4 w-4" />
+              Mix up cards
+            </Button>
+            <Button variant="destructive" disabled={!inputNumber} size="sm" onClick={handleResetCardPosition}>
+              <ArrowClockwise className="h-4 w-4" />
+              Put cards back
             </Button>
           </div>
-          <Button size="sm" disabled={!inputNumber} variant="outline" onClick={handleRandomizeCardPosition}>
-            <Shuffle className="h-4 w-4" />
-            Mix up cards
-          </Button>
-          <Button variant="destructive" disabled={!inputNumber} size="sm" onClick={handleResetCardPosition}>
-            <ArrowClockwise className="h-4 w-4" />
-            Put cards back
-          </Button>
-        </div>
-        <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
-          <CollapsibleContent>
-            <div className="flex flex-col gap-2">
-              <Separator />
-              <div className="flex flex-col items-center gap-2 w-full">
-                <div className="flex items-start gap-8 justify-between w-full">
-                  <div className="grid grid-cols-3 items-center gap-2 w-full">
-                    {randomNumberRangeKeys.map((value) => (
-                      <Button
-                        key={value}
-                        size="sm"
-                        variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
-                        onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
-                      >
-                        {value.toLocaleString()}
-                      </Button>
-                    ))}
+          <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
+            <CollapsibleContent>
+              <div className="flex flex-col gap-2">
+                <Separator />
+                <div className="flex flex-col items-center gap-2 w-full">
+                  <div className="flex items-start gap-8 justify-between w-full">
+                    <div className="grid grid-cols-3 items-center gap-2 w-full">
+                      {randomNumberRangeKeys.map((value) => (
+                        <Button
+                          key={value}
+                          size="sm"
+                          variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
+                          onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
+                        >
+                          {value.toLocaleString()}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange}>
+                      <ArrowClockwise className="h-4 w-4" />
+                      Start over
+                    </Button>
                   </div>
-                  <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange}>
-                    <ArrowClockwise className="h-4 w-4" />
-                    Start over
-                  </Button>
                 </div>
               </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+        <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
+          {cards.length === 0 ? (
+            <div className="flex flex-col items-center gap-2">
+              <Target className="h-16 w-16 text-muted-foreground" />
+              <span className="text-2xl text-muted-foreground text-center">Type a number above to see your cards!</span>
+              <span className="text-sm text-muted-foreground text-center">
+                Try numbers like 123, 1,000, or even 1,000,000!
+              </span>
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          ) : (
+            cards.map((card, index) => (
+              <DraggableCard
+                key={`${card.firstDigit}-${card.placeValue}-${index}`}
+                firstDigit={card.firstDigit}
+                placeValue={card.placeValue}
+                fakeNumbers={card.fakeNumbers}
+                index={index}
+                totalCards={cards.length}
+                resetTrigger={resetTrigger}
+                randomizeTrigger={randomizeTrigger}
+              />
+            ))
+          )}
+        </div>
       </div>
-      <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
-        {cards.length === 0 ? (
-          <div className="flex flex-col items-center gap-2">
-            <Target className="h-16 w-16 text-muted-foreground" />
-            <span className="text-2xl text-muted-foreground text-center">Type a number above to see your cards!</span>
-            <span className="text-sm text-muted-foreground text-center">
-              Try numbers like 123, 1,000, or even 1,000,000!
-            </span>
-          </div>
-        ) : (
-          cards.map((card, index) => (
-            <DraggableCard
-              key={`${card.firstDigit}-${card.placeValue}-${index}`}
-              firstDigit={card.firstDigit}
-              placeValue={card.placeValue}
-              fakeNumbers={card.fakeNumbers}
-              index={index}
-              totalCards={cards.length}
-              resetTrigger={resetTrigger}
-              randomizeTrigger={randomizeTrigger}
-            />
-          ))
-        )}
-      </div>
-    </div>
+
+      {/* Mobile Alert Dialog */}
+      <AlertDialog open={showMobileAlert && isMobile} onOpenChange={setShowMobileAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>App Not Optimized for Mobile</AlertDialogTitle>
+            <AlertDialogDescription>
+              This app is not optimized for mobile devices. Please use a larger screen for the best experience.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogAction onClick={() => setShowMobileAlert(false)}>Got it</AlertDialogAction>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

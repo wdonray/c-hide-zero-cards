@@ -47,3 +47,5 @@ export const CARD_RANDOM_Y_OFFSET = 175
 
 export const DEFAULT_MAX_RANDOM_NUMBER = 1_000_000
 export const MAX_NUMBER = 1_000_000_000
+
+export const MOBILE_WIDTH = 768
