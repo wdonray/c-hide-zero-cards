@@ -6,15 +6,8 @@ import { Button } from '@/components/ui/button'
 import { DraggableCard } from '@/components/DraggableCard'
 import { Separator } from '@/components/ui/separator'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { FAKE_ZERO_NUMBERS, PLACE_VALUES, DEFAULT_MAX_RANDOM_NUMBER, MOBILE_WIDTH } from '@/lib/constants'
+import { MobileAlert } from '@/components/MobileAlert'
+import { FAKE_ZERO_NUMBERS, PLACE_VALUES, DEFAULT_MAX_RANDOM_NUMBER } from '@/lib/constants'
 import { DiceSix, Shuffle, ArrowClockwise, Target, Funnel } from '@phosphor-icons/react'
 
 export default function Home() {
@@ -24,30 +17,6 @@ export default function Home() {
   const [randomNumberRange, setRandomNumberRange] = useState<[number, number]>([1, DEFAULT_MAX_RANDOM_NUMBER])
   const [showRandomRange, setShowRandomRange] = useState(false)
   const [isDiceRolling, setIsDiceRolling] = useState(false)
-  const [showMobileAlert, setShowMobileAlert] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-
-  // Mobile detection
-  useEffect(() => {
-    const checkMobile = () => {
-      const wasMobile = isMobile
-      const isNowMobile = window.innerWidth < MOBILE_WIDTH
-      setIsMobile(isNowMobile)
-
-      if (!wasMobile && isNowMobile) {
-        setShowMobileAlert(true)
-      }
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    if (window.innerWidth < MOBILE_WIDTH) {
-      setShowMobileAlert(true)
-    }
-
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [isMobile])
 
   function handleRandomNumber() {
     const randomNumber =
@@ -102,9 +71,12 @@ export default function Home() {
 
   return (
     <>
+      <MobileAlert />
+
       <div className="flex flex-col items-center gap-8">
         <div className="flex flex-col gap-4">
           <NumberInput value={inputNumber} onChange={setInputNumber} />
+
           <div className="flex w-full flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
@@ -156,6 +128,7 @@ export default function Home() {
             </CollapsibleContent>
           </Collapsible>
         </div>
+
         <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
           {cards.length === 0 ? (
             <div className="flex flex-col items-center gap-2">
@@ -181,19 +154,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      {/* Mobile Alert Dialog */}
-      <AlertDialog open={showMobileAlert && isMobile} onOpenChange={setShowMobileAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>App Not Optimized for Mobile</AlertDialogTitle>
-            <AlertDialogDescription>
-              This app is not optimized for mobile devices. Please use a larger screen for the best experience.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogAction onClick={() => setShowMobileAlert(false)}>Got it</AlertDialogAction>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   )
 }
