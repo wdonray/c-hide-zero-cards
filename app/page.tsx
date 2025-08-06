@@ -4,11 +4,11 @@ import { useMemo, useState, useEffect } from 'react'
 import { NumberInput } from '@/components/NumberInput'
 import { Button } from '@/components/ui/button'
 import { DraggableCard } from '@/components/DraggableCard'
-import { Separator } from '@/components/ui/separator'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { MobileAlert } from '@/components/MobileAlert'
 import { FAKE_ZERO_NUMBERS, PLACE_VALUES, DEFAULT_MAX_RANDOM_NUMBER } from '@/lib/constants'
-import { DiceSix, Shuffle, ArrowClockwise, Target, Funnel } from '@phosphor-icons/react'
+import { DiceSix, Shuffle, ArrowClockwise, Target, CaretDown } from '@phosphor-icons/react'
 
 export default function Home() {
   const [inputNumber, setInputNumber] = useState<number | null>(null)
@@ -78,18 +78,53 @@ export default function Home() {
           <NumberInput value={inputNumber} onChange={setInputNumber} />
 
           <div className="flex w-full flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
-                <CollapsibleTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    <Funnel className="h-4 w-4" />
-                  </Button>
-                </CollapsibleTrigger>
-              </Collapsible>
-              <Button size="sm" onClick={handleRandomNumber} disabled={isDiceRolling}>
-                <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
-                Roll a new number
-              </Button>
+            <div className="flex items-center">
+              <div className="flex rounded-md shadow-sm" role="group">
+                <Button
+                  size="sm"
+                  onClick={handleRandomNumber}
+                  disabled={isDiceRolling}
+                  className="rounded-r-none border-r-1"
+                >
+                  <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
+                  Roll a number
+                </Button>
+                <Popover open={showRandomRange} onOpenChange={setShowRandomRange}>
+                  <PopoverTrigger asChild>
+                    <Button size="sm" className="rounded-l-none text-sm px-2">
+                      <CaretDown className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <h4 className="font-medium leading-none">Random Number Range</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Set the maximum value for random number generation.
+                        </p>
+                      </div>
+                      <div className="grid gap-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          {randomNumberRangeKeys.map((value) => (
+                            <Button
+                              key={value}
+                              size="sm"
+                              variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
+                              onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
+                            >
+                              {value.toLocaleString()}
+                            </Button>
+                          ))}
+                        </div>
+                        <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange} className="mt-2">
+                          <ArrowClockwise className="h-4 w-4 mr-2" />
+                          Reset to default
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
             <Button size="sm" disabled={!inputNumber} variant="outline" onClick={handleRandomizeCardPosition}>
               <Shuffle className="h-4 w-4" />
@@ -100,33 +135,6 @@ export default function Home() {
               Put cards back
             </Button>
           </div>
-          <Collapsible open={showRandomRange} onOpenChange={setShowRandomRange}>
-            <CollapsibleContent>
-              <div className="flex flex-col gap-2">
-                <Separator />
-                <div className="flex flex-col items-center gap-2 w-full">
-                  <div className="flex items-start gap-8 justify-between w-full">
-                    <div className="grid grid-cols-3 items-center gap-2 w-full">
-                      {randomNumberRangeKeys.map((value) => (
-                        <Button
-                          key={value}
-                          size="sm"
-                          variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
-                          onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
-                        >
-                          {value.toLocaleString()}
-                        </Button>
-                      ))}
-                    </div>
-                    <Button size="sm" variant="ghost" onClick={handleResetRandomNumberRange}>
-                      <ArrowClockwise className="h-4 w-4" />
-                      Start over
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
         </div>
 
         <div className="w-full h-96 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
