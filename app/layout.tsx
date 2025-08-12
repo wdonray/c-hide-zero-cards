@@ -2,8 +2,11 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/Header'
+import { Toolbar } from '@/components/Toolbar'
 import { Footer } from '@/components/Footer'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { HeaderProvider } from '@/lib/useHeaderContext'
+import { HydrationCheck } from '@/components/HydrationCheck'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -46,9 +49,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <Header />
-          <main className="min-h-screen container m-auto p-8">{children}</main>
-          <Footer />
+          <HydrationCheck>
+            <HeaderProvider>
+              <Header />
+              <Toolbar />
+              <main className="min-h-screen container m-auto p-8 transition-all duration-300">{children}</main>
+              <Footer />
+            </HeaderProvider>
+          </HydrationCheck>
         </ThemeProvider>
       </body>
     </html>
