@@ -10,6 +10,7 @@ import {
   AlertDialogAction,
 } from '@/components/ui/alert-dialog'
 import { PLACE_VALUE_NAMES, PLACE_VALUES } from '@/lib/constants'
+import { Calculator, CheckCircle } from 'lucide-react'
 
 interface ExpandDialogProps {
   open: boolean
@@ -51,18 +52,23 @@ export function ExpandDialog({ open, onOpenChange, number }: ExpandDialogProps) 
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle>Number Parts</AlertDialogTitle>
-          <AlertDialogDescription>Let's see what makes up the number {number.toLocaleString()}</AlertDialogDescription>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
+            Let&apos;s Break Down This Number!
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Cool! Let&apos;s see how the number <strong>{number.toLocaleString()}</strong> is built piece by piece!
+          </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-4">
           <div className="bg-muted/50 rounded-lg p-4">
-            <h4 className="font-medium mb-2">Expanded Form:</h4>
+            <h4 className="font-medium mb-2">Here&apos;s how we write it:</h4>
             <p className="text-lg font-mono tabular-nums">{expandedForm}</p>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-medium">Each part:</h4>
+            <h4 className="font-medium">Each piece of our number:</h4>
             <div className="space-y-1">
               {placeValues.map((pv, index) => (
                 <div key={index} className="flex items-center justify-between border rounded p-2 tabular-nums">
@@ -76,7 +82,10 @@ export function ExpandDialog({ open, onOpenChange, number }: ExpandDialogProps) 
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogAction>Got it!</AlertDialogAction>
+          <AlertDialogAction className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Awesome! I understand!
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
