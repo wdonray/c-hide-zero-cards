@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
-export function MobileAlert() {
+export function MobileAlertDialog() {
   const [showMobileAlert, setShowMobileAlert] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 

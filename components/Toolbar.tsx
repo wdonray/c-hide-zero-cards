@@ -2,7 +2,17 @@
 
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { Button } from '@/components/ui/button'
-import { CaretUp, CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
+import {
+  CaretUp,
+  CaretDown,
+  DiceSix,
+  ArrowClockwise,
+  Shuffle,
+  X,
+  Eye,
+  EyeSlash,
+  ArrowsOut,
+} from '@phosphor-icons/react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { PLACE_VALUES } from '@/lib/constants'
 
@@ -23,6 +33,7 @@ export function Toolbar() {
     setInputNumber,
     showZeroCards,
     toggleZeroCards,
+    setShowExpandDialog,
   } = useHeaderContext()
 
   const randomNumberRangeKeys = Object.values(PLACE_VALUES).filter(
@@ -115,6 +126,11 @@ export function Toolbar() {
             <Button variant="outline" disabled={!inputNumber} size="sm" onClick={handleResetCardPosition}>
               <ArrowClockwise className="h-4 w-4 text-green-600" />
               <span className="hidden md:block">Reset</span>
+            </Button>
+
+            <Button variant="outline" disabled={!inputNumber} size="sm" onClick={() => setShowExpandDialog(true)}>
+              <ArrowsOut className="h-4 w-4 text-blue-600" />
+              <span className="hidden md:block">Expand</span>
             </Button>
           </div>
 

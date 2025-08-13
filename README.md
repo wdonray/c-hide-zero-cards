@@ -1,151 +1,101 @@
-# Hide Zero Cards - Place Value Teaching Tool
+# Hide Zero Cards
 
-A digital educational tool designed by Donray Williams for his wife, a fourth-grade teacher, that transforms abstract place value concepts into tangible, interactive learning experiences through draggable number cards.
+A Next.js application for interactive place value learning through draggable number cards.
 
-## 🎯 Purpose
+## Tech Stack
 
-This application transforms how fourth-grade students learn and practice place value concepts by:
+- **Framework**: Next.js 15 with React 19
+- **Styling**: Tailwind CSS 4
+- **UI Components**: Shadcn/ui (Radix UI primitives)
+- **Theme**: next-themes for light/dark mode
+- **Language**: TypeScript
+- **Icons**: Phosphor Icons
+- **Development**: ESLint, Prettier, Husky
 
-- **Visualizing Numbers**: Breaking down large numbers into their individual place value components
-- **Interactive Learning**: Allowing students to drag and rearrange number cards
-- **Zero Place Value Understanding**: Teaching students that zeros in different positions have different values
-- **Hands-on Practice**: Providing a tactile digital experience for number manipulation
+## Features
 
-## ✨ Features
+- **Number Input**: Manual entry (1-1B) or random generation with customizable ranges
+- **Draggable Cards**: Color-coded place value cards with drag-and-drop functionality
+- **Interactive Controls**: Reset, randomize positions, toggle zero cards, expand dialog
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Theme Support**: Light/dark mode toggle
 
-### 🎲 Number Generation
-
-- **Manual Input**: Enter any number from 1 to 1,000,000,000
-- **Random Generation**: Generate random numbers for practice with animated dice roll
-- **Customizable Range**: Set upper limits for random number generation (1,000 to 1,000,000,000)
-
-### 🃏 Interactive Cards
-
-- **Color-Coded Place Values**: Each place value has a distinct color for easy identification
-  - Ones/Tens: Red shades
-  - Hundreds/Thousands: Orange shades
-  - Ten Thousands/Hundred Thousands: Yellow shades
-  - Millions: Green shades
-  - Billions: Blue shades
-- **Draggable Interface**: Students can drag cards around the workspace
-- **Zero Representation**: Zero digits are shown as placeholder zeros (0, 00, 000, etc.)
-- **Formatted Display**: Numbers are displayed with proper comma formatting
-
-### 🎮 Interactive Controls
-
-- **Reset Cards**: Return all cards to their original positions
-- **Randomize Positions**: Scatter cards randomly for a challenge
-- **Randomize Number**: Generate a new random number for practice
-- **Collapsible Range Controls**: Expandable interface for customizing random number ranges
-
-### 🎨 User Experience
-
-- **Light/Dark Theme Toggle**: Switch between light and dark modes for comfortable viewing
-- **Instructional Guide**: Built-in help system with step-by-step instructions
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
-
-## 🎓 Educational Benefits
-
-### For Students:
-
-- **Visual Learning**: See how large numbers are composed of smaller parts
-- **Kinesthetic Learning**: Physical interaction with number components
-- **Place Value Mastery**: Understand the difference between 100, 1,000, and 10,000
-- **Zero Understanding**: Learn that zeros have different values in different positions
-
-### For Teachers:
-
-- **Classroom Demonstration**: Use on interactive whiteboards or projectors
-- **Individual Practice**: Students can practice independently
-- **Assessment Tool**: Observe how students manipulate and understand number components
-- **Differentiated Learning**: Adjust number ranges for different skill levels
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (version 18 or higher)
+- Node.js 18+
 - npm, yarn, pnpm, or bun
 
 ### Installation
 
-1. Clone the repository:
-
 ```bash
 git clone <repository-url>
 cd c-hide-zero-cards
-```
-
-2. Install dependencies:
-
-```bash
 npm install
-```
-
-3. Start the development server:
-
-```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+Open [http://localhost:3000](http://localhost:3000)
 
-### Building for Production
+### Build
 
 ```bash
 npm run build
 npm start
 ```
 
-## 🛠️ Technology Stack
+## Project Structure
 
-- **Framework**: Next.js 15 with React 19
-- **Styling**: Tailwind CSS 4
-- **UI Components**: Shadcn/ui (built on Radix UI primitives)
-- **Theme Management**: next-themes for light/dark mode support
-- **Language**: TypeScript
-- **Development**: ESLint, Prettier, Husky for code quality
+```
+c-hide-zero-cards/
+├── app/                    # Next.js app directory
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Main page
+├── components/            # React components
+│   ├── ui/               # Shadcn/ui components
+│   ├── DraggableCard.tsx # Main card component
+│   ├── Toolbar.tsx       # Control toolbar
+│   └── ...
+├── lib/                  # Utilities and hooks
+│   ├── constants.ts      # App constants
+│   ├── useDraggable.ts   # Drag functionality
+│   └── ...
+└── public/              # Static assets
+```
 
-## 📱 Usage Instructions
+## Key Components
 
-### Getting Started:
+- **DraggableCard**: Individual number cards with drag-and-drop
+- **Toolbar**: Control panel with number generation and card manipulation
+- **ExpandDialog**: Shows expanded form of numbers
+- **InstructionalGuideDialog**: Help system for teachers
 
-1. **Open the Tool**: Navigate to the application in your browser
-2. **Choose Your Theme**: Use the theme toggle in the header to select light or dark mode
-3. **Get Help**: Click "❓ How to Use" in the header for detailed instructions
+## Development
 
-### Basic Usage:
+### Code Quality
 
-1. **Enter a Number**: Type any number from 1 to 1,000,000,000 in the input field
-2. **Observe Cards**: Each digit appears as a separate, color-coded card
-3. **Drag Cards**: Click and drag cards to rearrange them
-4. **Practice**: Try dragging cards to different positions and see how the number changes
+- ESLint for linting
+- Prettier for formatting
+- Husky for pre-commit hooks
 
-### Advanced Features:
+### Styling
 
-- **Random Number**: Click "🎲 Randomize number" to generate a random number (with animated dice)
-- **Adjust Range**: Click "🔽" to show range controls and set maximum values
-- **Scatter Cards**: Click "🔀 Randomize positions" to scatter cards randomly
-- **Reset**: Click "🔄 Reset cards" to return cards to original positions
+- Tailwind CSS for utility-first styling
+- CSS variables for theme colors
+- Responsive design with mobile-first approach
 
-## 🎨 Design Philosophy
+### State Management
 
-The application uses a clean, educational design with:
+- React Context for global state (header context)
+- Local state for component-specific data
+- Custom hooks for reusable logic
 
-- **Large, readable fonts** for classroom visibility
-- **Color-coded place values** for easy identification
-- **Intuitive drag-and-drop** interface
-- **Responsive design** that works on various screen sizes
-- **Accessible controls** suitable for young learners
+## Contributing
 
-## 🤝 Contributing
+Open issues for bugs or feature requests. Pull requests welcome.
 
-This is a personal project created for educational purposes. If you find bugs or have suggestions for improvements, feel free to open an issue or submit a pull request.
+## License
 
-## 📄 License
-
-This project is created for educational use. Please respect the educational purpose and use appropriately in classroom settings.
-
----
-
-**Created with ❤️ by Donray Williams for his wife's fourth-grade classroom**
+Educational use only.

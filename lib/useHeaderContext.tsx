@@ -23,6 +23,8 @@ interface HeaderContextType {
   handleRandomizeCardPosition: () => void
   showZeroCards: boolean
   toggleZeroCards: () => void
+  showExpandDialog: boolean
+  setShowExpandDialog: (value: boolean) => void
 }
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined)
@@ -40,6 +42,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const [showRandomRange, setShowRandomRange] = useState(false)
   const [isDiceRolling, setIsDiceRolling] = useState(false)
   const [showZeroCards, setShowZeroCards] = useState(true)
+  const [showExpandDialog, setShowExpandDialog] = useState(false)
 
   function toggleHeader() {
     setIsHeaderCollapsed(!isHeaderCollapsed)
@@ -103,6 +106,8 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         handleRandomizeCardPosition,
         showZeroCards,
         toggleZeroCards,
+        showExpandDialog,
+        setShowExpandDialog,
       }}
     >
       {children}

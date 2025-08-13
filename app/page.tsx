@@ -3,10 +3,11 @@
 import { useMemo, useEffect } from 'react'
 import { NumberInput } from '@/components/NumberInput'
 import { DraggableCard } from '@/components/DraggableCard'
-import { MobileAlert } from '@/components/MobileAlert'
+import { MobileAlertDialog } from '@/components/MobileAlertDialog'
 import { FAKE_ZERO_NUMBERS, PLACE_VALUES } from '@/lib/constants'
 import { Target } from '@phosphor-icons/react'
 import { useHeaderContext } from '@/lib/useHeaderContext'
+import { ExpandDialog } from '@/components/ExpandDialog'
 
 export default function Home() {
   const {
@@ -17,6 +18,8 @@ export default function Home() {
     resetTrigger,
     randomizeTrigger,
     showZeroCards,
+    showExpandDialog,
+    setShowExpandDialog,
   } = useHeaderContext()
 
   const cards = useMemo(() => {
@@ -48,7 +51,8 @@ export default function Home() {
 
   return (
     <>
-      <MobileAlert />
+      <MobileAlertDialog />
+      <ExpandDialog open={showExpandDialog} onOpenChange={setShowExpandDialog} number={inputNumber} />
 
       <div className="flex flex-col items-center gap-8">
         <div className="flex flex-col">

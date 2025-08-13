@@ -40,6 +40,19 @@ export const FAKE_ZERO_NUMBERS: Record<number, string> = {
   9: '0,000,000,000',
 }
 
+export const PLACE_VALUE_NAMES: Record<number, string> = {
+  1: 'ones',
+  10: 'tens',
+  100: 'hundreds',
+  1000: 'thousands',
+  10000: 'ten thousands',
+  100000: 'hundred thousands',
+  1000000: 'millions',
+  10000000: 'ten millions',
+  100000000: 'hundred millions',
+  1000000000: 'billions',
+}
+
 export const CARD_X_OFFSET = 38
 export const CARD_Y_OFFSET = 0
 export const CARD_RANDOM_X_OFFSET = 400
