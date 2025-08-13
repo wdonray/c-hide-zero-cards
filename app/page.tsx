@@ -40,7 +40,7 @@ export default function Home() {
       setResetTrigger(0)
       setRandomizeTrigger(0)
     }
-  }, [inputNumber])
+  }, [inputNumber, setResetTrigger, setRandomizeTrigger])
 
   useEffect(() => {
     window.scrollTo(0, 0)
