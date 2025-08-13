@@ -8,6 +8,7 @@ import { FAKE_ZERO_NUMBERS, PLACE_VALUES } from '@/lib/constants'
 import { Target } from '@phosphor-icons/react'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { ExpandDialog } from '@/components/ExpandDialog'
+import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
 
 export default function Home() {
   const {
@@ -53,6 +54,7 @@ export default function Home() {
     <>
       <MobileAlertDialog />
       <ExpandDialog open={showExpandDialog} onOpenChange={setShowExpandDialog} number={inputNumber} />
+      <BuyMeACoffeeWidget />
 
       <div className="flex flex-col items-center gap-8">
         <div className="flex flex-col">

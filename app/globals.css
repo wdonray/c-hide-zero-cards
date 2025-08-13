@@ -170,3 +170,38 @@
     animation: dice-roll 0.2s ease-in-out;
   }
 }
+
+/* Buy Me a Coffee Widget Styles */
+#bmc-wbtn {
+  position: fixed !important;
+  bottom: 75px !important;
+  right: 20px !important;
+  z-index: 9999 !important;
+  /* Control button size */
+  transform: scale(0.8) !important; /* Make button 80% of original size */
+}
+
+#bmc-wbtn + div {
+  position: fixed !important;
+  bottom: 75px !important;
+  right: 20px !important;
+  z-index: 9999 !important;
+}
+
+/* Alternative: Make button smaller */
+#bmc-wbtn.small {
+  transform: scale(0.6) !important; /* 60% of original size */
+}
+
+#bmc-wbtn.large {
+  transform: scale(1.2) !important; /* 120% of original size */
+}
+
+/* Ensure widget is visible in both light and dark themes */
+#bmc-wbtn {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.dark #bmc-wbtn {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}

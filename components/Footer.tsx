@@ -1,3 +1,5 @@
+import { BuyMeACoffee } from '@/components/BuyMeACoffee'
+
 export function Footer() {
   return (
     <footer className="sticky bottom-0 z-50 w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -19,6 +21,7 @@ export function Footer() {
           >
             LinkedIn
           </a>
+          <BuyMeACoffee variant="ghost" size="sm" />
         </div>
         <div className="text-sm text-muted-foreground">© 2025 Donray Williams</div>
       </div>
