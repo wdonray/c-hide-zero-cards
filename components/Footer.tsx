@@ -1,4 +1,4 @@
-import { BuyMeACoffee } from '@/components/BuyMeACoffee'
+import { BuyMeACoffeeButton } from '@/components/BuyMeACoffeeButton'
 
 export function Footer() {
   return (
@@ -21,7 +21,7 @@ export function Footer() {
           >
             LinkedIn
           </a>
-          <BuyMeACoffee variant="ghost" size="sm" />
+          <BuyMeACoffeeButton variant="ghost" size="sm" />
         </div>
         <div className="text-sm text-muted-foreground">© 2025 Donray Williams</div>
       </div>

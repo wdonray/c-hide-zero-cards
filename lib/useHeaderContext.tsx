@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
-import { DEFAULT_MAX_RANDOM_NUMBER } from '@/lib/constants'
+import { DEFAULT_MAX_RANDOM_NUMBER, LOCAL_STORAGE_KEYS } from '@/lib/constants'
 
 interface HeaderContextType {
   isHeaderCollapsed: boolean
@@ -31,7 +31,7 @@ const HeaderContext = createContext<HeaderContextType | undefined>(undefined)
 
 export function HeaderProvider({ children }: { children: ReactNode }) {
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(() => {
-    const saved = localStorage.getItem('isHeaderCollapsed')
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.IS_HEADER_COLLAPSED)
     return saved !== null ? JSON.parse(saved) : false
   })
 
@@ -81,7 +81,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    localStorage.setItem('isHeaderCollapsed', JSON.stringify(isHeaderCollapsed))
+    localStorage.setItem(LOCAL_STORAGE_KEYS.IS_HEADER_COLLAPSED, JSON.stringify(isHeaderCollapsed))
   }, [isHeaderCollapsed])
 
   return (

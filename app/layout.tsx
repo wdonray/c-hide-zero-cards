@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { HeaderProvider } from '@/lib/useHeaderContext'
 import { HydrationCheck } from '@/components/HydrationCheck'
+import { Toaster } from '@/components/ui/sonner'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -57,6 +58,7 @@ export default function RootLayout({
               <Footer />
             </HeaderProvider>
           </HydrationCheck>
+          <Toaster position="bottom-center" richColors />
         </ThemeProvider>
       </body>
     </html>

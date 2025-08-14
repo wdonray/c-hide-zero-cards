@@ -1,14 +1,22 @@
 'use client'
 
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { NumberInput } from '@/components/NumberInput'
 import { DraggableCard } from '@/components/DraggableCard'
 import { MobileAlertDialog } from '@/components/MobileAlertDialog'
-import { FAKE_ZERO_NUMBERS, PLACE_VALUES } from '@/lib/constants'
-import { Target } from '@phosphor-icons/react'
+import {
+  FAKE_ZERO_NUMBERS,
+  PLACE_VALUES,
+  LOCAL_STORAGE_KEYS,
+  FIRST_TIME_TOAST_DURATION,
+  FIRST_TIME_TOAST_STYLE,
+} from '@/lib/constants'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { ExpandDialog } from '@/components/ExpandDialog'
 import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
+import { toast } from 'sonner'
+import { FirstTimeToast } from '@/components/FirstTimeToast'
+import { ArrowFatUpIcon } from '@phosphor-icons/react'
 
 export default function Home() {
   const {
@@ -22,6 +30,11 @@ export default function Home() {
     showExpandDialog,
     setShowExpandDialog,
   } = useHeaderContext()
+
+  const [hasShownFirstTimeToast, setHasShownFirstTimeToast] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST)
+    return saved !== null ? JSON.parse(saved) : false
+  })
 
   const cards = useMemo(() => {
     if (!inputNumber) return []
@@ -50,6 +63,14 @@ export default function Home() {
     window.scrollTo(0, 0)
   }, [])
 
+  useEffect(() => {
+    if (cards.length > 1 && !hasShownFirstTimeToast) {
+      setHasShownFirstTimeToast(true)
+      localStorage.setItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST, JSON.stringify(true))
+      toast(<FirstTimeToast />, { duration: FIRST_TIME_TOAST_DURATION, style: FIRST_TIME_TOAST_STYLE })
+    }
+  }, [cards, hasShownFirstTimeToast])
+
   return (
     <>
       <MobileAlertDialog />
@@ -64,7 +85,7 @@ export default function Home() {
         <div className="w-full h-128 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
           {cards.length === 0 ? (
             <div className="flex flex-col items-center gap-2">
-              <Target className="h-16 w-16 text-muted-foreground" />
+              <ArrowFatUpIcon className="h-12 w-12 animate-bounce text-muted-foreground" />
               <span className="text-2xl text-muted-foreground text-center">Type a number above to see your cards!</span>
               <span className="text-sm text-muted-foreground text-center">
                 Try numbers like 123, 1,000, or even 1,000,000!
