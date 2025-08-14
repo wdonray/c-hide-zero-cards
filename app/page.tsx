@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useEffect, useState } from 'react'
+import Script from 'next/script'
 import { NumberInput } from '@/components/NumberInput'
 import { DraggableCard } from '@/components/DraggableCard'
 import { MobileAlertDialog } from '@/components/MobileAlertDialog'
@@ -73,6 +74,29 @@ export default function Home() {
 
   return (
     <>
+      <Script id="ld-org" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Hide Zero Cards',
+          url: 'https://hidezerocards.org/',
+          logo: 'https://hidezerocards.org/logo.png',
+          sameAs: ['https://www.donray.dev/', 'https://www.linkedin.com/in/donrayxwilliams/'],
+        })}
+      </Script>
+      <Script id="ld-website" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Hide Zero Cards',
+          url: 'https://hidezerocards.org/',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://hidezerocards.org/?q={search_term_string}',
+            'query-input': 'required name=search_term_string',
+          },
+        })}
+      </Script>
       <MobileAlertDialog />
       <ExpandDialog open={showExpandDialog} onOpenChange={setShowExpandDialog} number={inputNumber} />
       <BuyMeACoffeeWidget />

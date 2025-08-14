@@ -20,6 +20,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://hidezerocards.org'),
   title: 'Hide Zero Cards - Place Value Teaching Tool',
   description:
     'Interactive educational tool for teaching place values to fourth-grade students. Drag and manipulate number cards to understand place value concepts.',
@@ -27,18 +28,24 @@ export const metadata: Metadata = {
   authors: [{ name: 'Donray Williams' }],
   creator: 'Donray Williams',
   publisher: 'Educational Tool',
-  robots: 'index, follow',
+  robots: 'index, follow, max-image-preview:large',
+  alternates: { canonical: '/' },
   openGraph: {
     title: 'Hide Zero Cards - Place Value Teaching Tool',
     description: 'Interactive educational tool for teaching place values to fourth-grade students.',
     type: 'website',
     locale: 'en_US',
+    url: 'https://hidezerocards.org/',
+    siteName: 'Hide Zero Cards',
+    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Hide Zero Cards' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Hide Zero Cards - Place Value Teaching Tool',
     description: 'Interactive educational tool for teaching place values to fourth-grade students.',
+    images: ['/logo.png'],
   },
+  icons: { icon: '/favicon.ico' },
 }
 
 export default function RootLayout({
