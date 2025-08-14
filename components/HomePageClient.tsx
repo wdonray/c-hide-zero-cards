@@ -80,13 +80,6 @@ export function HomePageClient() {
 
       <section className="flex flex-col items-center gap-8" aria-label="Interactive Place Value Cards">
         <header className="flex flex-col items-center">
-          <h1 className="text-4xl lg:text-5xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Interactive Place Value Cards
-          </h1>
-          <p className="text-lg text-muted-foreground text-center max-w-2xl mb-6">
-            Enter any number below to see it broken down into place value cards. Drag and manipulate the cards to
-            understand how place values work together.
-          </p>
           <NumberInput value={inputNumber} onChange={setInputNumber} />
         </header>
 
@@ -97,7 +90,9 @@ export function HomePageClient() {
           {cards.length === 0 ? (
             <div className="flex flex-col items-center gap-2" role="img" aria-label="Instructions to start">
               <ArrowFatUpIcon className="h-12 w-12 animate-bounce text-muted-foreground" aria-hidden="true" />
-              <span className="text-2xl text-muted-foreground text-center">Type a number above to see your cards!</span>
+              <span className="text-2xl text-muted-foreground text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Type a number above to see your cards!
+              </span>
               <span className="text-sm text-muted-foreground text-center">
                 Try numbers like 123, 1,000, or even 1,000,000!
               </span>
