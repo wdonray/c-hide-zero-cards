@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input'
 import { MAX_NUMBER } from '@/lib/constants'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 interface NumberInputProps {
   value: number | null
@@ -8,6 +8,7 @@ interface NumberInputProps {
 }
 
 export function NumberInput({ value, onChange }: NumberInputProps) {
+  const [isTouched, setIsTouched] = useState(false)
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const inputValue = e.target.value
     const cleanValue = inputValue.replace(/[^\d]/g, '')
@@ -37,7 +38,8 @@ export function NumberInput({ value, onChange }: NumberInputProps) {
       value={formattedNumber}
       placeholder="Type a number here!"
       onChange={handleInputChange}
-      className="!text-4xl !font-semibold !h-16 !px-6"
+      className={`!text-4xl !font-semibold !h-16 !px-6 ${!isTouched ? 'animate-pulse' : ''}`}
+      onFocus={() => setIsTouched(true)}
     />
   )
 }

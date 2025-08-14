@@ -1,112 +1,53 @@
-'use client'
+import { Metadata } from 'next'
+import { HomePageClient } from '@/components/HomePageClient'
 
-import { useMemo, useEffect, useState } from 'react'
-import { NumberInput } from '@/components/NumberInput'
-import { DraggableCard } from '@/components/DraggableCard'
-import { MobileAlertDialog } from '@/components/MobileAlertDialog'
-import {
-  FAKE_ZERO_NUMBERS,
-  PLACE_VALUES,
-  LOCAL_STORAGE_KEYS,
-  FIRST_TIME_TOAST_DURATION,
-  FIRST_TIME_TOAST_STYLE,
-} from '@/lib/constants'
-import { useHeaderContext } from '@/lib/useHeaderContext'
-import { ExpandDialog } from '@/components/ExpandDialog'
-import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
-import { toast } from 'sonner'
-import { FirstTimeToast } from '@/components/FirstTimeToast'
-import { ArrowFatUpIcon } from '@phosphor-icons/react'
+export const metadata: Metadata = {
+  title: 'Hide Zero Cards - Interactive Place Value Learning Tool for Teachers',
+  description:
+    'Help your students master place values with our interactive drag-and-drop number cards. Perfect for 4th grade math education and elementary teaching.',
+  alternates: {
+    canonical: '/',
+  },
+}
 
-export default function Home() {
-  const {
-    inputNumber,
-    setInputNumber,
-    setResetTrigger,
-    setRandomizeTrigger,
-    resetTrigger,
-    randomizeTrigger,
-    showZeroCards,
-    showExpandDialog,
-    setShowExpandDialog,
-  } = useHeaderContext()
-
-  const [hasShownFirstTimeToast, setHasShownFirstTimeToast] = useState(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST)
-    return saved !== null ? JSON.parse(saved) : false
-  })
-
-  const cards = useMemo(() => {
-    if (!inputNumber) return []
-    const numberString = inputNumber.toString()
-    const digits = numberString.split('')
-    const cards = digits.toReversed().map((digit, index) => ({
-      firstDigit: parseInt(digit) || 0,
-      placeValue: PLACE_VALUES[index],
-      fakeNumbers: digit === '0' ? FAKE_ZERO_NUMBERS[index] : null,
-    }))
-
-    // Filter out zero cards if showZeroCards is false
-    const filteredCards = showZeroCards ? cards : cards.filter((card) => card.firstDigit !== 0)
-
-    return filteredCards.toReversed()
-  }, [inputNumber, showZeroCards])
-
-  useEffect(() => {
-    if (inputNumber === null) {
-      setResetTrigger(0)
-      setRandomizeTrigger(0)
-    }
-  }, [inputNumber, setResetTrigger, setRandomizeTrigger])
-
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
-
-  useEffect(() => {
-    if (cards.length > 1 && !hasShownFirstTimeToast) {
-      setHasShownFirstTimeToast(true)
-      localStorage.setItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST, JSON.stringify(true))
-      toast(<FirstTimeToast />, { duration: FIRST_TIME_TOAST_DURATION, style: FIRST_TIME_TOAST_STYLE })
-    }
-  }, [cards, hasShownFirstTimeToast])
-
+export default function HomePage() {
   return (
     <>
-      <MobileAlertDialog />
-      <ExpandDialog open={showExpandDialog} onOpenChange={setShowExpandDialog} number={inputNumber} />
-      <BuyMeACoffeeWidget />
-
-      <div className="flex flex-col items-center gap-8">
-        <div className="flex flex-col">
-          <NumberInput value={inputNumber} onChange={setInputNumber} />
-        </div>
-
-        <div className="w-full h-128 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center">
-          {cards.length === 0 ? (
-            <div className="flex flex-col items-center gap-2">
-              <ArrowFatUpIcon className="h-12 w-12 animate-bounce text-muted-foreground" />
-              <span className="text-2xl text-muted-foreground text-center">Type a number above to see your cards!</span>
-              <span className="text-sm text-muted-foreground text-center">
-                Try numbers like 123, 1,000, or even 1,000,000!
-              </span>
-            </div>
-          ) : (
-            cards.map((card, index) => (
-              <DraggableCard
-                key={`${card.firstDigit}-${card.placeValue}-${index}`}
-                firstDigit={card.firstDigit}
-                placeValue={card.placeValue}
-                fakeNumbers={card.fakeNumbers}
-                index={index}
-                totalCards={cards.length}
-                resetTrigger={resetTrigger}
-                randomizeTrigger={randomizeTrigger}
-              />
-            ))
-          )}
-        </div>
+      {/* SEO-optimized content that's server-rendered */}
+      <div className="sr-only">
+        <h1>Hide Zero Cards - Interactive Place Value Teaching Tool</h1>
+        <p>
+          Transform how your students understand place values with this interactive, hands-on learning tool. Perfect for
+          teachers and fourth-grade students learning fundamental math concepts.
+        </p>
+        <h2>Key Features</h2>
+        <ul>
+          <li>Interactive drag-and-drop number cards</li>
+          <li>Color-coded place value visualization</li>
+          <li>Support for numbers up to 1 billion</li>
+          <li>Hide zero cards functionality for focused learning</li>
+          <li>Random number generation for practice</li>
+          <li>Responsive design for classroom use</li>
+        </ul>
+        <h2>Educational Benefits</h2>
+        <ul>
+          <li>Hands-on place value manipulation</li>
+          <li>Visual learning for different learning styles</li>
+          <li>Immediate feedback and interaction</li>
+          <li>Suitable for individual or group activities</li>
+        </ul>
+        <h2>Perfect for</h2>
+        <ul>
+          <li>Elementary school teachers</li>
+          <li>4th grade mathematics curriculum</li>
+          <li>Homeschool education</li>
+          <li>Math tutoring sessions</li>
+          <li>Remote learning environments</li>
+        </ul>
       </div>
+
+      {/* Interactive component */}
+      <HomePageClient />
     </>
   )
 }
