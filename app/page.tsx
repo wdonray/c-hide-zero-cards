@@ -102,7 +102,11 @@ export default function Home() {
       <BuyMeACoffeeWidget />
 
       <div className="flex flex-col items-center gap-8">
-        <div className="flex flex-col">
+        <div className="flex flex-col items-center text-center gap-2">
+          <h1 className="text-2xl md:text-4xl font-bold">Place Value Cards — Interactive Teaching Tool</h1>
+          <p className="text-muted-foreground max-w-prose">
+            Teach place value the way it sticks. Drag, drop, and truly see the value of each digit.
+          </p>
           <NumberInput value={inputNumber} onChange={setInputNumber} />
         </div>
 

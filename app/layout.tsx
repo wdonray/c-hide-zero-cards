@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/Header'
@@ -21,31 +21,41 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hidezerocards.org'),
-  title: 'Hide Zero Cards - Place Value Teaching Tool',
+  title: 'Place Value Cards — Interactive Teaching Tool | Hide Zero Cards',
   description:
-    'Interactive educational tool for teaching place values to fourth-grade students. Drag and manipulate number cards to understand place value concepts.',
-  keywords: 'education, place value, math, fourth grade, interactive learning, number cards, teaching tool',
-  authors: [{ name: 'Donray Williams' }],
-  creator: 'Donray Williams',
-  publisher: 'Educational Tool',
+    'Hands-on place value cards with a modern UI for teachers. Build true understanding fast. Try the interactive demo.',
   robots: 'index, follow, max-image-preview:large',
-  alternates: { canonical: '/' },
+  alternates: { canonical: 'https://hidezerocards.org/' },
   openGraph: {
-    title: 'Hide Zero Cards - Place Value Teaching Tool',
-    description: 'Interactive educational tool for teaching place values to fourth-grade students.',
-    type: 'website',
-    locale: 'en_US',
+    title: 'Place Value Cards — Interactive Teaching Tool | Hide Zero Cards',
+    description: 'Hands-on place value cards with a modern UI for teachers. Build true understanding fast.',
     url: 'https://hidezerocards.org/',
     siteName: 'Hide Zero Cards',
-    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Hide Zero Cards' }],
+    type: 'website',
+    images: [
+      {
+        url: 'https://hidezerocards.org/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Hide Zero Cards — interactive place value tool',
+      },
+    ],
+    locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hide Zero Cards - Place Value Teaching Tool',
-    description: 'Interactive educational tool for teaching place values to fourth-grade students.',
-    images: ['/logo.png'],
+    title: 'Place Value Cards — Interactive Teaching Tool',
+    description: 'Interactive, hands-on place value cards that make place value click.',
+    images: ['https://hidezerocards.org/twitter-image'],
   },
-  icons: { icon: '/favicon.ico' },
+  icons: {
+    icon: [{ url: '/favicon.ico', sizes: '32x32' }],
+  },
+  manifest: '/site.webmanifest',
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0F172A',
 }
 
 export default function RootLayout({

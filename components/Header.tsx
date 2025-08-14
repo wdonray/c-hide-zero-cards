@@ -22,7 +22,7 @@ export function Header() {
       >
         <div className="flex items-center gap-3">
           <Image src={logo} alt="Hide Zero Cards Logo" className="h-6 md:h-8 w-auto" priority />
-          <h1 className="text-lg md:text-2xl font-bold">Hide Zero Cards</h1>
+          <div className="text-lg md:text-2xl font-bold">Hide Zero Cards</div>
         </div>
         <div className="flex items-center gap-2">
           <InstructionalGuideDialog />
