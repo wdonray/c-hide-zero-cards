@@ -93,7 +93,7 @@ export function HomePageClient() {
         </header>
 
         <main
-          className="w-full h-128 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center"
+          className="w-full h-128 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center relative"
           aria-label="Place value cards workspace"
         >
           {cards.length === 0 ? (
@@ -108,9 +108,9 @@ export function HomePageClient() {
             </div>
           ) : (
             <div
-              className="flex flex-wrap justify-center gap-4"
               role="application"
               aria-label="Draggable place value cards"
+              className="w-full h-full flex items-center justify-center"
             >
               {cards.map((card, index) => (
                 <DraggableCard
