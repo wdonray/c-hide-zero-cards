@@ -10,9 +10,10 @@ import {
   LOCAL_STORAGE_KEYS,
   FIRST_TIME_TOAST_DURATION,
   FIRST_TIME_TOAST_STYLE,
+  NumberFormsDialogTab,
 } from '@/lib/constants'
 import { useHeaderContext } from '@/lib/useHeaderContext'
-import { ExpandDialog } from '@/components/ExpandDialog'
+import { NumberFormsDialog } from '@/components/NumberFormsDialog'
 import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
 import { toast } from 'sonner'
 import { FirstTimeToast } from '@/components/FirstTimeToast'
@@ -27,9 +28,11 @@ export function HomePageClient() {
     resetTrigger,
     randomizeTrigger,
     showZeroCards,
-    showExpandDialog,
-    setShowExpandDialog,
+    showNumberFormsDialog,
+    setShowNumberFormsDialog,
   } = useHeaderContext()
+
+  const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.STANDARD)
 
   const [hasShownFirstTimeToast, setHasShownFirstTimeToast] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -75,7 +78,13 @@ export function HomePageClient() {
   return (
     <>
       <MobileAlertDialog />
-      <ExpandDialog open={showExpandDialog} onOpenChange={setShowExpandDialog} number={inputNumber} />
+      <NumberFormsDialog
+        open={showNumberFormsDialog}
+        onOpenChange={setShowNumberFormsDialog}
+        number={inputNumber}
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+      />
       <BuyMeACoffeeWidget />
 
       <section className="flex flex-col items-center gap-8" aria-label="Interactive Place Value Cards">

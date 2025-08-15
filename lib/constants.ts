@@ -161,3 +161,17 @@ export const FIRST_TIME_TOAST_STYLE = {
   color: 'var(--toast-text)',
   border: '1px solid var(--toast-border)',
 } as const
+
+// =============================================================================
+// NUMBER FORM DIALOG CONSTANTS
+// =============================================================================
+
+/**
+ * Tabs for the number forms dialog
+ */
+export enum NumberFormsDialogTab {
+  STANDARD = 'standard',
+  WORD = 'word',
+  UNIT = 'unit',
+  EXPANDED = 'expanded',
+}

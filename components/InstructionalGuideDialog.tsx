@@ -1,16 +1,15 @@
 'use client'
 
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import {
   Question,
@@ -37,35 +36,27 @@ import { Separator } from './ui/separator'
 
 export function InstructionalGuideDialog() {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
+    <Dialog>
+      <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Question className="h-4 w-4" />
           How to Use
         </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-        <AlertDialogHeader className="relative">
-          <div className="absolute top-0 right-0">
-            <AlertDialogCancel asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <span className="sr-only">Close</span>
-                <X className="h-4 w-4" />
-              </Button>
-            </AlertDialogCancel>
-          </div>
-          <AlertDialogTitle className="text-2xl flex items-center gap-2 pr-8">
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto" showCloseButton={true}>
+        <DialogHeader>
+          <DialogTitle className="text-2xl flex items-center gap-2 pr-8">
             <GraduationCap className="h-6 w-6 text-blue-600" />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-bold">
               Hide Zero Cards - Teacher&apos;s Guide
             </span>
-          </AlertDialogTitle>
+          </DialogTitle>
           <Separator />
-          <AlertDialogDescription className="text-muted-foreground">
+          <DialogDescription className="text-muted-foreground">
             Transform how your students understand <strong>place values</strong> with this interactive, hands-on
             learning tool
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="space-y-8 text-sm">
           {/* Quick Start for Teachers */}
@@ -422,10 +413,12 @@ export function InstructionalGuideDialog() {
             </div>
           </section>
         </div>
-        <AlertDialogFooter>
-          <AlertDialogAction>Let&apos;s Start Teaching!</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button>Let&apos;s Start Teaching!</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

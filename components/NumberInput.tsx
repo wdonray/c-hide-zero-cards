@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input'
 import { MAX_NUMBER } from '@/lib/constants'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 interface NumberInputProps {
   value: number | null
@@ -31,6 +31,12 @@ export function NumberInput({ value, onChange }: NumberInputProps) {
     })
   }, [value])
 
+  useEffect(() => {
+    if (value) {
+      setIsTouched(true)
+    }
+  }, [value])
+
   return (
     <Input
       type="text"
@@ -39,7 +45,6 @@ export function NumberInput({ value, onChange }: NumberInputProps) {
       placeholder="Type a number here!"
       onChange={handleInputChange}
       className={`!text-4xl !font-semibold !h-16 !px-6 ${!isTouched ? 'animate-pulse' : ''}`}
-      onFocus={() => setIsTouched(true)}
     />
   )
 }
