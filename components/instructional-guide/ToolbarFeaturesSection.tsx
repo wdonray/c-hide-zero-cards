@@ -112,17 +112,20 @@ export function ToolbarFeaturesSection() {
               <p className="text-sm font-medium text-indigo-800 mb-1">Four Different Representations:</p>
               <ul className="text-sm text-indigo-700 space-y-1">
                 <li>
-                  • <strong>Standard Form:</strong> The number as we normally write it (2,345)
+                  • <span className="text-black font-semibold">Standard Form:</span> The number as we normally write it
+                  (2,345)
                 </li>
                 <li>
-                  • <strong>Word Form:</strong> The number written in words (two thousand, three hundred forty-five)
+                  • <span className="text-black font-semibold">Word Form:</span> The number written in words (two
+                  thousand, three hundred forty-five)
                 </li>
                 <li>
-                  • <strong>Unit Form:</strong> Each digit with its place value (2 thousands, 3 hundreds, 4 tens, 5
-                  ones)
+                  • <span className="text-black font-semibold">Unit Form:</span> Each digit with its place value (2
+                  thousands, 3 hundreds, 4 tens, 5 ones)
                 </li>
                 <li>
-                  • <strong>Expanded Form:</strong> Each digit multiplied by its place value (2,000 + 300 + 40 + 5)
+                  • <span className="text-black font-semibold">Expanded Form:</span> Each digit multiplied by its place
+                  value (2,000 + 300 + 40 + 5)
                 </li>
               </ul>
             </div>
