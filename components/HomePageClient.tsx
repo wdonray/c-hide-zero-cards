@@ -30,6 +30,7 @@ export function HomePageClient() {
     showZeroCards,
     showNumberFormsDialog,
     setShowNumberFormsDialog,
+    isHeaderCollapsed,
   } = useHeaderContext()
 
   const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.STANDARD)
@@ -93,7 +94,7 @@ export function HomePageClient() {
         </header>
 
         <main
-          className="w-full h-128 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center relative"
+          className={`w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} transition-[height] duration-300 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center relative`}
           aria-label="Place value cards workspace"
         >
           {cards.length === 0 ? (
