@@ -175,3 +175,13 @@ export enum NumberFormsDialogTab {
   UNIT = 'unit',
   EXPANDED = 'expanded',
 }
+
+/**
+ * Tabs for the instructional guide dialog
+ */
+export enum InstructionalGuideDialogTab {
+  QUICK_START = 'quick-start',
+  TOOLBAR_FEATURES = 'toolbar-features',
+  ACTIVITIES = 'activities',
+  ASSESSMENT = 'assessment',
+}
