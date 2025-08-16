@@ -31,6 +31,7 @@ export function HomePageClient() {
     showNumberFormsDialog,
     setShowNumberFormsDialog,
     isHeaderCollapsed,
+    setCardsMoved,
   } = useHeaderContext()
 
   const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.STANDARD)
@@ -61,8 +62,9 @@ export function HomePageClient() {
     if (inputNumber === null) {
       setResetTrigger(0)
       setRandomizeTrigger(0)
+      setCardsMoved(false)
     }
-  }, [inputNumber, setResetTrigger, setRandomizeTrigger])
+  }, [inputNumber, setResetTrigger, setRandomizeTrigger, setCardsMoved])
 
   useEffect(() => {
     window.scrollTo(0, 0)

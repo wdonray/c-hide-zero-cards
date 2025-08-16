@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { CARD_RANDOM_X_OFFSET, CARD_RANDOM_Y_OFFSET } from './constants'
+import { useHeaderContext } from './useHeaderContext'
 
 interface UseDraggableOptions {
   initialX: number
@@ -26,6 +27,8 @@ export function useDraggable({
   resetTrigger,
   randomizeTrigger,
 }: UseDraggableOptions): UseDraggableReturn {
+  const { setCardsMoved } = useHeaderContext()
+
   const [position, setPosition] = useState({ x: initialX, y: initialY })
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
@@ -56,8 +59,9 @@ export function useDraggable({
       const newY = e.clientY - dragOffset.current.y
 
       setPosition({ x: newX, y: newY })
+      setCardsMoved(true)
     },
-    [isDragging]
+    [isDragging, setCardsMoved]
   )
 
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
@@ -106,8 +110,9 @@ export function useDraggable({
   useEffect(() => {
     if (resetTrigger !== undefined) {
       setPosition({ x: initialX, y: initialY })
+      setCardsMoved(false)
     }
-  }, [resetTrigger, initialX, initialY])
+  }, [resetTrigger, initialX, initialY, setCardsMoved])
 
   useEffect(() => {
     if (randomizeTrigger !== 0) {

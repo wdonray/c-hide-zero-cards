@@ -15,7 +15,13 @@ export function BuyMeACoffeeButton({ variant = 'outline', size = 'sm', className
   }
 
   return (
-    <Button variant={variant} size={size} onClick={handleClick} className={`gap-2 ${className}`}>
+    <Button
+      variant={variant}
+      size={size}
+      onClick={handleClick}
+      className={`gap-2 ${className}`}
+      title="Donate to show your support"
+    >
       <Coffee className="h-4 w-4 animate-pulse" />
       <span className="hidden md:inline">Buy me a coffee</span>
       <span className="md:hidden">Coffee</span>

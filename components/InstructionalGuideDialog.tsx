@@ -38,7 +38,7 @@ export function InstructionalGuideDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2" title="Instructional Teachers Guide for Hide Zero Cards">
           <Question className="h-4 w-4" />
           How to Use
         </Button>

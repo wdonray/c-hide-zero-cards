@@ -25,6 +25,8 @@ interface HeaderContextType {
   toggleZeroCards: () => void
   showNumberFormsDialog: boolean
   setShowNumberFormsDialog: (value: boolean) => void
+  cardsMoved: boolean
+  setCardsMoved: (value: boolean) => void
 }
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined)
@@ -43,6 +45,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const [isDiceRolling, setIsDiceRolling] = useState(false)
   const [showZeroCards, setShowZeroCards] = useState(true)
   const [showNumberFormsDialog, setShowNumberFormsDialog] = useState(false)
+  const [cardsMoved, setCardsMoved] = useState(false)
 
   function toggleHeader() {
     setIsHeaderCollapsed(!isHeaderCollapsed)
@@ -70,10 +73,12 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   function handleResetCardPosition() {
     setResetTrigger((prev) => prev + 1)
     setRandomizeTrigger(0)
+    setCardsMoved(false)
   }
 
   function handleRandomizeCardPosition() {
     setRandomizeTrigger((prev) => prev + 1)
+    setCardsMoved(true)
   }
 
   function toggleZeroCards() {
@@ -108,6 +113,8 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         toggleZeroCards,
         showNumberFormsDialog,
         setShowNumberFormsDialog,
+        cardsMoved,
+        setCardsMoved,
       }}
     >
       {children}
