@@ -50,7 +50,7 @@ export const PLACE_VALUE_NAMES: Record<number, string> = {
 /**
  * Default horizontal spacing between cards when arranged in order
  */
-export const CARD_X_OFFSET = 38
+export const CARD_X_OFFSET = 36
 
 /**
  * Default vertical spacing between cards when arranged in order
