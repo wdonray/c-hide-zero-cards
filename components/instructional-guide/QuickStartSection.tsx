@@ -41,15 +41,14 @@ export function QuickStartSection() {
         </h3>
         <p className="text-muted-foreground leading-relaxed">
           An interactive tool that makes <strong>place values</strong> tangible. Cards represent each digit in a number,
-          allowing you to see and manipulate how large numbers are built from smaller parts. Designed for understanding
-          the difference between 100, 1,000, and 10,000.
+          allowing you to see and manipulate how large numbers are built from smaller parts.
         </p>
       </section>
 
       {/* Color Guide */}
       <section>
         <h3 className="font-semibold text-lg text-foreground mb-3 text-slate-700 dark:text-slate-300">
-          Understanding the Colors
+          Understanding Card Colors
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="flex items-center gap-3 p-3 bg-red-50/50 dark:bg-red-950/20 rounded-lg border border-red-100 dark:border-red-800">

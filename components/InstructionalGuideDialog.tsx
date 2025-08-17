@@ -47,6 +47,7 @@ export function InstructionalGuideDialog() {
               <TabsTrigger value={InstructionalGuideDialogTab.ACTIVITIES}>Activities</TabsTrigger>
               <TabsTrigger value={InstructionalGuideDialogTab.ASSESSMENT}>Assessment</TabsTrigger>
             </TabsList>
+            <Separator />
             <div className="w-full relative">
               <TabsContent value={InstructionalGuideDialogTab.QUICK_START} className="mt-0">
                 <QuickStartSection />
