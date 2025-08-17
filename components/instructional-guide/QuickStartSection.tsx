@@ -1,33 +1,28 @@
-import { Clock, Target, Brain } from '@phosphor-icons/react'
-
 export function QuickStartSection() {
   return (
     <div className="space-y-6">
       {/* Quick Start for Teachers */}
       <section>
-        <h3 className="font-semibold text-lg text-foreground mb-3 flex items-center gap-2">
-          <Clock className="h-5 w-5 text-green-500" />
-          Quick Start (2 minutes)
-        </h3>
-        <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5">
+        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700">Quick Start (2 minutes)</h3>
+        <div className="bg-blue-50/50 p-4 rounded-lg space-y-3 border border-blue-100">
+          <div className="flex items-start gap-3">
+            <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">
               1
             </div>
             <div>
               <strong>Enter a number</strong> (1 to 1 billion) in the input field
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5">
+          <div className="flex items-start gap-3">
+            <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">
               2
             </div>
             <div>
               <strong>Watch cards appear</strong> showing each digit
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5">
+          <div className="flex items-start gap-3">
+            <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">
               3
             </div>
             <div>
@@ -39,50 +34,44 @@ export function QuickStartSection() {
 
       {/* What is this tool */}
       <section>
-        <h3 className="font-semibold text-lg text-foreground mb-2 flex items-center gap-2">
-          <Target className="h-5 w-5 text-red-500" />
-          What is Hide Zero Cards?
-        </h3>
+        <h3 className="font-semibold text-lg text-foreground mb-2 text-slate-700">What is Hide Zero Cards?</h3>
         <p className="text-muted-foreground leading-relaxed">
-          An interactive tool that makes <strong>place values</strong> tangible. Students can literally see and touch
-          how large numbers are built from smaller parts. Perfect for <strong>fourth-grade learners</strong> who need to
-          understand the difference between 100, 1,000, and 10,000.
+          An interactive tool that makes <strong>place values</strong> tangible. Cards represent each digit in a number,
+          allowing you to see and manipulate how large numbers are built from smaller parts. Designed for understanding
+          the difference between 100, 1,000, and 10,000.
         </p>
       </section>
 
       {/* Color Guide */}
       <section>
-        <h3 className="font-semibold text-lg text-foreground mb-3 flex items-center gap-2">
-          <Brain className="h-5 w-5 text-pink-500" />
-          Understanding the Colors
-        </h3>
+        <h3 className="font-semibold text-lg text-foreground mb-3 text-slate-700">Understanding the Colors</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-            <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+          <div className="flex items-center gap-3 p-3 bg-red-50/50 rounded-lg border border-red-100">
+            <div className="w-4 h-4 bg-red-500 rounded-full flex-shrink-0"></div>
             <div>
-              <span className="text-black font-semibold">Ones Period</span>
-              <div className="text-sm text-muted-foreground">Red shades</div>
+              <span className="font-semibold text-slate-800">Ones Period</span>
+              <div className="text-sm text-slate-600">Red shades</div>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-            <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+          <div className="flex items-center gap-3 p-3 bg-amber-50/50 rounded-lg border border-amber-100">
+            <div className="w-4 h-4 bg-amber-500 rounded-full flex-shrink-0"></div>
             <div>
-              <span className="text-black font-semibold">Thousands Period</span>
-              <div className="text-sm text-muted-foreground">Yellow shades</div>
+              <span className="font-semibold text-slate-800">Thousands Period</span>
+              <div className="text-sm text-slate-600">Yellow shades</div>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+          <div className="flex items-center gap-3 p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
+            <div className="w-4 h-4 bg-emerald-500 rounded-full flex-shrink-0"></div>
             <div>
-              <span className="text-black font-semibold">Millions Period</span>
-              <div className="text-sm text-muted-foreground">Green shades</div>
+              <span className="font-semibold text-slate-800">Millions Period</span>
+              <div className="text-sm text-slate-600">Green shades</div>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-            <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+          <div className="flex items-center gap-3 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+            <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0"></div>
             <div>
-              <span className="text-black font-semibold">Billions Period</span>
-              <div className="text-sm text-muted-foreground">Blue shades</div>
+              <span className="font-semibold text-slate-800">Billions Period</span>
+              <div className="text-sm text-slate-600">Blue shades</div>
             </div>
           </div>
         </div>

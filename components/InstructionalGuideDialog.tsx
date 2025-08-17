@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsTrigger, TabsList, TabsContent } from '@/components/ui/tabs'
-import { Question, GraduationCap } from '@phosphor-icons/react'
+import { Question } from '@phosphor-icons/react'
 import { Separator } from './ui/separator'
 import { InstructionalGuideDialogTab } from '@/lib/constants'
 import { QuickStartSection } from './instructional-guide/QuickStartSection'
@@ -31,12 +31,7 @@ export function InstructionalGuideDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto" showCloseButton={true}>
         <DialogHeader>
-          <DialogTitle className="text-2xl flex items-center gap-2 pr-8">
-            <GraduationCap className="h-6 w-6 text-blue-600" />
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-bold">
-              Hide Zero Cards - Teacher&apos;s Guide
-            </span>
-          </DialogTitle>
+          <DialogTitle className="text-2xl pr-8">Hide Zero Cards - Teacher&apos;s Guide</DialogTitle>
           <Separator />
           <DialogDescription className="text-muted-foreground">
             Transform how your students understand <strong>place values</strong> with this interactive, hands-on
