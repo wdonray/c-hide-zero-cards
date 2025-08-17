@@ -1,0 +1,22 @@
+{
+  "name": "Hide Zero Cards",
+  "short_name": "Hide Zero Cards",
+  "description": "Interactive place value teaching tool for elementary education",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "493x506",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

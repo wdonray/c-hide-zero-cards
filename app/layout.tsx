@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://hidezerocards.org'),
   title: 'Hide Zero Cards - Interactive Place Value Teaching Tool',
   description:
-    'Transform how your students understand place values with this interactive, hands-on learning tool. Perfect for teachers and fourth-grade students learning math concepts.',
+    'Transform how your students understand place values with this interactive, hands-on learning tool. Perfect for teachers and students learning math concepts.',
   keywords: [
     'place value teaching',
     'math education tool',
@@ -39,6 +39,15 @@ export const metadata: Metadata = {
   authors: [{ name: 'Donray Williams' }],
   creator: 'Donray Williams',
   publisher: 'Hide Zero Cards',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo.png', type: 'image/png', sizes: '493x506' },
+    ],
+    apple: [{ url: '/logo.png', sizes: '493x506', type: 'image/png' }],
+    shortcut: '/favicon.ico',
+  },
+  manifest: '/manifest.json',
   robots: {
     index: true,
     follow: true,
@@ -56,7 +65,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Hide Zero Cards - Interactive Place Value Teaching Tool',
     description:
-      'Transform how your students understand place values with this interactive, hands-on learning tool. Perfect for teachers and fourth-grade students.',
+      'Transform how your students understand place values with this interactive, hands-on learning tool. Perfect for teachers and students.',
     type: 'website',
     locale: 'en_US',
     url: 'https://hidezerocards.org',
@@ -64,9 +73,10 @@ export const metadata: Metadata = {
     images: [
       {
         url: '/logo.png',
-        width: 1200,
-        height: 630,
+        width: 493,
+        height: 506,
         alt: 'Hide Zero Cards - Place Value Teaching Tool',
+        type: 'image/png',
       },
     ],
   },
@@ -86,11 +96,23 @@ export default function RootLayout({
 }>) {
   const organizationJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'EducationalOrganization',
+    '@type': 'Organization',
     name: 'Hide Zero Cards',
     description: 'Transform how your students understand place values with this interactive, hands-on learning tool',
     url: 'https://hidezerocards.org',
-    logo: 'https://hidezerocards.org/logo.png',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://hidezerocards.org/logo.png',
+      width: 493,
+      height: 506,
+    },
+    image: {
+      '@type': 'ImageObject',
+      url: 'https://hidezerocards.org/logo.png',
+      width: 493,
+      height: 506,
+      alt: 'Hide Zero Cards Logo',
+    },
     founder: {
       '@type': 'Person',
       name: 'Donray Williams',
@@ -109,6 +131,19 @@ export default function RootLayout({
     name: 'Hide Zero Cards',
     description: 'Interactive place value teaching tool for elementary education',
     url: 'https://hidezerocards.org',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://hidezerocards.org/logo.png',
+      width: 493,
+      height: 506,
+    },
+    image: {
+      '@type': 'ImageObject',
+      url: 'https://hidezerocards.org/logo.png',
+      width: 493,
+      height: 506,
+      alt: 'Hide Zero Cards Logo',
+    },
     potentialAction: {
       '@type': 'SearchAction',
       target: 'https://hidezerocards.org/?q={search_term_string}',
@@ -144,6 +179,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="overflow-hidden">
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="manifest" href="/manifest.json" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
         <script
