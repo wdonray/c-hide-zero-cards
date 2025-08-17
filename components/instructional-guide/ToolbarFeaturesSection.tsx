@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
-import { Separator } from '../ui/separator'
 
 export function ToolbarFeaturesSection() {
   return (
