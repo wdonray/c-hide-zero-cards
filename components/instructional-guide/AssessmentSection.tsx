@@ -3,8 +3,10 @@ export function AssessmentSection() {
     <div className="space-y-6">
       {/* Assessment & Learning Checks */}
       <section>
-        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700">Assessment & Learning Checks</h3>
-        <div className="bg-blue-50/50 p-4 rounded-lg space-y-3 border border-blue-100">
+        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700 dark:text-blue-300">
+          Assessment & Learning Checks
+        </h3>
+        <div className="bg-blue-50/50 dark:bg-blue-950/30 p-4 rounded-lg space-y-3 border border-blue-100 dark:border-blue-800">
           <div className="grid grid-cols-[20px_1fr] items-start gap-4">
             <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">
               ✓

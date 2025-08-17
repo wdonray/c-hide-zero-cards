@@ -7,13 +7,17 @@ export function ToolbarFeaturesSection() {
     <div className="space-y-6">
       {/* Toolbar Features */}
       <section>
-        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700">Toolbar Features Guide</h3>
+        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700 dark:text-blue-300">
+          Toolbar Features Guide
+        </h3>
         <div className="space-y-4">
           <div className="border-l-3 border-blue-500 pl-4">
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h4 className="font-medium text-foreground mb-2 text-slate-700">Roll Button & Random Range</h4>
+                  <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
+                    Roll Button & Random Range
+                  </h4>
                   <p className="text-muted-foreground mb-2">
                     Click the <strong>dice icon</strong> to generate random numbers instantly. Watch the dice roll with
                     animation!
@@ -31,8 +35,10 @@ export function ToolbarFeaturesSection() {
                   </div>
                 </div>
               </div>
-              <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                <p className="text-sm font-medium mb-1 text-blue-800">Advanced: Random Range Settings</p>
+              <div className="bg-blue-50/50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+                <p className="text-sm font-medium mb-1 text-blue-900 dark:text-blue-100">
+                  Advanced: Random Range Settings
+                </p>
                 <p className="text-sm text-muted-foreground">Click the dropdown next to Roll to set maximum values:</p>
                 <ul className="text-sm text-muted-foreground mt-1 space-y-1">
                   <li>
@@ -59,7 +65,7 @@ export function ToolbarFeaturesSection() {
           <div className="border-l-3 border-slate-400 pl-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <h4 className="font-medium text-foreground mb-2 text-slate-700">Clear Input</h4>
+                <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">Clear Input</h4>
                 <p className="text-muted-foreground">
                   Click the <strong>X button</strong> to clear the current number and start fresh.
                 </p>
@@ -76,7 +82,9 @@ export function ToolbarFeaturesSection() {
           <div className="border-l-3 border-emerald-500 pl-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <h4 className="font-medium text-foreground mb-2 text-slate-700">Zero Cards Toggle</h4>
+                <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
+                  Zero Cards Toggle
+                </h4>
                 <p className="text-muted-foreground">
                   Toggle between <strong>showing/hiding zero cards</strong>. When hidden, only non-zero digits are
                   visible. When shown, the complete number structure including placeholder zeros is displayed.
@@ -98,7 +106,7 @@ export function ToolbarFeaturesSection() {
           <div className="border-l-3 border-amber-500 pl-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <h4 className="font-medium text-foreground mb-2 text-slate-700">Mix Cards</h4>
+                <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">Mix Cards</h4>
                 <p className="text-muted-foreground">
                   Click <strong>Mix</strong> to randomly scatter all cards across the screen.
                 </p>
@@ -115,7 +123,7 @@ export function ToolbarFeaturesSection() {
           <div className="border-l-3 border-indigo-500 pl-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <h4 className="font-medium text-foreground mb-2 text-slate-700">Reset Position</h4>
+                <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">Reset Position</h4>
                 <p className="text-muted-foreground">
                   Click <strong>Reset</strong> to instantly return all cards to their original positions.
                 </p>
@@ -134,7 +142,9 @@ export function ToolbarFeaturesSection() {
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <h4 className="font-medium text-foreground mb-2 text-slate-700">Number Forms & Representations</h4>
+                    <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
+                      Number Forms & Representations
+                    </h4>
                     <p className="text-muted-foreground mb-2">
                       Click <strong>Number Forms</strong> to explore different ways to write and understand the number:
                     </p>
@@ -147,8 +157,10 @@ export function ToolbarFeaturesSection() {
                   </div>
                 </div>
 
-                <div className="bg-purple-50/50 p-3 rounded-lg border border-purple-100">
-                  <p className="text-sm font-medium mb-1 text-purple-800">Four Different Representations:</p>
+                <div className="bg-purple-50/50 dark:bg-purple-950/20 p-3 rounded-lg border border-purple-100 dark:border-purple-800">
+                  <p className="text-sm font-medium mb-1 text-purple-900 dark:text-purple-100">
+                    Four Different Representations:
+                  </p>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>
                       • <span className="font-semibold">Standard Form:</span> The number as we normally write it (2,345)

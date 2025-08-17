@@ -3,10 +3,14 @@ export function ActivitiesSection() {
     <div className="space-y-6">
       {/* Interactive Learning Activities */}
       <section>
-        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700">Interactive Learning Activities</h3>
+        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700 dark:text-blue-300">
+          Interactive Learning Activities
+        </h3>
         <div className="space-y-4">
           <div className="border-l-3 border-blue-500 pl-4">
-            <h4 className="font-medium text-foreground mb-2 text-slate-700">Activity 1: Number Exploration</h4>
+            <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
+              Activity 1: Number Exploration
+            </h4>
             <p className="text-muted-foreground">
               Enter a number, then drag individual cards to see how the number changes. Observe what happens when you
               move digits between different place values.
@@ -14,7 +18,9 @@ export function ActivitiesSection() {
           </div>
 
           <div className="border-l-3 border-emerald-500 pl-4">
-            <h4 className="font-medium text-foreground mb-2 text-slate-700">Activity 2: Card Sorting Challenge</h4>
+            <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
+              Activity 2: Card Sorting Challenge
+            </h4>
             <p className="text-muted-foreground">
               Click <strong>Mix</strong> to scatter cards, then arrange them back in order. Time yourself for added
               challenge.
@@ -22,7 +28,9 @@ export function ActivitiesSection() {
           </div>
 
           <div className="border-l-3 border-purple-500 pl-4">
-            <h4 className="font-medium text-foreground mb-2 text-slate-700">Activity 3: Number Forms Exploration</h4>
+            <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
+              Activity 3: Number Forms Exploration
+            </h4>
             <p className="text-muted-foreground">
               Use the <strong>Number Forms</strong> button to explore four different ways to represent the same number.
               Switch between Standard, Word, Unit, and Expanded forms.
@@ -30,7 +38,9 @@ export function ActivitiesSection() {
           </div>
 
           <div className="border-l-3 border-amber-500 pl-4">
-            <h4 className="font-medium text-foreground mb-2 text-slate-700">Activity 4: Random Number Practice</h4>
+            <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
+              Activity 4: Random Number Practice
+            </h4>
             <p className="text-muted-foreground">
               Use the <strong>Roll</strong> button with different range settings. Start with 1,000, then increase to
               100,000 for more complex numbers.
@@ -38,7 +48,9 @@ export function ActivitiesSection() {
           </div>
 
           <div className="border-l-3 border-indigo-500 pl-4">
-            <h4 className="font-medium text-foreground mb-2 text-slate-700">Activity 5: Zero Card Investigation</h4>
+            <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
+              Activity 5: Zero Card Investigation
+            </h4>
             <p className="text-muted-foreground">
               Toggle zero cards on/off to understand the difference between &ldquo;no digit&rdquo; and &ldquo;zero
               digit&rdquo; in place value.
@@ -49,10 +61,14 @@ export function ActivitiesSection() {
 
       {/* Classroom Implementation Tips */}
       <section>
-        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700">Classroom Implementation Tips</h3>
+        <h3 className="font-semibold text-lg text-foreground mb-3 text-blue-700 dark:text-blue-300">
+          Classroom Implementation Tips
+        </h3>
         <div className="flex flex-col gap-4">
-          <div className="bg-emerald-50/30 p-4 rounded-lg border border-emerald-100">
-            <h4 className="font-medium text-foreground mb-2 text-emerald-800">Whole Class Activities</h4>
+          <div className="bg-emerald-50/30 dark:bg-emerald-950/20 p-4 rounded-lg border border-emerald-100 dark:border-emerald-800">
+            <h4 className="font-medium text-foreground mb-2 text-emerald-900 dark:text-emerald-100">
+              Whole Class Activities
+            </h4>
             <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
                 • Use on <strong>interactive whiteboards</strong> for demonstrations
@@ -70,8 +86,8 @@ export function ActivitiesSection() {
               </li>
             </ul>
           </div>
-          <div className="bg-amber-50/30 p-4 rounded-lg border border-amber-100">
-            <h4 className="font-medium text-foreground mb-2 text-amber-800">Individual Practice</h4>
+          <div className="bg-amber-50/30 dark:bg-amber-950/20 p-4 rounded-lg border border-amber-100 dark:border-amber-800">
+            <h4 className="font-medium text-foreground mb-2 text-amber-900 dark:text-amber-100">Individual Practice</h4>
             <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
                 • Students work on <strong>tablets or computers</strong>
