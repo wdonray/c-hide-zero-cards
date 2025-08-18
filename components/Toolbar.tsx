@@ -26,14 +26,16 @@ export function Toolbar() {
     toggleZeroCards,
     setShowNumberFormsDialog,
     cardsMoved,
+    focusNumberInput,
   } = useHeaderContext()
 
   const randomNumberRangeKeys = Object.values(PLACE_VALUES).filter(
     (value) => value !== PLACE_VALUES[0] && value !== PLACE_VALUES[1]
   )
 
-  const handleClearInput = () => {
+  function handleClearInput() {
     setInputNumber(null)
+    focusNumberInput()
   }
 
   return (

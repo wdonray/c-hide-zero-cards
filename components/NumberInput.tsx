@@ -1,14 +1,26 @@
 import { Input } from '@/components/ui/input'
 import { MAX_NUMBER } from '@/lib/constants'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, forwardRef, useImperativeHandle, useRef } from 'react'
 
 interface NumberInputProps {
   value: number | null
   onChange: (value: number | null) => void
 }
 
-export function NumberInput({ value, onChange }: NumberInputProps) {
+export interface NumberInputRef {
+  focus: () => void
+}
+
+export const NumberInput = forwardRef<NumberInputRef, NumberInputProps>(({ value, onChange }, ref) => {
   const [isTouched, setIsTouched] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus()
+    },
+  }))
+
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const inputValue = e.target.value
     const cleanValue = inputValue.replace(/[^\d]/g, '')
@@ -39,6 +51,7 @@ export function NumberInput({ value, onChange }: NumberInputProps) {
 
   return (
     <Input
+      ref={inputRef}
       type="text"
       inputMode="numeric"
       value={formattedNumber}
@@ -47,4 +60,6 @@ export function NumberInput({ value, onChange }: NumberInputProps) {
       className={`!text-4xl !font-semibold !h-16 !px-6 ${!isTouched ? 'animate-pulse' : ''}`}
     />
   )
-}
+})
+
+NumberInput.displayName = 'NumberInput'

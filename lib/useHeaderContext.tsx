@@ -1,7 +1,8 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react'
 import { DEFAULT_MAX_RANDOM_NUMBER, LOCAL_STORAGE_KEYS } from '@/lib/constants'
+import { NumberInputRef } from '@/components/NumberInput'
 
 interface HeaderContextType {
   isHeaderCollapsed: boolean
@@ -27,6 +28,8 @@ interface HeaderContextType {
   setShowNumberFormsDialog: (value: boolean) => void
   cardsMoved: boolean
   setCardsMoved: (value: boolean) => void
+  numberInputRef: React.RefObject<NumberInputRef | null>
+  focusNumberInput: () => void
 }
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined)
@@ -46,6 +49,12 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const [showZeroCards, setShowZeroCards] = useState(true)
   const [showNumberFormsDialog, setShowNumberFormsDialog] = useState(false)
   const [cardsMoved, setCardsMoved] = useState(false)
+
+  const numberInputRef = useRef<NumberInputRef>(null)
+
+  function focusNumberInput() {
+    numberInputRef.current?.focus()
+  }
 
   function toggleHeader() {
     setIsHeaderCollapsed(!isHeaderCollapsed)
@@ -115,6 +124,8 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         setShowNumberFormsDialog,
         cardsMoved,
         setCardsMoved,
+        numberInputRef,
+        focusNumberInput,
       }}
     >
       {children}

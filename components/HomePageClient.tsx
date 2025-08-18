@@ -32,6 +32,7 @@ export function HomePageClient() {
     setShowNumberFormsDialog,
     isHeaderCollapsed,
     setCardsMoved,
+    numberInputRef,
   } = useHeaderContext()
 
   const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.STANDARD)
@@ -92,7 +93,7 @@ export function HomePageClient() {
 
       <section className="flex flex-col items-center gap-8" aria-label="Interactive Place Value Cards">
         <header className="flex flex-col items-center">
-          <NumberInput value={inputNumber} onChange={setInputNumber} />
+          <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
         </header>
 
         <main
