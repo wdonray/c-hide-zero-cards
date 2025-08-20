@@ -14,7 +14,7 @@ import {
 } from '@/lib/constants'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
-import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
+// import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
 import { toast } from 'sonner'
 import { FirstTimeToast } from '@/components/FirstTimeToast'
 import { ArrowFatUpIcon } from '@phosphor-icons/react'
@@ -89,7 +89,7 @@ export function HomePageClient() {
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
       />
-      <BuyMeACoffeeWidget />
+      {/* <BuyMeACoffeeWidget /> */}
 
       <section className="flex flex-col items-center gap-8" aria-label="Interactive Place Value Cards">
         <header className="flex flex-col items-center">
