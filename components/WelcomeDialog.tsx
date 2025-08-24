@@ -51,7 +51,7 @@ export function WelcomeDialog() {
 
           <Button onClick={() => setShowWelcomeDialog(false)} className="w-full" size="lg">
             <HandPointing className="h-4 w-4 mr-2" />
-            Let's Get Started!
+            Let&apos;s Get Started!
           </Button>
         </div>
       </DialogContent>

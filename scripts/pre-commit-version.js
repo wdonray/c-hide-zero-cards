@@ -104,16 +104,16 @@ function updatePackageVersion(version) {
   console.log(`Updated package.json version to ${version}`)
 }
 
-function createGitTag(version) {
+function stageVersionChanges() {
   try {
-    execSync(`git tag v${version}`, { encoding: 'utf8' })
-    console.log(`Created git tag v${version}`)
+    execSync('git add package.json', { encoding: 'utf8' })
+    console.log('Staged package.json changes')
   } catch (_error) {
-    console.warn(`Failed to create git tag v${version}`)
+    console.warn('Failed to stage package.json changes')
   }
 }
 
-// Main execution - only create git tags, version bump is handled in pre-commit
+// Main execution
 const newVersion = calculateVersion()
 const currentVersion = getLatestTag()
 
@@ -122,7 +122,7 @@ if (newVersion === currentVersion) {
   process.exit(0)
 }
 
-// Only create git tag, don't update package.json (that's done in pre-commit)
-createGitTag(newVersion)
+updatePackageVersion(newVersion)
+stageVersionChanges()
 
-console.log(`Created git tag v${newVersion} for version bump from ${currentVersion} to ${newVersion}`)
+console.log(`Version bumped from ${currentVersion} to ${newVersion} and staged for commit`)
