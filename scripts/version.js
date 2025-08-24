@@ -8,7 +8,9 @@ import { execSync } from 'child_process'
 function getLatestTag() {
   try {
     const tags = execSync('git tag --sort=-version:refname', { encoding: 'utf8' }).trim()
-    return tags.split('\n')[0] || '0.0.0'
+    const latestTag = tags.split('\n')[0] || '0.0.0'
+    // Remove 'v' prefix if present
+    return latestTag.startsWith('v') ? latestTag.slice(1) : latestTag
   } catch (_error) {
     return '0.0.0'
   }
@@ -22,7 +24,9 @@ function getCommitMessagesSinceLastTag() {
     if (latestTag === '0.0.0') {
       command = 'git log --pretty=format:"%s" HEAD'
     } else {
-      command = `git log --pretty=format:"%s" ${latestTag}..HEAD`
+      // Use the full tag name with 'v' prefix for git commands
+      const tagName = latestTag.startsWith('v') ? latestTag : `v${latestTag}`
+      command = `git log --pretty=format:"%s" ${tagName}..HEAD`
     }
 
     const output = execSync(command, { encoding: 'utf8' }).trim()
