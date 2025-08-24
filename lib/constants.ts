@@ -140,6 +140,8 @@ export const LOCAL_STORAGE_KEYS = {
   IS_HEADER_COLLAPSED: 'hzc-is-header-collapsed',
   /** Whether the user has seen the first-time toast notification */
   HAS_SEEN_FIRST_TIME_TOAST: 'hzc-has-seen-first-time-toast',
+  /** Whether the user has seen the welcome dialog */
+  HAS_SEEN_WELCOME_DIALOG: 'hzc-has-seen-welcome-dialog',
 } as const
 
 // =============================================================================

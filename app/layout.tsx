@@ -6,7 +6,9 @@ import { Toolbar } from '@/components/Toolbar'
 import { Footer } from '@/components/Footer'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { HeaderProvider } from '@/lib/useHeaderContext'
+import { FirstTimeVisitorProvider } from '@/lib/useFirstTimeVisitor'
 import { HydrationCheck } from '@/components/HydrationCheck'
+import { WelcomeDialog } from '@/components/WelcomeDialog'
 import { Toaster } from '@/components/ui/sonner'
 
 const geistSans = Geist({
@@ -193,12 +195,15 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <HydrationCheck>
-            <HeaderProvider>
-              <Header />
-              <Toolbar />
-              <main className="min-h-screen container m-auto p-8 transition-all duration-300">{children}</main>
-              <Footer />
-            </HeaderProvider>
+            <FirstTimeVisitorProvider>
+              <HeaderProvider>
+                <Header />
+                <Toolbar />
+                <main className="min-h-screen container m-auto p-8 transition-all duration-300">{children}</main>
+                <Footer />
+                <WelcomeDialog />
+              </HeaderProvider>
+            </FirstTimeVisitorProvider>
           </HydrationCheck>
           <Toaster position="bottom-center" richColors />
         </ThemeProvider>
