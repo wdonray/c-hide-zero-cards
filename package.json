@@ -1,7 +1,8 @@
 {
   "name": "c-hide-zero-cards",
-  "version": "0.1.0",
+  "version": "0.18.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -13,7 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky install",
-    "pre-commit": "lint-staged"
+    "pre-commit": "lint-staged",
+    "version": "node scripts/version.js"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

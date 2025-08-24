@@ -1,4 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Auto-bump version based on conventional commits
+npm run version
+
+# Run lint-staged
 npx lint-staged

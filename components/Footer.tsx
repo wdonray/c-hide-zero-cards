@@ -1,4 +1,5 @@
 import { BuyMeACoffeeButton } from '@/components/BuyMeACoffeeButton'
+import { VERSION } from '@/lib/version'
 
 export function Footer() {
   return (
@@ -25,7 +26,11 @@ export function Footer() {
           </a>
           <BuyMeACoffeeButton variant="ghost" size="sm" />
         </div>
-        <div className="text-sm text-muted-foreground">© 2025 Donray Williams</div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>© 2025 Donray Williams</span>
+          <span>•</span>
+          <span>v{VERSION}</span>
+        </div>
       </div>
     </footer>
   )
