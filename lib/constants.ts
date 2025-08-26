@@ -111,6 +111,11 @@ export const FAKE_ZERO_NUMBERS: Record<number, string> = {
  */
 export const DEFAULT_MAX_RANDOM_NUMBER = 1_000_000
 
+export enum RANDOM_NUMBER_TYPE {
+  BASIC = 'basic',
+  ZERO_FOCUS = 'zero-focus',
+}
+
 /**
  * Absolute maximum number supported by the application
  * Used to validate user input and prevent overflow

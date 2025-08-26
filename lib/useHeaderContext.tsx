@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react'
-import { DEFAULT_MAX_RANDOM_NUMBER, LOCAL_STORAGE_KEYS } from '@/lib/constants'
+import { DEFAULT_MAX_RANDOM_NUMBER, LOCAL_STORAGE_KEYS, RANDOM_NUMBER_TYPE } from '@/lib/constants'
 import { NumberInputRef } from '@/components/NumberInput'
 
 interface HeaderContextType {
@@ -30,6 +30,8 @@ interface HeaderContextType {
   setCardsMoved: (value: boolean) => void
   numberInputRef: React.RefObject<NumberInputRef | null>
   focusNumberInput: () => void
+  randomNumberType: RANDOM_NUMBER_TYPE
+  setRandomNumberType: (value: RANDOM_NUMBER_TYPE) => void
 }
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined)
@@ -44,6 +46,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const [resetTrigger, setResetTrigger] = useState(0)
   const [randomizeTrigger, setRandomizeTrigger] = useState(0)
   const [randomNumberRange, setRandomNumberRange] = useState<[number, number]>([1, DEFAULT_MAX_RANDOM_NUMBER])
+  const [randomNumberType, setRandomNumberType] = useState<RANDOM_NUMBER_TYPE>(RANDOM_NUMBER_TYPE.BASIC)
   const [showRandomRange, setShowRandomRange] = useState(false)
   const [isDiceRolling, setIsDiceRolling] = useState(false)
   const [showZeroCards, setShowZeroCards] = useState(true)
@@ -61,14 +64,29 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   }
 
   function handleRandomNumber() {
-    const randomNumber =
-      Math.floor(Math.random() * (randomNumberRange[1] - randomNumberRange[0] + 1)) + randomNumberRange[0]
+    const min = randomNumberRange[0]
+    const max = randomNumberRange[1]
+    let randomNumber: number
     setIsDiceRolling(true)
-    setTimeout(() => {
+
+    switch (randomNumberType) {
+      case RANDOM_NUMBER_TYPE.BASIC:
+        randomNumber = Math.floor(Math.random() * (max - min + 1)) + min
+        break
+      case RANDOM_NUMBER_TYPE.ZERO_FOCUS:
+        do {
+          randomNumber = Math.floor(Math.random() * (max - min + 1)) + min
+        } while (!randomNumber.toString().includes('0'))
+        break
+    }
+
+    function delayedSetInputNumber() {
       setInputNumber(randomNumber)
       handleResetCardPosition()
       setIsDiceRolling(false)
-    }, 200)
+    }
+
+    setTimeout(delayedSetInputNumber, 200)
   }
 
   function handleRandomNumberRange(value: number[]) {
@@ -126,6 +144,8 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         setCardsMoved,
         numberInputRef,
         focusNumberInput,
+        randomNumberType,
+        setRandomNumberType,
       }}
     >
       {children}

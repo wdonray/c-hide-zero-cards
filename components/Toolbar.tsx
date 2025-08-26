@@ -4,8 +4,7 @@ import { useHeaderContext } from '@/lib/useHeaderContext'
 import { Button } from '@/components/ui/button'
 import { CaretUp, CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { PLACE_VALUES } from '@/lib/constants'
+import { RandomNumberPopover } from './RandomNumberPopover'
 
 export function Toolbar() {
   const {
@@ -13,11 +12,6 @@ export function Toolbar() {
     toggleHeader,
     handleRandomNumber,
     isDiceRolling,
-    showRandomRange,
-    setShowRandomRange,
-    randomNumberRange,
-    handleRandomNumberRange,
-    handleResetRandomNumberRange,
     handleRandomizeCardPosition,
     handleResetCardPosition,
     inputNumber,
@@ -28,10 +22,6 @@ export function Toolbar() {
     cardsMoved,
     focusNumberInput,
   } = useHeaderContext()
-
-  const randomNumberRangeKeys = Object.values(PLACE_VALUES).filter(
-    (value) => value !== PLACE_VALUES[0] && value !== PLACE_VALUES[1]
-  )
 
   function handleClearInput() {
     setInputNumber(null)
@@ -68,52 +58,7 @@ export function Toolbar() {
                 <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
                 <span className="hidden md:block">Roll</span>
               </Button>
-              <Popover open={showRandomRange} onOpenChange={setShowRandomRange}>
-                <PopoverTrigger asChild>
-                  <Button
-                    size="sm"
-                    className="rounded-l-none text-sm px-2 hidden md:block"
-                    title="Set random number range"
-                  >
-                    <CaretDown className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80">
-                  <div className="grid gap-4">
-                    <div className="space-y-2">
-                      <h4 className="font-medium leading-none">Random Number Range</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Set the maximum value for random number generation.
-                      </p>
-                    </div>
-                    <div className="grid gap-2">
-                      <div className="grid grid-cols-2 gap-2">
-                        {randomNumberRangeKeys.map((value) => (
-                          <Button
-                            key={value}
-                            size="sm"
-                            variant={randomNumberRange[1] === value ? 'outline' : 'ghost'}
-                            onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
-                            title={`Set random number range to ${value.toLocaleString()}`}
-                          >
-                            {value.toLocaleString()}
-                          </Button>
-                        ))}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleResetRandomNumberRange}
-                        className="mt-2"
-                        title="Reset random number range"
-                      >
-                        <ArrowClockwise className="h-4 w-4 mr-2 text-blue-600" />
-                        Reset to default
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <RandomNumberPopover />
             </div>
 
             <Button
