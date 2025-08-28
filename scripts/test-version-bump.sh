@@ -20,8 +20,8 @@ declare -a TEST_SCENARIOS=(
     "major:feat: test breaking change\n\nBREAKING CHANGE: This is a breaking change"
 )
 
-# Mock current version
-CURRENT_VERSION="1.2.3"
+# Get actual current version from git tags
+CURRENT_VERSION=$(git tag --sort=-version:refname | head -1 | sed 's/^v//' || echo "0.0.0")
 
 echo -e "${YELLOW}Testing version bump logic...${NC}"
 echo "Current version: $CURRENT_VERSION"
