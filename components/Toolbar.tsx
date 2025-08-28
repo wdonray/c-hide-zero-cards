@@ -19,6 +19,8 @@ export function Toolbar() {
     showZeroCards,
     toggleZeroCards,
     setShowNumberFormsDialog,
+    showNumberFormsSection,
+    setShowNumberFormsSection,
     cardsMoved,
     focusNumberInput,
   } = useHeaderContext()
@@ -113,10 +115,21 @@ export function Toolbar() {
               variant="outline"
               disabled={!inputNumber}
               size="sm"
-              onClick={() => setShowNumberFormsDialog(true)}
+              onClick={() => {
+                setShowNumberFormsSection(!showNumberFormsSection)
+                // Scroll to the section after a brief delay to allow for render
+                if (!showNumberFormsSection) {
+                  setTimeout(() => {
+                    const section = document.getElementById('number-forms-section')
+                    if (section) {
+                      section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }
+                  }, 100)
+                }
+              }}
               title={
                 inputNumber
-                  ? `Number Forms & Representations for ${inputNumber?.toLocaleString()}`
+                  ? `${showNumberFormsSection ? 'Hide' : 'Show'} Number Forms & Representations for ${inputNumber?.toLocaleString()}`
                   : 'Number Forms & Representations'
               }
             >
