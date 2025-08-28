@@ -16,81 +16,27 @@ declare -a TEST_SCENARIOS=(
     "patch:fix: test patch bump"
     "minor:feat: test minor bump"
     "major:feat!: test major bump"
-    "none:chore: test no bump"
+    "patch:chore: test no bump"
     "major:feat: test breaking change\n\nBREAKING CHANGE: This is a breaking change"
 )
 
-# Get actual current version from git tags
-CURRENT_VERSION=$(git tag --sort=-version:refname | head -1 | sed 's/^v//' || echo "0.0.0")
-
 echo -e "${YELLOW}Testing version bump logic...${NC}"
-echo "Current version: $CURRENT_VERSION"
 echo ""
 
 # Function to analyze conventional commits (same logic as workflow)
 analyze_conventional_commits() {
-    local commit_messages="$1"
-    local has_breaking=false
-    local has_feature=false
-    local has_fix=false
+    local commit_message="$1"
     
-    while IFS= read -r message; do
-        # Check for breaking changes
-        if [[ "$message" == *"BREAKING CHANGE"* ]] || [[ "$message" == *"!:"* ]]; then
-            has_breaking=true
-        fi
-        
-        # Parse conventional commit format - simpler approach
-        if [[ "$message" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert): ]]; then
-            local type=$(echo "$message" | sed -E 's/^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([^)]*\))?(!)?:.*/\1/')
-            local has_exclamation=$(echo "$message" | grep -o '!' | head -1)
-            
-            if [ "$has_exclamation" = "!" ]; then
-                has_breaking=true
-            fi
-            
-            if [ "$type" = "feat" ]; then
-                has_feature=true
-            fi
-            
-            if [ "$type" = "fix" ]; then
-                has_fix=true
-            fi
-        fi
-    done <<< "$commit_messages"
-    
-    if [ "$has_breaking" = true ]; then
+    # Check for breaking changes
+    if [[ "$commit_message" == *"BREAKING CHANGE"* ]] || [[ "$commit_message" == *"!:"* ]]; then
         echo "major"
-    elif [ "$has_feature" = true ]; then
+    elif [[ "$commit_message" =~ ^feat: ]]; then
         echo "minor"
-    elif [ "$has_fix" = true ]; then
+    elif [[ "$commit_message" =~ ^fix: ]]; then
         echo "patch"
     else
-        echo "none"
+        echo "patch"
     fi
-}
-
-# Function to calculate new version
-calculate_version() {
-    local current_version="$1"
-    local bump_type="$2"
-    
-    IFS='.' read -r major minor patch <<< "$current_version"
-    
-    case "$bump_type" in
-        "major")
-            echo "$((major + 1)).0.0"
-            ;;
-        "minor")
-            echo "${major}.$((minor + 1)).0"
-            ;;
-        "patch")
-            echo "${major}.${minor}.$((patch + 1))"
-            ;;
-        *)
-            echo "$current_version"
-            ;;
-    esac
 }
 
 # Run tests
@@ -105,10 +51,8 @@ for scenario in "${TEST_SCENARIOS[@]}"; do
     
     # Analyze the commit
     bump_type=$(analyze_conventional_commits "$commit_message")
-    new_version=$(calculate_version "$CURRENT_VERSION" "$bump_type")
     
     echo "Detected bump type: $bump_type"
-    echo "New version: $new_version"
     
     # Validate result
     if [ "$bump_type" = "$expected_bump" ]; then

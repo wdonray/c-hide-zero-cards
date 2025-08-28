@@ -31,12 +31,13 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Create test commits
+      - name: Configure git
         run: |
-          # Configure git for testing
-          git config --local user.email "test@github.com"
-          git config --local user.name "Test User"
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
+      - name: Create test commit
+        run: |
           # Create test commit based on scenario
           TEST_SCENARIO="${{ github.event.inputs.test_scenario }}"
 
@@ -67,106 +68,33 @@ jobs:
               ;;
           esac
 
-      - name: Get latest tag
-        id: get-latest-tag
+      - name: Determine version bump type
+        id: version-type
         run: |
-          LATEST_TAG=$(git tag --sort=-version:refname | head -1 || echo "v0.0.0")
-          echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
-          echo "Latest tag: $LATEST_TAG"
+          COMMIT_MESSAGE="$(git log -1 --pretty=format:"%s")"
 
-      - name: Get commits since last tag
-        id: get-commits
-        run: |
-          LATEST_TAG="${{ steps.get-latest-tag.outputs.latest_tag }}"
-          if [ "$LATEST_TAG" = "v0.0.0" ]; then
-            COMMITS=$(git log --pretty=format:"%s" HEAD)
+          # Check for breaking changes
+          if [[ "$COMMIT_MESSAGE" == *"BREAKING CHANGE"* ]] || [[ "$COMMIT_MESSAGE" == *"!:"* ]]; then
+            echo "newversion=major" >> $GITHUB_OUTPUT
+            echo "Bump type: major (breaking change detected)"
+          elif [[ "$COMMIT_MESSAGE" =~ ^feat: ]]; then
+            echo "newversion=minor" >> $GITHUB_OUTPUT
+            echo "Bump type: minor (feature commit detected)"
+          elif [[ "$COMMIT_MESSAGE" =~ ^fix: ]]; then
+            echo "newversion=patch" >> $GITHUB_OUTPUT
+            echo "Bump type: patch (fix commit detected)"
           else
-            COMMITS=$(git log --pretty=format:"%s" ${LATEST_TAG}..HEAD)
+            echo "newversion=patch" >> $GITHUB_OUTPUT
+            echo "Bump type: patch (default for non-conventional commits)"
           fi
-          echo "commits<<EOF" >> $GITHUB_OUTPUT
-          echo "$COMMITS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Analyze conventional commits
-        id: analyze-commits
-        run: |
-          COMMITS="${{ steps.get-commits.outputs.commits }}"
-          HAS_BREAKING=false
-          HAS_FEATURE=false
-          HAS_FIX=false
-
-          while IFS= read -r commit; do
-            # Check for breaking changes
-            if [[ "$commit" == *"BREAKING CHANGE"* ]] || [[ "$commit" == *"!:"* ]]; then
-              HAS_BREAKING=true
-            fi
-            
-            # Parse conventional commit format
-            if [[ "$commit" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+?\))?(!)?: ]]; then
-              TYPE="${BASH_REMATCH[1]}"
-              HAS_EXCLAMATION="${BASH_REMATCH[3]}"
-              
-              if [ "$HAS_EXCLAMATION" = "!" ]; then
-                HAS_BREAKING=true
-              fi
-              
-              if [ "$TYPE" = "feat" ]; then
-                HAS_FEATURE=true
-              fi
-              
-              if [ "$TYPE" = "fix" ]; then
-                HAS_FIX=true
-              fi
-            fi
-          done <<< "$COMMITS"
-
-          if [ "$HAS_BREAKING" = true ]; then
-            BUMP_TYPE="major"
-          elif [ "$HAS_FEATURE" = true ]; then
-            BUMP_TYPE="minor"
-          elif [ "$HAS_FIX" = true ]; then
-            BUMP_TYPE="patch"
-          else
-            BUMP_TYPE="none"
-          fi
-
-          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
-          echo "Bump type: $BUMP_TYPE"
-
-      - name: Calculate new version
-        id: calculate-version
-        run: |
-          LATEST_TAG="${{ steps.get-latest-tag.outputs.latest_tag }}"
-          BUMP_TYPE="${{ steps.analyze-commits.outputs.bump_type }}"
-
-          # Remove 'v' prefix for version calculation
-          VERSION=${LATEST_TAG#v}
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-
-          if [ "$BUMP_TYPE" = "major" ]; then
-            NEW_VERSION="$((MAJOR + 1)).0.0"
-          elif [ "$BUMP_TYPE" = "minor" ]; then
-            NEW_VERSION="${MAJOR}.$((MINOR + 1)).0"
-          elif [ "$BUMP_TYPE" = "patch" ]; then
-            NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
-          else
-            NEW_VERSION="$VERSION"
-          fi
-
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "New version: $NEW_VERSION"
 
       - name: Validate test results
         run: |
           TEST_SCENARIO="${{ github.event.inputs.test_scenario }}"
-          BUMP_TYPE="${{ steps.analyze-commits.outputs.bump_type }}"
-          NEW_VERSION="${{ steps.calculate-version.outputs.new_version }}"
-          LATEST_TAG="${{ steps.get-latest-tag.outputs.latest_tag }}"
+          BUMP_TYPE="${{ steps.version-type.outputs.newversion }}"
 
           echo "Test scenario: $TEST_SCENARIO"
           echo "Detected bump type: $BUMP_TYPE"
-          echo "Current version: $LATEST_TAG"
-          echo "Calculated new version: $NEW_VERSION"
 
           # Validate expected results
           case $TEST_SCENARIO in
@@ -189,8 +117,8 @@ jobs:
               fi
               ;;
             "no_bump")
-              if [ "$BUMP_TYPE" != "none" ]; then
-                echo "❌ Expected no bump, got $BUMP_TYPE"
+              if [ "$BUMP_TYPE" != "patch" ]; then
+                echo "❌ Expected patch bump (default), got $BUMP_TYPE"
                 exit 1
               fi
               ;;
