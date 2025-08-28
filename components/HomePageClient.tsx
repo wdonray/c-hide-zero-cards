@@ -14,6 +14,7 @@ import {
 } from '@/lib/constants'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
+import { NumberFormsSection } from '@/components/NumberFormsSection'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
 import { toast } from 'sonner'
 import { FirstTimeToast } from '@/components/FirstTimeToast'
@@ -30,6 +31,8 @@ export function HomePageClient() {
     showZeroCards,
     showNumberFormsDialog,
     setShowNumberFormsDialog,
+    showNumberFormsSection,
+    setShowNumberFormsSection,
     isHeaderCollapsed,
     setCardsMoved,
     numberInputRef,
@@ -64,8 +67,9 @@ export function HomePageClient() {
       setResetTrigger(0)
       setRandomizeTrigger(0)
       setCardsMoved(false)
+      setShowNumberFormsSection(false)
     }
-  }, [inputNumber, setResetTrigger, setRandomizeTrigger, setCardsMoved])
+  }, [inputNumber, setResetTrigger, setRandomizeTrigger, setCardsMoved, setShowNumberFormsSection])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -132,6 +136,16 @@ export function HomePageClient() {
           )}
         </main>
       </section>
+
+      {/* Number Forms Section - Inline display below cards */}
+      <div id="number-forms-section" className="w-full container mx-auto">
+        <NumberFormsSection
+          number={inputNumber}
+          selectedTab={selectedTab}
+          setSelectedTab={setSelectedTab}
+          isVisible={showNumberFormsSection}
+        />
+      </div>
     </>
   )
 }

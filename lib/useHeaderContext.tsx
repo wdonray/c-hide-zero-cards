@@ -26,6 +26,8 @@ interface HeaderContextType {
   toggleZeroCards: () => void
   showNumberFormsDialog: boolean
   setShowNumberFormsDialog: (value: boolean) => void
+  showNumberFormsSection: boolean
+  setShowNumberFormsSection: (value: boolean) => void
   cardsMoved: boolean
   setCardsMoved: (value: boolean) => void
   numberInputRef: React.RefObject<NumberInputRef | null>
@@ -51,6 +53,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const [isDiceRolling, setIsDiceRolling] = useState(false)
   const [showZeroCards, setShowZeroCards] = useState(true)
   const [showNumberFormsDialog, setShowNumberFormsDialog] = useState(false)
+  const [showNumberFormsSection, setShowNumberFormsSection] = useState(false)
   const [cardsMoved, setCardsMoved] = useState(false)
 
   const numberInputRef = useRef<NumberInputRef>(null)
@@ -140,6 +143,8 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         toggleZeroCards,
         showNumberFormsDialog,
         setShowNumberFormsDialog,
+        showNumberFormsSection,
+        setShowNumberFormsSection,
         cardsMoved,
         setCardsMoved,
         numberInputRef,
