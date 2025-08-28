@@ -1,5 +1,4 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
   "env": {
     "browser": true,
     "es2022": true,
@@ -7,15 +6,7 @@
   },
   "extends": ["next/core-web-vitals", "next/typescript"],
   "ignorePatterns": ["node_modules/", ".next/", "out/", "dist/", "build/", "*.config.js", "*.config.ts"],
-  "overrides": [
-    {
-      "files": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
-      "rules": {
-        "typescript/no-explicit-any": "off"
-      }
-    }
-  ],
-  "plugins": ["typescript", "react", "jsx-a11y"],
+  "plugins": ["typescript", "react"],
   "rules": {
     "correctness": "warn",
     "nursery": "off",

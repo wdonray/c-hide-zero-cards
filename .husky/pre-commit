@@ -2,9 +2,4 @@
 . "$(dirname "$0")/_/husky.sh"
 
 npm run build
-
-# Auto-bump version based on conventional commits and stage changes
-node scripts/pre-commit-version.js
-
-# Run lint-staged
 npx lint-staged
