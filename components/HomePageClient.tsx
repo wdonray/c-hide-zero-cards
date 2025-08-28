@@ -13,6 +13,7 @@ import {
   NumberFormsDialogTab,
 } from '@/lib/constants'
 import { useHeaderContext } from '@/lib/useHeaderContext'
+import { useOverflowControl } from '@/lib/useOverflowControl'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
 import { NumberFormsSection } from '@/components/NumberFormsSection'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
@@ -45,6 +46,9 @@ export function HomePageClient() {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST)
     return saved !== null ? JSON.parse(saved) : false
   })
+
+  // Control HTML overflow based on whether scrollable content is present
+  useOverflowControl(showNumberFormsSection)
 
   const cards = useMemo(() => {
     if (!inputNumber) return []
