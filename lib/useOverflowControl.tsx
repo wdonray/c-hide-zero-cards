@@ -15,9 +15,20 @@ export function useOverflowControl(hasScrollableContent: boolean) {
       htmlElement.classList.remove('overflow-hidden')
       htmlElement.classList.add('overflow-auto')
     } else {
-      // Add overflow-hidden to prevent scrolling when no scrollable content
-      htmlElement.classList.remove('overflow-auto')
-      htmlElement.classList.add('overflow-hidden')
+      // When closing scrollable content, scroll to top first, then lock
+      if (window.scrollY > 0) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        
+        // Wait for scroll animation to complete before locking
+        setTimeout(() => {
+          htmlElement.classList.remove('overflow-auto')
+          htmlElement.classList.add('overflow-hidden')
+        }, 500) // 500ms to allow smooth scroll to complete
+      } else {
+        // If already at top, immediately lock
+        htmlElement.classList.remove('overflow-auto')
+        htmlElement.classList.add('overflow-hidden')
+      }
     }
 
     // Cleanup function to ensure we don't leave the page in a bad state
