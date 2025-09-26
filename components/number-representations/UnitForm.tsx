@@ -1,11 +1,13 @@
 import { PLACE_VALUE_NAMES, PLACE_VALUES } from '@/lib/constants'
 import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 interface UnitFormProps {
   number: number
+  className?: string
 }
 
-export function UnitForm({ number }: UnitFormProps) {
+export function UnitForm({ number, className }: UnitFormProps) {
   function replaceFinalChar(str: string, replacement: string) {
     if (str.length === 0) return replacement
     return str.slice(0, -1) + replacement
@@ -41,7 +43,7 @@ export function UnitForm({ number }: UnitFormProps) {
   const unitForm = units.map((unit) => unit.text).join(' , ')
 
   return (
-    <Card className="h-[280px] flex flex-col">
+    <Card className={cn('flex flex-col', className)}>
       <CardContent className="flex-1 flex items-center justify-center">
         <p className="text-lg font-medium text-primary leading-relaxed text-center">{unitForm}</p>
       </CardContent>

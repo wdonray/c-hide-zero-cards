@@ -1,11 +1,13 @@
 import { PLACE_VALUE_NAMES, PLACE_VALUES } from '@/lib/constants'
 import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 interface ExpandedFormProps {
   number: number
+  className?: string
 }
 
-export function ExpandedForm({ number }: ExpandedFormProps) {
+export function ExpandedForm({ number, className }: ExpandedFormProps) {
   function getPlaceValues(num: number) {
     const numStr = num.toString()
     const length = numStr.length
@@ -34,7 +36,7 @@ export function ExpandedForm({ number }: ExpandedFormProps) {
   const expandedForm = nonZeroValues.map((pv) => pv.actualValue.toLocaleString()).join(' + ')
 
   return (
-    <Card className="h-[280px] flex flex-col">
+    <Card className={cn('flex flex-col', className)}>
       <CardContent className="flex-1 flex items-center justify-center">
         <p className="text-lg font-mono tabular-nums font-medium text-primary leading-relaxed text-center">
           {expandedForm}

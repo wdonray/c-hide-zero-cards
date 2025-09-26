@@ -1,10 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 interface WordFormProps {
   number: number
+  className?: string
 }
 
-export function WordForm({ number }: WordFormProps) {
+export function WordForm({ number, className }: WordFormProps) {
   function numberToWords(num: number): string {
     if (num === 0) return 'zero'
 
@@ -82,7 +84,7 @@ export function WordForm({ number }: WordFormProps) {
   const wordForm = numberToWords(number)
 
   return (
-    <Card className="h-[280px] flex flex-col">
+    <Card className={cn('flex flex-col', className)}>
       <CardContent className="flex-1 flex items-center justify-center">
         <p className="text-xl font-semibold text-primary leading-relaxed text-center">{wordForm}</p>
       </CardContent>

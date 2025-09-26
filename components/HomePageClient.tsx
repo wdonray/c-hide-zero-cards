@@ -35,7 +35,7 @@ export function HomePageClient() {
     numberInputRef,
   } = useHeaderContext()
 
-  const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.STANDARD)
+  const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.WORD)
 
   const [hasShownFirstTimeToast, setHasShownFirstTimeToast] = useState(() => {
     if (typeof window === 'undefined') return false
