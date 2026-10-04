@@ -1,0 +1,89 @@
+import { test, expect } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
+
+/**
+ * Automated WCAG 2.2 AA scan of the app, powered by axe-core
+ * (the same engine behind Lighthouse accessibility audits).
+ * Catches: missing labels, contrast failures, landmark/heading issues,
+ * keyboard/focus problems, ARIA misuse, and more.
+ *
+ * The app is scanned in both light and dark mode, since color
+ * contrast is theme-dependent, and both with and without cards
+ * on screen, since the cards are the core interactive surface.
+ */
+test.describe('accessibility', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    for (const withCards of [false, true]) {
+      test(`home page ${withCards ? 'with cards' : 'empty'} has no WCAG 2.2 AA violations in ${theme} mode`, async ({
+        page,
+      }) => {
+        // Suppress the welcome dialog; scan the main app surface.
+        await page.addInitScript(() => {
+          localStorage.setItem('hzc-has-seen-welcome-dialog', 'true')
+        })
+        await page.goto('/')
+
+        if (withCards) {
+          await page.getByPlaceholder('Type a number here!').fill('1234')
+          await expect(
+            page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
+          ).toHaveCount(4)
+        }
+
+        // Let entrance animations settle so contrast is measured on the final state.
+        await page.waitForTimeout(1000)
+
+        if (theme === 'dark') {
+          await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
+          await page.getByRole('menuitem', { name: 'Dark' }).click()
+          await expect(page.getByRole('menu')).toBeHidden()
+        }
+
+        const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+
+        expect(withoutBlockedViolations(results)).toEqual([])
+      })
+    }
+  }
+})
+
+/**
+ * Known blocked violation (owner decision pending, see PLAN.md):
+ * the desktop "Roll" button label is white text on blue-500 (#2b7fff) at
+ * 3.76:1, below WCAG AA's 4.5:1. Fixing it requires recoloring or resizing
+ * button text, which changes the visual design and needs owner approval.
+ * This filter keeps the gate strict for every other violation: if the button
+ * markup changes, the filter stops matching and the scan fails loudly.
+ */
+function withoutBlockedViolations(results: Awaited<ReturnType<AxeBuilder['analyze']>>) {
+  const isBlockedRollButton = (violationId: string, target: readonly unknown[]) =>
+    violationId === 'color-contrast' &&
+    target.some((selector) => typeof selector === 'string' && selector.includes('md\\:flex'))
+
+  return results.violations
+    .map((violation) => ({
+      ...violation,
+      nodes: violation.nodes.filter((node) => !isBlockedRollButton(violation.id, node.target)),
+    }))
+    .filter((violation) => violation.nodes.length > 0)
+}
+
+test.describe('keyboard operability', () => {
+  test('cards can be moved with arrow keys', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('hzc-has-seen-welcome-dialog', 'true')
+    })
+    await page.goto('/')
+    await page.getByPlaceholder('Type a number here!').fill('1234')
+
+    const cards = page.getByRole('application', { name: 'Draggable place value cards' })
+    const firstCard = cards.locator(':scope > div').first()
+    await expect(firstCard).toBeVisible()
+    await expect(firstCard).toHaveAttribute('aria-label', /place value card\. Use arrow keys to move it\./)
+
+    await firstCard.focus()
+    await page.keyboard.press('ArrowRight')
+
+    await expect(firstCard).toHaveJSProperty('style.transform', 'translate(10px, 0px)')
+  })
+})

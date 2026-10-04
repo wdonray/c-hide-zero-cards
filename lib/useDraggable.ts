@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { CARD_RANDOM_X_OFFSET, CARD_RANDOM_Y_OFFSET } from './constants'
+import { CARD_RANDOM_X_OFFSET, CARD_RANDOM_Y_OFFSET, CARD_KEYBOARD_MOVE_STEP } from './constants'
 import { useHeaderContext } from './useHeaderContext'
 
 interface UseDraggableOptions {
@@ -18,6 +18,7 @@ interface UseDraggableReturn {
     onPointerMove: (e: React.PointerEvent) => void
     onPointerUp: (e: React.PointerEvent) => void
     onPointerLeave: (e: React.PointerEvent) => void
+    onKeyDown: (e: React.KeyboardEvent) => void
   }
 }
 
@@ -123,14 +124,44 @@ export function useDraggable({
     }
   }, [randomizeTrigger, initialX, initialY])
 
+  // Keyboard alternative to pointer dragging (WCAG 2.1.1): arrow keys nudge
+  // the card without changing anything visual. Purely additive.
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      let dx = 0
+      let dy = 0
+      switch (e.key) {
+        case 'ArrowLeft':
+          dx = -CARD_KEYBOARD_MOVE_STEP
+          break
+        case 'ArrowRight':
+          dx = CARD_KEYBOARD_MOVE_STEP
+          break
+        case 'ArrowUp':
+          dy = -CARD_KEYBOARD_MOVE_STEP
+          break
+        case 'ArrowDown':
+          dy = CARD_KEYBOARD_MOVE_STEP
+          break
+        default:
+          return
+      }
+      e.preventDefault()
+      setPosition((prev) => ({ x: prev.x + dx, y: prev.y + dy }))
+      setCardsMoved(true)
+    },
+    [setCardsMoved]
+  )
+
   const handlers = useMemo(
     () => ({
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,
       onPointerUp: handlePointerUp,
       onPointerLeave: handlePointerLeave,
+      onKeyDown: handleKeyDown,
     }),
-    [handlePointerDown, handlePointerMove, handlePointerUp, handlePointerLeave]
+    [handlePointerDown, handlePointerMove, handlePointerUp, handlePointerLeave, handleKeyDown]
   )
 
   return {

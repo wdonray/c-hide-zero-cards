@@ -1,4 +1,4 @@
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { describe, expect, it } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { HeaderProvider } from '@/lib/useHeaderContext'
@@ -52,6 +52,26 @@ describe('useDraggable', () => {
     const { result } = renderDraggable()
     act(() => {
       result.current.handlers.onPointerMove(pointerEvent(999, 999))
+    })
+    expect(result.current.position).toEqual({ x: 10, y: 20 })
+  })
+
+  it('moves the card with arrow keys', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onKeyDown({ key: 'ArrowRight', preventDefault: () => {} } as ReactKeyboardEvent)
+    })
+    expect(result.current.position).toEqual({ x: 20, y: 20 })
+    act(() => {
+      result.current.handlers.onKeyDown({ key: 'ArrowDown', preventDefault: () => {} } as ReactKeyboardEvent)
+    })
+    expect(result.current.position).toEqual({ x: 20, y: 30 })
+  })
+
+  it('ignores non-arrow keys', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onKeyDown({ key: 'Enter', preventDefault: () => {} } as ReactKeyboardEvent)
     })
     expect(result.current.position).toEqual({ x: 10, y: 20 })
   })

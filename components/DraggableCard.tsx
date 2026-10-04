@@ -34,9 +34,13 @@ export function DraggableCard({
   const cardColor = useCallback((placeValue: number) => CARD_COLORS[placeValue], [])
   const { position, dragRef, handlers } = useDraggable(useDraggableProps)
 
+  const displayValue = fakeNumbers !== null ? fakeNumbers : (firstDigit * placeValue).toLocaleString()
+
   return (
     <div
       ref={dragRef}
+      tabIndex={0}
+      aria-label={`${displayValue} place value card. Use arrow keys to move it.`}
       className={`flex items-center justify-center gap-0 px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
       style={{
         position: 'absolute',
