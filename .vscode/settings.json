@@ -30,7 +30,6 @@
   "i18n-ally.translate.fallbackToKey": true,
   "i18n-ally.translate.deepl.useFreeApiEntry": true,
   "i18n-ally.translate.engines": ["deepl"],
-  "i18n-ally.translate.deepl.apiKey": "79b768f1-3a7d-7d2d-a89f-9845464b398e:fx",
   "i18n-ally.enabledFrameworks": ["vue"],
   "i18n-ally.sortKeys": true,
   "i18n-ally.sourceLanguage": "en",
