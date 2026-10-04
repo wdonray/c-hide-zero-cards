@@ -1,0 +1,28 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # Fetch all tags
+
+      - name: Create Release for Tag
+        id: release_tag
+        uses: Akryum/release-tag@a45f9f6a7572682345b87927ea3aacf723225e0b
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          preset: angular # Use conventional-changelog preset
