@@ -1,27 +1,6 @@
 {
-  "env": {
-    "browser": true,
-    "es2022": true,
-    "node": true
-  },
-  "extends": ["next/core-web-vitals", "next/typescript"],
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "env": { "browser": true, "es2022": true, "node": true },
   "ignorePatterns": ["node_modules/", ".next/", "out/", "dist/", "build/", "*.config.js", "*.config.ts"],
-  "plugins": ["typescript", "react"],
-  "rules": {
-    "correctness": "warn",
-    "nursery": "off",
-    "pedantic": "off",
-    "perf": "warn",
-    "restriction": "off",
-    "style": "warn",
-    "suspicious": "warn"
-  },
-  "settings": {
-    "next": {
-      "rootDir": "./"
-    },
-    "react": {
-      "version": "detect"
-    }
-  }
+  "plugins": ["typescript", "react", "nextjs"]
 }
