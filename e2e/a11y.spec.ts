@@ -45,6 +45,46 @@ test.describe('accessibility', () => {
       })
     }
   }
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`version page has no WCAG 2.2 AA violations in ${theme} mode`, async ({ page }) => {
+      // Suppress the welcome dialog; scan the version page surface.
+      await page.addInitScript(() => {
+        localStorage.setItem('hzc-has-seen-welcome-dialog', 'true')
+      })
+      // Mock the releases API for a deterministic scan of the list UI.
+      await page.route(
+        (url) => url.href.startsWith('https://api.github.com/repos/wdonray/c-hide-zero-cards/releases'),
+        (route) =>
+          route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([
+              {
+                tag_name: 'v0.19.11',
+                html_url: 'https://github.com/wdonray/c-hide-zero-cards/releases/tag/v0.19.11',
+                published_at: '2026-10-03T11:00:00Z',
+                body: '### Tests\n\n  - Some change (abc1234)\n',
+              },
+            ]),
+          })
+      )
+      await page.goto('/version')
+      await expect(page.getByRole('heading', { name: 'Version' })).toBeVisible()
+
+      if (theme === 'dark') {
+        await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
+        await page.getByRole('menuitem', { name: 'Dark' }).click()
+        await expect(page.getByRole('menu')).toBeHidden()
+      }
+
+      const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+
+      // The toolbar (with the Roll button) is part of the root layout, so the
+      // same blocked-violation filter applies here as on the home page.
+      expect(withoutBlockedViolations(results)).toEqual([])
+    })
+  }
 })
 
 /**
