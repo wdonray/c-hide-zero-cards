@@ -72,23 +72,34 @@ export function HomePageClient() {
   )
 
   // Fan layout: cards anchor on evenly spaced left edges (index * xOffset)
-  // inside a wrapper sized to the measured fan extent. The wrapper is a flex
-  // item of the workspace (which centers it via justify-content), so the
-  // visible fan is centered even though card widths vary with place value.
+  // inside a wrapper sized to the fan extent. The wrapper is a flex item of
+  // the workspace (which centers it via justify-content), so the visible
+  // fan is centered even though card widths vary with place value.
   // shrink-0 keeps an oversized fan from being flex-shrunk (the one-card
   // mobile fan can exceed the viewport; it then overflows centered, as the
-  // cards did before this change). Each card also gets an assigned width
-  // (extent - index * xOffset) so the fan's right edge is flush: without it,
-  // the wide back cards would extend past the narrower cards stacked on top
-  // and their trailing zeros would peek out on the right. Measured in a
-  // layout effect so the first paint already has the correct size (no flash).
+  // cards did before this change).
+  //
+  // The extent is (n - 1) peeks plus the LAST (top, narrowest) card's natural
+  // width, never a max over all cards: max-ing let a wide back card
+  // ("700,000") inflate the top card ("5") to ~3x its natural width. Each
+  // card gets an assigned width (extent - index * xOffset) with its text
+  // left-aligned and overflow hidden, so every peek shows its leading digit
+  // and the fan's right edge is flush. A card away from its fan home
+  // (dragged, Mix-scattered, keyboard-moved) renders at its natural width
+  // instead, so the full place value stays readable.
   //
   // Natural widths are derived from the text itself (inner.scrollWidth +
   // the card's horizontal padding), not the card's offsetWidth: the inner
   // div shrink-fits its text, so this is the content-driven width on every
-  // pass (first paint, font swap, resize) with no drift.
+  // pass (first paint, font swap, resize) with no drift. Measured in a
+  // layout effect so the first paint already has the correct size (no flash).
   const fanRef = useRef<HTMLDivElement>(null)
-  const [fanLayout, setFanLayout] = useState<{ key: string; extent: number; height: number } | null>(null)
+  const [fanLayout, setFanLayout] = useState<{
+    key: string
+    extent: number
+    height: number
+    naturals: number[]
+  } | null>(null)
   const [measureTick, setMeasureTick] = useState(0)
   const measureKey = `${inputNumber}|${showZeroCards}|${xOffset}`
 
@@ -102,12 +113,18 @@ export function HomePageClient() {
       const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
       return (child.firstElementChild?.scrollWidth ?? 0) + padX
     })
-    const extent = getFanExtent(naturals, xOffset)
+    // Extent from the last card only: a wide back card must never inflate
+    // the top card.
+    const extent = getFanExtent(naturals[naturals.length - 1], cards.length, xOffset)
     const height = Math.max(...children.map((child) => child.offsetHeight))
     setFanLayout((prev) =>
-      prev?.key === measureKey && prev.extent === extent && prev.height === height
+      prev?.key === measureKey &&
+      prev.extent === extent &&
+      prev.height === height &&
+      prev.naturals.length === naturals.length &&
+      prev.naturals.every((w, i) => w === naturals[i])
         ? prev
-        : { key: measureKey, extent, height }
+        : { key: measureKey, extent, height, naturals }
     )
   }, [measureKey, cards.length, xOffset, measureTick])
 
@@ -193,6 +210,7 @@ export function HomePageClient() {
                   xOffset={xOffset}
                   mobileMetrics={mobileMetrics}
                   fanWidth={layout ? layout.extent - index * xOffset : undefined}
+                  naturalWidth={layout ? layout.naturals[index] : undefined}
                   resetTrigger={resetTrigger}
                   randomizeTrigger={randomizeTrigger}
                   scatterArea={scatterArea}

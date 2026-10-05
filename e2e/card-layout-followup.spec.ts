@@ -90,6 +90,62 @@ test.describe('card layout follow-up', () => {
           expect(Math.abs(cx - vp.width / 2)).toBeLessThanOrEqual(3)
         }
       })
+
+      test('every peek shows its leading digit and the top card is natural width', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('763285')
+        const probes = await page.evaluate(() => {
+          const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
+          return els.map((el) => {
+            const r = el.getBoundingClientRect()
+            const inner = el.firstElementChild as HTMLElement
+            const ir = inner.getBoundingClientRect()
+            const style = getComputedStyle(el)
+            const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+            return {
+              text: el.innerText,
+              cardWidth: r.width,
+              // How far the text's left edge sits past the card's left
+              // padding: ~0 when left-aligned, large when centered in a
+              // widened card (the buried-digit regression).
+              textPastPad: ir.x - r.x - parseFloat(style.paddingLeft),
+              natural: inner.scrollWidth + padX,
+            }
+          })
+        })
+        expect(probes.map((p) => p.text)).toEqual(['700,000', '60,000', '3,000', '200', '80', '5'])
+        // Every leading digit sits at the left padding: no blank slivers,
+        // no digits buried under the next card.
+        for (const p of probes) {
+          expect(Math.abs(p.textPastPad)).toBeLessThanOrEqual(2)
+        }
+        // The top card keeps its natural width: no giant block with a
+        // lonely centered digit.
+        const top = probes[probes.length - 1]
+        expect(Math.abs(top.cardWidth - top.natural)).toBeLessThanOrEqual(2)
+      })
+
+      test('a displaced card shows its full place-value text unclipped', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('763285')
+        const first = page
+          .getByRole('application', { name: 'Draggable place value cards' })
+          .locator(':scope > div')
+          .first()
+        // Outer width minus natural text width: negative at fan home (the
+        // wide back card is clipped to its assigned width), ~0 displaced.
+        const widthDiff = () =>
+          first.evaluate((el: HTMLElement) => {
+            const r = el.getBoundingClientRect()
+            const inner = el.firstElementChild as HTMLElement
+            const style = getComputedStyle(el)
+            return r.width - (inner.scrollWidth + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight))
+          })
+        expect(await widthDiff()).toBeLessThan(0)
+        // Keyboard-displace the card: the full text must show, unclipped.
+        await first.focus()
+        await page.keyboard.press('ArrowRight')
+        await page.keyboard.press('ArrowRight')
+        expect(Math.abs(await widthDiff())).toBeLessThanOrEqual(2)
+      })
     })
   }
 })
