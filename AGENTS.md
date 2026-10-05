@@ -61,6 +61,22 @@ behavior on your own.
   yellow-700/800/900, green-700/800/900, blue-600. Same hue families and the same
   light-to-dark gradation per period. The Roll button is blue-600 for the same
   reason. No contrast filters remain in `e2e/a11y.spec.ts`.
+- **Mobile action bar (2026-10-05 redesign).** Below 768px the desktop
+  `Toolbar` unmounts (via `useIsMobile`, not CSS hiding, so each control
+  exists exactly once in the DOM) and `MobileActionBar` takes over: a
+  bottom-anchored nav with icon + text labels (Roll, Zero, Mix, Reset, Clear,
+  Forms, More). Labels are mandatory because icon-only buttons have no hover
+  tooltips on touch. Secondary actions (range, teacher's guide, theme,
+  version link) live in the `MobileMoreMenu` bottom sheet (Radix Dialog:
+  focus trap + Escape come free). The bar is a flex-column sibling of the
+  footer, never `position: fixed`, so no overlap math is needed.
+- **Hero card sizing.** `getMobileCardMetrics()` in `lib/cardLayout.ts`
+  scales the fan up on mobile (fewer digits = bigger cards, capped at the
+  desktop 60px) while keeping the exact cascading-overlap peeking ratio
+  (offset = 0.6 x font size, min 12px). The fan is vertically centered via a
+  mobile-only flex-column chain (body > main > section > workspace); the
+  cards themselves are absolutely positioned, so centering works through
+  their static position in the flex workspace, not through flex item layout.
 
 - **No em dashes in user-facing copy.** Use commas, colons, or split the
   sentence instead.

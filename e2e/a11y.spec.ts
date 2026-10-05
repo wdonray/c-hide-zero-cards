@@ -22,6 +22,24 @@ test.describe('accessibility', () => {
     test.describe(`viewport: ${viewport.name}`, () => {
       test.use(viewport.use)
 
+      /** On mobile the theme toggle lives in the More sheet; on desktop it is in the header. */
+      async function switchToDarkTheme(page: import('@playwright/test').Page) {
+        if (viewport.name === 'mobile') {
+          await page.getByRole('button', { name: 'More actions' }).click()
+          const sheet = page.getByRole('dialog', { name: 'More actions' })
+          await sheet.getByTitle('Toggle light/dark mode', { exact: true }).click()
+          await page.getByRole('menuitem', { name: 'Dark' }).click()
+          await expect(page.getByRole('menu')).toBeHidden()
+          // Close the sheet so the scan sees the normal page, not a modal.
+          await page.keyboard.press('Escape')
+          await expect(sheet).toBeHidden()
+        } else {
+          await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
+          await page.getByRole('menuitem', { name: 'Dark' }).click()
+          await expect(page.getByRole('menu')).toBeHidden()
+        }
+      }
+
       for (const theme of ['light', 'dark'] as const) {
         for (const withCards of [false, true]) {
           test(`home page ${withCards ? 'with cards' : 'empty'} has no WCAG 2.2 AA violations in ${theme} mode`, async ({
@@ -44,9 +62,7 @@ test.describe('accessibility', () => {
             await page.waitForTimeout(1000)
 
             if (theme === 'dark') {
-              await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
-              await page.getByRole('menuitem', { name: 'Dark' }).click()
-              await expect(page.getByRole('menu')).toBeHidden()
+              await switchToDarkTheme(page)
             }
 
             const results = await new AxeBuilder({ page })
@@ -88,9 +104,7 @@ test.describe('accessibility', () => {
           await expect(page.getByRole('heading', { name: 'Version' })).toBeVisible()
 
           if (theme === 'dark') {
-            await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
-            await page.getByRole('menuitem', { name: 'Dark' }).click()
-            await expect(page.getByRole('menu')).toBeHidden()
+            await switchToDarkTheme(page)
           }
 
           const results = await new AxeBuilder({ page })

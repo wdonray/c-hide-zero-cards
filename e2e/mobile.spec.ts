@@ -64,20 +64,22 @@ test.describe('mobile core flows', () => {
     await page.getByPlaceholder('Type a number here!').fill('1234')
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
-    const firstCard = cards.locator(':scope > div').first()
-    await expect(firstCard).toBeVisible()
+    // The last card sits on top of the fan: its center is never covered by
+    // the cascading overlap, so the touch reliably hits it.
+    const lastCard = cards.locator(':scope > div').last()
+    await expect(lastCard).toBeVisible()
 
-    const box = await firstCard.boundingBox()
+    const box = await lastCard.boundingBox()
     expect(box).not.toBeNull()
     const startX = box!.x + box!.width / 2
     const startY = box!.y + box!.height / 2
-    const initialTransform = await firstCard.evaluate((el) => (el as HTMLElement).style.transform)
+    const initialTransform = await lastCard.evaluate((el) => (el as HTMLElement).style.transform)
 
     await touchDrag(page, startX, startY, startX + 60, startY + 40)
 
     // The card followed the finger (touch-action: none lets the pointer
     // events through instead of scrolling).
-    await expect.poll(() => firstCard.evaluate((el) => (el as HTMLElement).style.transform)).not.toBe(initialTransform)
+    await expect.poll(() => lastCard.evaluate((el) => (el as HTMLElement).style.transform)).not.toBe(initialTransform)
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
   })
 
@@ -105,14 +107,21 @@ test.describe('mobile core flows', () => {
     await expect(cards.locator(':scope > div').first()).toBeVisible()
   })
 
-  test('sets the random range from the mobile range popover', async ({ page }) => {
+  test('sets the random range from the More menu', async ({ page }) => {
     const input = page.getByPlaceholder('Type a number here!')
 
-    // The range control used to be desktop-only; it is reachable on mobile now.
-    await page.getByTitle('Set random number range', { exact: true }).click()
-    await expect(page.getByText('Random Number Range')).toBeVisible()
+    // Range settings live in the More sheet on mobile now.
+    await page.getByRole('button', { name: 'More actions' }).click()
+    const sheet = page.getByRole('dialog', { name: 'More actions' })
+    await expect(sheet).toBeVisible()
+
+    await sheet.getByTitle('Set random number range', { exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Random Number Range' })).toBeVisible()
     await page.getByRole('button', { name: '100', exact: true }).click()
     await page.keyboard.press('Escape')
+    await expect(page.getByRole('heading', { name: 'Random Number Range' })).toBeHidden()
+    await sheet.getByRole('button', { name: 'Close' }).click()
+    await expect(sheet).toBeHidden()
 
     await page.getByRole('button', { name: 'Roll a random number' }).click()
     await expect(input).not.toHaveValue('')
@@ -177,8 +186,10 @@ test.describe('mobile core flows', () => {
     await expect(dialog.getByText('1,234')).toBeVisible()
   })
 
-  test("opens the teacher's guide and switches tabs", async ({ page }) => {
-    await page.getByTitle('Instructional Teachers Guide for Hide Zero Cards', { exact: true }).click()
+  test("opens the teacher's guide from the More menu and switches tabs", async ({ page }) => {
+    await page.getByRole('button', { name: 'More actions' }).click()
+    const sheet = page.getByRole('dialog', { name: 'More actions' })
+    await sheet.getByTitle('Instructional Teachers Guide for Hide Zero Cards', { exact: true }).click()
 
     const dialog = page.getByRole('dialog', { name: "Hide Zero Cards - Teacher's Guide" })
     await expect(dialog).toBeVisible()
@@ -220,22 +231,119 @@ test.describe('mobile layout', () => {
     }
   })
 
-  test('toolbar buttons meet the 44px touch target on coarse pointers', async ({ page }) => {
+  test('bottom bar buttons meet the 44px touch target on coarse pointers', async ({ page }) => {
     expect(await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches)).toBe(true)
 
+    // The seven bottom-bar actions: icon + text label, each 60px tall.
+    const bar = page.getByRole('navigation', { name: 'Quick actions' })
     const buttons = [
-      page.getByRole('button', { name: 'Roll a random number' }),
-      page.getByTitle('Set random number range', { exact: true }),
-      page.getByTitle('Clear input number and reset cards', { exact: true }),
-      page.getByTitle('Instructional Teachers Guide for Hide Zero Cards', { exact: true }),
-      page.getByTitle('Toggle light/dark mode', { exact: true }),
+      bar.getByRole('button', { name: 'Roll a random number' }),
+      bar.getByRole('button', { name: 'Hide zero cards' }),
+      bar.getByRole('button', { name: 'Randomize card position' }),
+      bar.getByRole('button', { name: 'Reset cards to original position' }),
+      bar.getByRole('button', { name: 'Clear input number and reset cards' }),
+      bar.getByRole('button', { name: 'Number Forms' }),
+      bar.getByRole('button', { name: 'More actions' }),
     ]
     for (const button of buttons) {
+      const box = await button.boundingBox()
+      const name = await button.evaluate((el) => el.getAttribute('aria-label'))
+      expect(box, `button "${name}" should have a bounding box`).not.toBeNull()
+      expect(box!.width, `button "${name}" width`).toBeGreaterThanOrEqual(44)
+      expect(box!.height, `button "${name}" height`).toBeGreaterThanOrEqual(44)
+    }
+
+    // The More sheet rows reuse the desktop triggers (range, guide, theme),
+    // which carry the coarse-pointer 44px minimum.
+    await bar.getByRole('button', { name: 'More actions' }).click()
+    const sheet = page.getByRole('dialog', { name: 'More actions' })
+    await expect(sheet).toBeVisible()
+    // Let the bottom-sheet slide-in animation finish so measurements are steady.
+    await (await sheet.elementHandle())?.waitForElementState('stable')
+    const sheetButtons = [
+      sheet.getByTitle('Set random number range', { exact: true }),
+      sheet.getByTitle('Instructional Teachers Guide for Hide Zero Cards', { exact: true }),
+      sheet.getByTitle('Toggle light/dark mode', { exact: true }),
+    ]
+    for (const button of sheetButtons) {
       const box = await button.boundingBox()
       const title = await button.evaluate((el) => el.getAttribute('title'))
       expect(box, `button "${title}" should have a bounding box`).not.toBeNull()
       expect(box!.width, `button "${title}" width`).toBeGreaterThanOrEqual(44)
       expect(box!.height, `button "${title}" height`).toBeGreaterThanOrEqual(44)
     }
+  })
+
+  test('bottom action bar replaces the top toolbar: labeled actions, single instance of each control', async ({
+    page,
+  }) => {
+    const bar = page.getByRole('navigation', { name: 'Quick actions' })
+    await expect(bar).toBeVisible()
+
+    // Every action carries a visible text label (no hover tooltips on touch).
+    for (const label of ['Roll', 'Zero', 'Mix', 'Reset', 'Clear', 'Forms', 'More']) {
+      await expect(bar.getByText(label, { exact: true })).toBeVisible()
+    }
+
+    // The desktop toolbar is unmounted on mobile, so each control exists once.
+    await expect(page.getByRole('button', { name: 'Roll a random number' })).toHaveCount(1)
+    await expect(page.getByTitle('Hide zero cards', { exact: true })).toHaveCount(1)
+  })
+
+  test('cards are the hero: bigger for fewer digits, vertically centered in the workspace', async ({ page }) => {
+    const input = page.getByPlaceholder('Type a number here!')
+    const cards = page.getByRole('application', { name: 'Draggable place value cards' })
+
+    await input.fill('123')
+    const fewDigitFont = await cards
+      .locator(':scope > div')
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
+
+    await input.fill('1000000000')
+    const manyDigitFont = await cards
+      .locator(':scope > div')
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
+
+    // Adaptive sizing: fewer digits means bigger cards, far above the old
+    // fixed 18px mobile size.
+    expect(fewDigitFont).toBeGreaterThan(manyDigitFont)
+    expect(fewDigitFont).toBeGreaterThan(30)
+
+    // The fan sits in the vertical middle of the workspace, not the top.
+    await input.fill('1234')
+    const workspaceBox = await page.getByRole('main', { name: 'Place value cards workspace' }).boundingBox()
+    expect(workspaceBox).not.toBeNull()
+    const cardBoxes = await cards.locator(':scope > div').evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect()
+        return { top: r.top, bottom: r.bottom }
+      })
+    )
+    const fanCenter = (Math.min(...cardBoxes.map((b) => b.top)) + Math.max(...cardBoxes.map((b) => b.bottom))) / 2
+    const workspaceCenter = workspaceBox!.y + workspaceBox!.height / 2
+    expect(Math.abs(fanCenter - workspaceCenter)).toBeLessThan(60)
+  })
+
+  test('More menu holds secondary actions and links to the version page', async ({ page }) => {
+    await page.getByRole('button', { name: 'More actions' }).click()
+    const sheet = page.getByRole('dialog', { name: 'More actions' })
+    await expect(sheet).toBeVisible()
+
+    await expect(sheet.getByText('Random number range')).toBeVisible()
+    await expect(sheet.getByText("Teacher's guide")).toBeVisible()
+    await expect(sheet.getByText('Theme', { exact: true })).toBeVisible()
+    await expect(sheet.getByText('App version')).toBeVisible()
+
+    // Escape closes the sheet (focus management comes from Radix Dialog).
+    await page.keyboard.press('Escape')
+    await expect(sheet).toBeHidden()
+
+    // The version page is one tap away: nobody scrolls to footers on phones.
+    // (The version page's own rendering is covered by e2e/a11y.spec.ts.)
+    await page.getByRole('button', { name: 'More actions' }).click()
+    await sheet.getByTitle('App version and release history').click()
+    await expect(page).toHaveURL(/\/version$/)
   })
 })

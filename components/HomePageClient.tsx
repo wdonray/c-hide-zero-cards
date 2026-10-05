@@ -73,13 +73,16 @@ export function HomePageClient() {
       />
       {/* <BuyMeACoffeeWidget /> */}
 
-      <section className="flex flex-col items-center gap-8" aria-label="Interactive Place Value Cards">
-        <header className="flex flex-col items-center">
+      <section
+        className="flex flex-col items-center gap-8 max-md:w-full max-md:flex-1 max-md:gap-3"
+        aria-label="Interactive Place Value Cards"
+      >
+        <header className="flex flex-col items-center max-md:w-full">
           <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
         </header>
 
         <main
-          className={`w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} transition-[height] duration-300 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center relative`}
+          className={`w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} max-md:h-auto max-md:min-h-[280px] max-md:flex-1 transition-[height] duration-300 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center relative`}
           aria-label="Place value cards workspace"
         >
           {cards.length === 0 ? (
