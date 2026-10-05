@@ -9,6 +9,7 @@ import { CaretUp, CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash 
 import { Layers } from 'lucide-react'
 import { RandomNumberPopover } from './RandomNumberPopover'
 import { ZeroStateIndicator } from './ZeroStateIndicator'
+import { APP_TOOLBAR_ID } from '@/lib/scatterArea'
 
 export function Toolbar() {
   const isMobile = useIsMobile()
@@ -48,6 +49,7 @@ export function Toolbar() {
   return (
     <>
       <div
+        id={APP_TOOLBAR_ID}
         className={`sticky z-40 w-full border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/50 transition-all duration-300 ${
           isHeaderCollapsed ? 'top-0' : 'top-14'
         }`}

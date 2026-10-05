@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { CARD_KEYBOARD_MOVE_STEP, CARD_WORKSPACE_SELECTOR } from './constants'
+import { CARD_KEYBOARD_MOVE_STEP } from './constants'
+import { measureScatterArea } from './scatterArea'
 import { useHeaderContext, type ScatterArea } from './useHeaderContext'
 import { useIsMobile } from './useIsMobile'
 
@@ -16,17 +17,16 @@ interface UseDraggableOptions {
   resetTrigger?: number
   randomizeTrigger?: number
   /**
-   * Workspace rect (viewport coordinates) measured when Mix was pressed.
+   * Scatter region (viewport coordinates) measured when Mix was pressed.
    * The scatter keeps every card fully inside it. A live measurement is
-   * preferred when the card is mounted; this is the fallback for
+   * preferred when the chrome is laid out; this is the fallback for
    * environments without layout (unit tests, SSR).
    */
   scatterArea?: ScatterArea | null
   /**
    * The card element, supplied by the component via callback ref into state
    * (reading it here keeps render-phase measurement lint-clean: refs must
-   * not be read during render). Used to measure the card and find the
-   * workspace ancestor at scatter time.
+   * not be read during render). Used to measure the card at scatter time.
    */
   cardEl?: HTMLDivElement | null
 }
@@ -61,21 +61,14 @@ function mulberry32(seed: number) {
 
 /**
  * Resolve the rect Mix scatters within. Prefers a live measurement of the
- * workspace element (fresh even if the layout changed since Mix was pressed,
- * e.g. a breakpoint flip re-scatter); falls back to the area measured at Mix
- * time, which is also what unit tests inject. Null when there is no usable
- * area (SSR, or Mix pressed with no workspace mounted).
+ * visible strip between the header/toolbar and the footer/action bar
+ * (fresh even if the layout changed since Mix was pressed, e.g. a
+ * breakpoint flip re-scatter); falls back to the area measured at Mix time,
+ * which is also what unit tests inject. Null when there is no usable area
+ * (SSR, or Mix pressed with no chrome laid out).
  */
-function resolveScatterArea(
-  cardEl: HTMLDivElement | null | undefined,
-  measuredAtMix: ScatterArea | null | undefined
-): ScatterArea | null {
-  const workspace = cardEl?.closest?.(CARD_WORKSPACE_SELECTOR) ?? null
-  const rect = workspace?.getBoundingClientRect?.()
-  if (rect && rect.width > 0 && rect.height > 0) {
-    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
-  }
-  return measuredAtMix ?? null
+function resolveScatterArea(measuredAtMix: ScatterArea | null | undefined): ScatterArea | null {
+  return measureScatterArea() ?? measuredAtMix ?? null
 }
 
 export function useDraggable({
@@ -254,10 +247,11 @@ export function useDraggable({
     setPrevRandomizeDeps({ trigger: randomizeTrigger, x: initialX, y: initialY, mobile: isMobile })
     if (randomizeTrigger !== 0) {
       // Container-relative scatter: each card lands at a random spot fully
-      // inside the visible workspace rect, on any screen size. Seeded per
-      // Mix click and per card, so each Mix re-scatters unpredictably.
+      // inside the visible strip between the header/toolbar and the
+      // footer/action bar, on any screen size. Seeded per Mix click and per
+      // card, so each Mix re-scatters unpredictably.
       const rand = mulberry32(((randomizeTrigger ?? 0) * 2654435761 + scatterSeed * 40503) >>> 0)
-      const area = resolveScatterArea(cardEl, scatterArea)
+      const area = resolveScatterArea(scatterArea)
       if (area) {
         // position is the transform offset from the card's static (centered)
         // spot; derive that spot from the live card rect so the random

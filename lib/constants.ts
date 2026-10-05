@@ -66,15 +66,6 @@ export const CARD_X_OFFSET_MOBILE_MIN = 12
 export const CARD_Y_OFFSET = 0
 
 /**
- * Selector for the card workspace element: the flex-1 area between the app
- * header and the footer / mobile action bar. Mix measures this element at
- * click time and scatters cards within its actually visible rect, so the
- * scatter tracks the real layout on any screen size instead of using fixed
- * pixel offsets.
- */
-export const CARD_WORKSPACE_SELECTOR = '[aria-label="Place value cards workspace"]'
-
-/**
  * Distance (in pixels) a card moves per arrow-key press when keyboard dragging.
  * Keyboard support is a purely additive alternative to pointer dragging;
  * it does not change the visual design.

@@ -8,6 +8,7 @@ import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { MobileMoreMenu } from './MobileMoreMenu'
 import { ZeroStateIndicator } from './ZeroStateIndicator'
+import { MOBILE_ACTION_BAR_ID } from '@/lib/scatterArea'
 import { cn } from '@/lib/utils'
 
 function BarButton({
@@ -86,6 +87,7 @@ export function MobileActionBar() {
     <>
       <ZeroStateIndicator className="pb-1 text-center" />
       <nav
+        id={MOBILE_ACTION_BAR_ID}
         aria-label="Quick actions"
         className="z-50 w-full shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden"
       >

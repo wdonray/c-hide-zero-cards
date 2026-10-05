@@ -3,6 +3,7 @@
 import { InstructionalGuideDialog } from '@/components/InstructionalGuideDialog'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useIsMobile } from '@/lib/useIsMobile'
+import { APP_HEADER_ID } from '@/lib/scatterArea'
 import Image from 'next/image'
 import Link from 'next/link'
 import logo from '@/app/logo.png'
@@ -18,6 +19,7 @@ export function Header() {
 
   return (
     <header
+      id={APP_HEADER_ID}
       className={`sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ${
         // The top safe-area inset keeps the sticky header clear of the notch /
         // Dynamic Island once viewport-fit=cover lets the page extend under it.

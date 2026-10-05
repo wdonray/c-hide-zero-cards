@@ -1,12 +1,16 @@
 import Link from 'next/link'
 import { BuyMeACoffeeButton } from '@/components/BuyMeACoffeeButton'
+import { APP_FOOTER_ID } from '@/lib/scatterArea'
 import { VERSION } from '@/lib/version'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
 export function Footer() {
   return (
-    <footer className="sticky bottom-0 z-50 w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 max-md:hidden">
+    <footer
+      id={APP_FOOTER_ID}
+      className="sticky bottom-0 z-50 w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 max-md:hidden"
+    >
       <div className="container m-auto px-4 md:px-8 flex h-14 max-md:h-auto items-center justify-between max-md:flex-col max-md:justify-center max-md:gap-1 max-md:py-2">
         <div className="flex items-center gap-2 md:gap-4">
           <a
