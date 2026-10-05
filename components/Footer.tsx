@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { BuyMeACoffeeButton } from '@/components/BuyMeACoffeeButton'
 import { VERSION } from '@/lib/version'
 
@@ -31,7 +32,13 @@ export function Footer() {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>© {CURRENT_YEAR} Donray Williams</span>
           <span>•</span>
-          <span>v{VERSION}</span>
+          <Link
+            href="/version"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            title="App version and release history"
+          >
+            v{VERSION}
+          </Link>
         </div>
       </div>
     </footer>
