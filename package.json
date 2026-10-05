@@ -73,5 +73,9 @@
       "prettier --write"
     ],
     "*.{json,css,md,html}": "prettier --write"
+  },
+  "overrides": {
+    "postcss": "^8.5.28",
+    "sharp": "^0.35.5"
   }
 }
