@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { VERSION } from '@/lib/version'
+import EnablePageScroll from '@/components/EnablePageScroll'
 import VersionInfo, { RELEASES_API, toRelease, type Release } from '@/components/version-info'
 
 export const metadata: Metadata = {
@@ -38,7 +39,8 @@ export default async function VersionPage() {
   const initialReleases = await getRecentReleases()
 
   return (
-    <div className="flex items-start justify-center px-4 md:px-16 pt-24 pb-16">
+    <div className="flex items-start justify-center px-4 md:px-16 pt-6 md:pt-24 pb-16">
+      <EnablePageScroll />
       <VersionInfo currentVersion={VERSION} initialReleases={initialReleases} />
     </div>
   )

@@ -4,6 +4,7 @@ import { InstructionalGuideDialog } from '@/components/InstructionalGuideDialog'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useIsMobile } from '@/lib/useIsMobile'
 import Image from 'next/image'
+import Link from 'next/link'
 import logo from '@/app/logo.png'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 
@@ -30,10 +31,14 @@ export function Header() {
           collapsed ? 'h-0 opacity-0' : 'h-14 opacity-100'
         }`}
       >
-        <div className="flex items-center gap-2 md:gap-3">
+        <Link
+          href="/"
+          aria-label="Hide Zero Cards home"
+          className="flex items-center gap-2 md:gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
           <Image src={logo} alt="Hide Zero Cards Logo" className="h-6 md:h-8 w-auto" />
           <h1 className="text-base md:text-2xl font-bold whitespace-nowrap">Hide Zero Cards</h1>
-        </div>
+        </Link>
         {/* On mobile the guide and theme actions live in the bottom bar's
             More menu; the header keeps only the wordmark. Unmounting (rather
             than CSS-hiding) keeps a single instance of each control in the
