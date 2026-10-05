@@ -77,12 +77,22 @@ test.describe('toolbar actions', () => {
     await page.getByTitle('Randomize card position', { exact: true }).click()
     await expect(resetButton).toBeEnabled()
 
-    const mixedTransforms = await cardDivs.evaluateAll((els) => els.map((el) => (el as HTMLElement).style.transform))
-    expect(mixedTransforms.some((t, i) => t !== initialTransforms[i])).toBe(true)
+    // Card repositioning happens in a React effect, so wait for it to flush
+    // instead of asserting on the first DOM read (racy).
+    await expect
+      .poll(async () => {
+        const t = await cardDivs.evaluateAll((els) => els.map((el) => (el as HTMLElement).style.transform))
+        return t.some((x, i) => x !== initialTransforms[i])
+      })
+      .toBe(true)
 
     await resetButton.click()
-    const resetTransforms = await cardDivs.evaluateAll((els) => els.map((el) => (el as HTMLElement).style.transform))
-    expect(resetTransforms).toEqual(initialTransforms)
+    await expect
+      .poll(async () => {
+        const t = await cardDivs.evaluateAll((els) => els.map((el) => (el as HTMLElement).style.transform))
+        return t.every((x, i) => x === initialTransforms[i])
+      })
+      .toBe(true)
     await expect(resetButton).toBeDisabled()
   })
 
