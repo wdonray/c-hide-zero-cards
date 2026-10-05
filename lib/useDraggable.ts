@@ -29,6 +29,21 @@ interface UseDraggableReturn {
   }
 }
 
+// Deterministic PRNG (mulberry32). Pure, so it may run during render without
+// tripping the purity rule. Seeded per Mix click and per card, it produces a
+// fresh unpredictable-looking scatter each time with the same distribution as
+// the Math.random() version it replaces.
+function mulberry32(seed: number) {
+  let a = seed >>> 0
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
 export function useDraggable({
   initialX,
   initialY,
@@ -116,25 +131,52 @@ export function useDraggable({
     }
   }, [isDragging])
 
-  useEffect(() => {
+  // Sync position when the parent signals a reset or a re-scatter, without
+  // effects. The tracked inputs mirror the old effect dep arrays exactly
+  // (trigger + initialX/initialY, so a breakpoint flip still re-seats cards
+  // in the fan). The triggers only ever change alongside their own cardsMoved
+  // update in the provider (handleResetCardPosition / the input-clear path),
+  // so the child's setCardsMoved(false) here was redundant. Render-phase
+  // adjustment (React's endorsed pattern for prop-derived state) replaces
+  // each effect with identical timing and no cascading render.
+  const [prevResetDeps, setPrevResetDeps] = useState(() => ({
+    trigger: undefined as number | undefined,
+    x: initialX,
+    y: initialY,
+  }))
+  if (resetTrigger !== prevResetDeps.trigger || initialX !== prevResetDeps.x || initialY !== prevResetDeps.y) {
+    setPrevResetDeps({ trigger: resetTrigger, x: initialX, y: initialY })
     if (resetTrigger !== undefined) {
       setPosition({ x: initialX, y: initialY })
-      setCardsMoved(false)
     }
-  }, [resetTrigger, initialX, initialY, setCardsMoved])
+  }
 
-  useEffect(() => {
+  const [prevRandomizeDeps, setPrevRandomizeDeps] = useState(() => ({
+    trigger: 0 as number | undefined,
+    x: initialX,
+    y: initialY,
+    mobile: isMobile,
+  }))
+  if (
+    randomizeTrigger !== prevRandomizeDeps.trigger ||
+    initialX !== prevRandomizeDeps.x ||
+    initialY !== prevRandomizeDeps.y ||
+    isMobile !== prevRandomizeDeps.mobile
+  ) {
+    setPrevRandomizeDeps({ trigger: randomizeTrigger, x: initialX, y: initialY, mobile: isMobile })
     if (randomizeTrigger !== 0) {
       // On narrow viewports the desktop scatter would fling cards off-screen,
       // so Mix uses a tighter scatter that stays inside the workspace.
+      // Seeded per click and per card: each Mix re-scatters unpredictably.
+      const rand = mulberry32(((randomizeTrigger ?? 0) * 2654435761 + initialX * 40503 + initialY * 65599) >>> 0)
       const xOffset = isMobile ? MOBILE_CARD_RANDOM_X_OFFSET : CARD_RANDOM_X_OFFSET
       const yOffset = isMobile ? MOBILE_CARD_RANDOM_Y_OFFSET : CARD_RANDOM_Y_OFFSET
       setPosition({
-        x: initialX + Math.floor((Math.random() - 0.5) * xOffset),
-        y: initialY + Math.floor((Math.random() - 0.5) * yOffset),
+        x: initialX + Math.floor((rand() - 0.5) * xOffset),
+        y: initialY + Math.floor((rand() - 0.5) * yOffset),
       })
     }
-  }, [randomizeTrigger, initialX, initialY, isMobile])
+  }
 
   // Keyboard alternative to pointer dragging (WCAG 2.1.1): arrow keys nudge
   // the card without changing anything visual. Purely additive.

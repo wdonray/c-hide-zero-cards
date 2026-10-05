@@ -38,7 +38,7 @@ behavior on your own.
 
 ## Stack
 
-- Next.js 15 (App Router, static-first), React 19, TypeScript
+- Next.js 16.3.8 (App Router, static-first), React 19.3, TypeScript 5.9.3
 - Tailwind CSS v4, shadcn/ui, Phosphor + Lucide icons
 - oxlint for linting, Prettier for formatting
 - Vitest + Testing Library for unit tests, Playwright for e2e
@@ -56,10 +56,11 @@ behavior on your own.
 - **44px touch targets are coarse-pointer-gated.** Use
   `COARSE_POINTER_TOUCH_TARGET` (`pointer-coarse:min-h-11 min-w-11`) so the
   desktop mouse layout is untouched.
-- **Card colors are a known mobile contrast exception.** White digits on the
-  place-value palette fall below 4.5:1 at mobile text sizes; the palette is the
-  teaching design, so it is a documented axe filter in `e2e/a11y.spec.ts`
-  pending the owner's call, same standing as the Roll button.
+- **Card colors pass 4.5:1.** The place-value palette was darkened per the
+  owner's 2026-10-05 decision (darker shades, white digits kept): red-600/700/800,
+  yellow-700/800/900, green-700/800/900, blue-600. Same hue families and the same
+  light-to-dark gradation per period. The Roll button is blue-600 for the same
+  reason. No contrast filters remain in `e2e/a11y.spec.ts`.
 
 - **No em dashes in user-facing copy.** Use commas, colons, or split the
   sentence instead.

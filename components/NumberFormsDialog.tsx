@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -32,11 +32,16 @@ interface NumberFormsDialogProps {
 export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, setSelectedTab }: NumberFormsDialogProps) {
   const [revealCards, setRevealCards] = useState(false)
 
-  useEffect(() => {
+  // Reset the reveal toggle whenever the dialog opens. Adjusted during render
+  // (React's endorsed pattern for prop-derived state) instead of an effect:
+  // no cascading render, identical behavior.
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (open) {
       setRevealCards(false)
     }
-  }, [open])
+  }
 
   if (!number) return null
 

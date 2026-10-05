@@ -7,23 +7,24 @@
  * Each place value gets a specific background color for visual distinction
  */
 export const CARD_COLORS: Record<number, string> = {
-  // Ones, tens, hundreds (red shades)
-  1: 'bg-red-400',
-  10: 'bg-red-500',
-  100: 'bg-red-600',
+  // Ones, tens, hundreds (red shades) — darkened so white digits pass
+  // WCAG 2.2 AA 4.5:1 (red-600 is 4.76:1); hue family unchanged.
+  1: 'bg-red-600',
+  10: 'bg-red-700',
+  100: 'bg-red-800',
 
-  // Thousands (yellow shades)
-  1000: 'bg-yellow-300',
-  10000: 'bg-yellow-400',
-  100000: 'bg-yellow-500',
+  // Thousands (yellow shades) — darkened (yellow-700 is 4.92:1)
+  1000: 'bg-yellow-700',
+  10000: 'bg-yellow-800',
+  100000: 'bg-yellow-900',
 
-  // Millions (green shades)
-  1000000: 'bg-green-400',
-  10000000: 'bg-green-500',
-  100000000: 'bg-green-600',
+  // Millions (green shades) — darkened (green-700 is 4.94:1)
+  1000000: 'bg-green-700',
+  10000000: 'bg-green-800',
+  100000000: 'bg-green-900',
 
-  // Billions (blue shades)
-  1000000000: 'bg-blue-500',
+  // Billions (blue shades) — darkened (blue-600 is 5.26:1)
+  1000000000: 'bg-blue-600',
 }
 
 /**

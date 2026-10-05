@@ -55,6 +55,19 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
 
   const numberInputRef = useRef<NumberInputRef>(null)
 
+  // Clearing the input also re-seats the cards and resets the triggers.
+  // Centralized here (was a setState-in-effect in HomePageClient watching
+  // inputNumber) so every null assignment behaves identically, batched in the
+  // originating event with no cascading render.
+  function setInputNumberAndResetTriggers(value: number | null) {
+    setInputNumber(value)
+    if (value === null) {
+      setResetTrigger(0)
+      setRandomizeTrigger(0)
+      setCardsMoved(false)
+    }
+  }
+
   function focusNumberInput() {
     numberInputRef.current?.focus()
   }
@@ -122,7 +135,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         isHeaderCollapsed,
         toggleHeader,
         inputNumber,
-        setInputNumber,
+        setInputNumber: setInputNumberAndResetTriggers,
         setResetTrigger,
         setRandomizeTrigger,
         setShowRandomRange,
