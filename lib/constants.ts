@@ -49,9 +49,12 @@ export const PLACE_VALUE_NAMES: Record<number, string> = {
 // =============================================================================
 
 /**
- * Default horizontal spacing between cards when arranged in order
+ * Default horizontal spacing between cards when arranged in order.
+ * Sized to fit the desktop card's left padding (8px, md:px-2) plus one full
+ * digit advance at 60px text (0.62 * 60 = 37.2), so each peek shows its
+ * leading digit fully instead of clipping a few px under the next card.
  */
-export const CARD_X_OFFSET = 36
+export const CARD_X_OFFSET = 46
 
 /**
  * Minimum horizontal spacing between cards on narrow viewports.
