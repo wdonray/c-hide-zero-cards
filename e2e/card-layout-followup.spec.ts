@@ -124,6 +124,36 @@ test.describe('card layout follow-up', () => {
         expect(Math.abs(top.cardWidth - top.natural)).toBeLessThanOrEqual(2)
       })
 
+      test('every peek fits its leading digit with room to spare', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('172695')
+        // For each card but the last: the leading digit's glyph right edge
+        // must sit at or left of the covering card's left edge (the peek
+        // fits padLeft + one full digit advance). The last card is on top,
+        // so it is fully visible by construction.
+        const clips = await page.evaluate(() => {
+          const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
+          const cards = els.map((el) => {
+            const r = el.getBoundingClientRect()
+            const inner = el.firstElementChild as HTMLElement
+            const textNode = inner.firstChild as Text
+            const range = document.createRange()
+            range.setStart(textNode, 0)
+            range.setEnd(textNode, 1)
+            const cr = range.getBoundingClientRect()
+            const style = getComputedStyle(el)
+            const letterSpacing = parseFloat(style.letterSpacing) || 0
+            // Exclude trailing letter-spacing: the digit's ink ends where
+            // its advance box ends minus the spacing after it.
+            return { left: r.x, glyphRight: cr.x + cr.width - letterSpacing }
+          })
+          return cards.slice(0, -1).map((c, i) => c.glyphRight - cards[i + 1].left)
+        })
+        expect(clips.length).toBeGreaterThan(0)
+        for (const clip of clips) {
+          expect(clip).toBeLessThanOrEqual(1)
+        }
+      })
+
       test('a displaced card shows its full place-value text unclipped', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('763285')
         const first = page

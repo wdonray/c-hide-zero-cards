@@ -51,8 +51,10 @@ behavior on your own.
   replace one annoyance with another).
 - **Card fan stays a fan.** `useIsMobile()` (matchMedia, SSR-safe) plus
   `getCardXOffset()` in `lib/cardLayout.ts` drive the layout: desktop keeps the
-  fixed 36px cascading overlap; below 768px the _same_ fan compresses so all
-  10 cards fit a 375px viewport. Never reflow into a grid or plain row.
+  fixed 46px cascading overlap (8px card padding plus one full digit advance
+  at 60px text, so no leading digit is clipped); below 768px the _same_ fan
+  compresses so all 10 cards fit a 375px viewport. Never reflow into a grid
+  or plain row.
 - **44px touch targets are coarse-pointer-gated.** Use
   `COARSE_POINTER_TOUCH_TARGET` (`pointer-coarse:min-h-11 min-w-11`) so the
   desktop mouse layout is untouched.
@@ -72,8 +74,9 @@ behavior on your own.
   footer, never `position: fixed`, so no overlap math is needed.
 - **Hero card sizing.** `getMobileCardMetrics()` in `lib/cardLayout.ts`
   scales the fan up on mobile (fewer digits = bigger cards, capped at the
-  desktop 60px) while keeping the exact cascading-overlap peeking ratio
-  (offset = 0.6 x font size, min 12px). The fan is vertically centered via a
+  desktop 60px) while keeping every peek exactly one digit wide (offset =
+  card left padding + ceil(0.62 * font size), min 12px, so the leading digit
+  is never clipped). The fan is vertically centered via a
   mobile-only flex-column chain (body > main > section > workspace). The
   cards anchor on evenly spaced left edges (`index * xOffset`) inside a
   wrapper sized to `(n-1) * xOffset + naturalWidth(last card)` (`getFanExtent()`

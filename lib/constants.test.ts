@@ -49,7 +49,7 @@ describe('game limits', () => {
 
 describe('ui constants', () => {
   it('defines card layout offsets', () => {
-    expect(CARD_X_OFFSET).toBe(36)
+    expect(CARD_X_OFFSET).toBe(46)
     expect(CARD_Y_OFFSET).toBe(0)
   })
 

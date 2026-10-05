@@ -3,7 +3,8 @@ import { CARD_X_OFFSET, CARD_X_OFFSET_MOBILE_MIN, MOBILE_WIDTH } from './constan
 /**
  * Horizontal fan offset between place-value cards.
  *
- * Desktop keeps the fixed 36px fan. On narrow viewports the fan is
+ * Desktop keeps the fixed 46px fan (CARD_X_OFFSET: 8px card padding plus one
+ * full digit advance at 60px text). On narrow viewports the fan is
  * compressed so every card stays inside the viewport: each card is
  * centered in the workspace and shifted right by `index * offset`, so the
  * rightmost card's far edge must fit in half the viewport width.
@@ -34,8 +35,11 @@ function maxCardChars(totalCards: number): number {
 export interface MobileCardMetrics {
   /** Card font size in px, chosen so the whole fan fits the viewport. */
   fontSize: number
-  /** Horizontal fan offset in px, kept proportional to the font size so the
-   *  peeking character matches the desktop fan. */
+  /**
+   * Horizontal fan offset in px: the card's left padding plus one full
+   * digit advance, so every peek shows its leading digit fully instead of
+   * clipping it under the next card.
+   */
   xOffset: number
 }
 
@@ -54,11 +58,26 @@ export function getFanExtent(lastCardWidth: number, totalCards: number, xOffset:
 }
 
 /**
+ * Peek width for a mobile fan at the given font size: the card's left
+ * padding plus one full digit advance, so the leading digit is never
+ * clipped by the next card. (The old 0.6 * fontSize ratio dates from the
+ * center-anchored era, when effective peeks were wider; with even
+ * left-edge peeks it clipped a few px of digit ink on every card.)
+ *
+ * Pure function of fontSize; unit-testable.
+ */
+export function mobilePeekForFontSize(fontSize: number): number {
+  // Matches the card's mobile padding override in DraggableCard
+  // (fontSize * 0.15 horizontal).
+  return Math.round(fontSize * 0.15) + Math.ceil(0.62 * fontSize)
+}
+
+/**
  * Adaptive card metrics for narrow viewports: the cards are the hero of the
  * app, so instead of the fixed small mobile size they grow to fill the
- * available width — fewer digits means bigger cards. The fan keeps the exact
- * desktop peeking character because the offset stays proportional to the
- * font size (desktop uses 36px offset at 60px text, a 0.6 ratio).
+ * available width — fewer digits means bigger cards. Each peek fits the
+ * card's left padding plus one full digit advance (see
+ * mobilePeekForFontSize), so every leading digit stays fully visible.
  *
  * Pure function of (totalCards, viewportWidth); unit-testable.
  */
@@ -66,17 +85,17 @@ export function getMobileCardMetrics(totalCards: number, viewportWidth: number):
   // Page padding on mobile (px-4 = 16px per side).
   const available = viewportWidth - 32
   const chars = maxCardChars(totalCards)
-  // Fan width model: (n-1) peeks at 0.6 * fontSize plus one full card at
+  // Fan width model: (n-1) peeks at ~0.79 * fontSize plus one full card at
   // ~0.92 * fontSize per char (0.62 digit advance + 0.3 letter spacing).
-  let fontSize = Math.min(60, Math.floor(available / ((totalCards - 1) * 0.6 + chars * 0.92)))
+  let fontSize = Math.min(60, Math.floor(available / ((totalCards - 1) * 0.79 + chars * 0.92)))
   // The offset floor (12px) breaks the proportional model on very narrow
   // viewports, so shrink until the real fan (with the real clamped offset)
   // fits. Terminates: each step strictly reduces the fan width.
   for (;;) {
-    const xOffset = Math.min(CARD_X_OFFSET, Math.max(CARD_X_OFFSET_MOBILE_MIN, Math.round(fontSize * 0.6)))
+    const xOffset = Math.min(CARD_X_OFFSET, Math.max(CARD_X_OFFSET_MOBILE_MIN, mobilePeekForFontSize(fontSize)))
     if ((totalCards - 1) * xOffset + chars * 0.92 * fontSize <= available || fontSize <= 10) break
     fontSize -= 1
   }
-  const xOffset = Math.min(CARD_X_OFFSET, Math.max(CARD_X_OFFSET_MOBILE_MIN, Math.round(fontSize * 0.6)))
+  const xOffset = Math.min(CARD_X_OFFSET, Math.max(CARD_X_OFFSET_MOBILE_MIN, mobilePeekForFontSize(fontSize)))
   return { fontSize, xOffset }
 }
