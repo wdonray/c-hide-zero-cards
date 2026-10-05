@@ -20,14 +20,19 @@ beforeEach(() => {
 })
 
 describe('InstructionalGuideDialog', () => {
-  it('renders stacked headed sections with no tab row on mobile', () => {
+  it('renders stacked labeled sections with no doubled headings on mobile', () => {
     mockUseIsMobile.mockReturnValue(true)
     openDialog()
 
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
     for (const label of ['Quick Start', 'Toolbar Features', 'Activities', 'Assessment']) {
-      expect(screen.getByRole('heading', { name: label })).toBeInTheDocument()
+      // No redundant outer heading: each section component renders its own
+      // descriptive h3 ("Quick Start (2 minutes)", ...).
+      expect(screen.queryByRole('heading', { name: label })).not.toBeInTheDocument()
+      // ...but the section stays labeled in the accessibility tree.
+      expect(screen.getByRole('region', { name: label })).toBeInTheDocument()
     }
+    expect(screen.getByRole('heading', { name: 'Quick Start (2 minutes)' })).toBeInTheDocument()
   })
 
   it('renders the tabbed layout on desktop', () => {

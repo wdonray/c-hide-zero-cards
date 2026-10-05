@@ -197,10 +197,12 @@ test.describe('mobile core flows', () => {
     await expect(dialog).toBeVisible()
 
     // Mobile renders every section as a stacked, vertically-scrolling block —
-    // no tab row, each labeled by a real heading in tab order.
+    // no tab row, no doubled headings: each section is a labeled region whose
+    // visible heading is the content's own title.
     await expect(dialog.getByRole('tablist')).toHaveCount(0)
-    for (const heading of ['Quick Start', 'Toolbar Features', 'Activities', 'Assessment']) {
-      await expect(dialog.getByRole('heading', { name: heading, exact: true })).toBeVisible()
+    for (const label of ['Quick Start', 'Toolbar Features', 'Activities', 'Assessment']) {
+      await expect(dialog.getByRole('heading', { name: label, exact: true })).toHaveCount(0)
+      await expect(dialog.getByRole('region', { name: label })).toBeVisible()
     }
   })
 })
