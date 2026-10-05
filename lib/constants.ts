@@ -66,22 +66,13 @@ export const CARD_X_OFFSET_MOBILE_MIN = 12
 export const CARD_Y_OFFSET = 0
 
 /**
- * Maximum horizontal offset for random card positioning
+ * Selector for the card workspace element: the flex-1 area between the app
+ * header and the footer / mobile action bar. Mix measures this element at
+ * click time and scatters cards within its actually visible rect, so the
+ * scatter tracks the real layout on any screen size instead of using fixed
+ * pixel offsets.
  */
-export const CARD_RANDOM_X_OFFSET = 400
-
-/**
- * Maximum vertical offset for random card positioning
- */
-export const CARD_RANDOM_Y_OFFSET = 175
-
-/**
- * Maximum horizontal/vertical offsets for random card positioning on narrow
- * viewports. The desktop scatter (±200px/±87px) would fling cards off-screen
- * on a phone; the mobile scatter keeps them inside the workspace.
- */
-export const MOBILE_CARD_RANDOM_X_OFFSET = 80
-export const MOBILE_CARD_RANDOM_Y_OFFSET = 80
+export const CARD_WORKSPACE_SELECTOR = '[aria-label="Place value cards workspace"]'
 
 /**
  * Distance (in pixels) a card moves per arrow-key press when keyboard dragging.
