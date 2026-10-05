@@ -67,6 +67,13 @@ export const CARD_RANDOM_X_OFFSET = 400
  */
 export const CARD_RANDOM_Y_OFFSET = 175
 
+/**
+ * Distance (in pixels) a card moves per arrow-key press when keyboard dragging.
+ * Keyboard support is a purely additive alternative to pointer dragging;
+ * it does not change the visual design.
+ */
+export const CARD_KEYBOARD_MOVE_STEP = 10
+
 // =============================================================================
 // GAME LOGIC CONSTANTS
 // =============================================================================
