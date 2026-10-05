@@ -1,6 +1,7 @@
 'use client'
 
 import { useHeaderContext } from '@/lib/useHeaderContext'
+import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { CaretUp, CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
@@ -35,14 +36,14 @@ export function Toolbar() {
           isHeaderCollapsed ? 'top-0' : 'top-14'
         }`}
       >
-        <div className="container m-auto px-8 flex h-12 items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-4">
+        <div className="container m-auto px-3 md:px-8 flex h-12 max-md:h-auto max-md:py-1.5 items-center justify-between">
+          <div className="flex items-center gap-1.5 md:gap-4 max-md:flex-wrap">
             <div className="flex rounded-md shadow-sm" role="group">
               <Button
                 size="sm"
                 onClick={handleRandomNumber}
                 disabled={isDiceRolling}
-                className="md:hidden"
+                className={`md:hidden ${COARSE_POINTER_TOUCH_TARGET}`}
                 title="Roll a random number"
               >
                 <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
@@ -52,7 +53,7 @@ export function Toolbar() {
                 size="sm"
                 onClick={handleRandomNumber}
                 disabled={isDiceRolling}
-                className="hidden md:flex rounded-r-none"
+                className={`hidden md:flex rounded-r-none ${COARSE_POINTER_TOUCH_TARGET}`}
                 title="Roll a random number"
               >
                 <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
@@ -66,6 +67,7 @@ export function Toolbar() {
               disabled={!inputNumber}
               size="sm"
               onClick={handleClearInput}
+              className={COARSE_POINTER_TOUCH_TARGET}
               title="Clear input number and reset cards"
             >
               <X className="h-4 w-4 text-red-600" />
@@ -77,6 +79,7 @@ export function Toolbar() {
               disabled={!inputNumber}
               size="sm"
               onClick={toggleZeroCards}
+              className={COARSE_POINTER_TOUCH_TARGET}
               title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
             >
               {showZeroCards ? (
@@ -92,6 +95,7 @@ export function Toolbar() {
               disabled={!inputNumber}
               variant="outline"
               onClick={handleRandomizeCardPosition}
+              className={COARSE_POINTER_TOUCH_TARGET}
               title="Randomize card position"
             >
               <Shuffle className="h-4 w-4 text-purple-600" />
@@ -103,6 +107,7 @@ export function Toolbar() {
               disabled={!inputNumber || !cardsMoved}
               size="sm"
               onClick={handleResetCardPosition}
+              className={COARSE_POINTER_TOUCH_TARGET}
               title="Reset cards to original position"
             >
               <ArrowClockwise className="h-4 w-4 text-green-600" />
@@ -114,6 +119,7 @@ export function Toolbar() {
               disabled={!inputNumber}
               size="sm"
               onClick={() => setShowNumberFormsDialog(true)}
+              className={COARSE_POINTER_TOUCH_TARGET}
               title={
                 inputNumber
                   ? `Number Forms & Representations for ${inputNumber?.toLocaleString()}`
@@ -129,6 +135,7 @@ export function Toolbar() {
             variant="ghost"
             size="sm"
             onClick={toggleHeader}
+            className={`shrink-0 ${COARSE_POINTER_TOUCH_TARGET}`}
             title={isHeaderCollapsed ? 'Expand header' : 'Collapse header'}
           >
             {isHeaderCollapsed ? <CaretDown className="h-4 w-4" /> : <CaretUp className="h-4 w-4" />}

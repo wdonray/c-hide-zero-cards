@@ -45,7 +45,7 @@ export function UnitForm({ number, className }: UnitFormProps) {
   return (
     <Card className={cn('flex flex-col', className)}>
       <CardContent className="flex-1 flex items-center justify-center">
-        <p className="text-lg font-medium text-primary leading-relaxed text-center">{unitForm}</p>
+        <p className="w-full text-lg font-medium text-primary leading-relaxed text-center">{unitForm}</p>
       </CardContent>
     </Card>
   )

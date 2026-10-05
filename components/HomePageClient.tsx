@@ -3,7 +3,6 @@
 import { useMemo, useEffect, useState } from 'react'
 import { NumberInput } from '@/components/NumberInput'
 import { DraggableCard } from '@/components/DraggableCard'
-import { MobileAlertDialog } from '@/components/MobileAlertDialog'
 import {
   FAKE_ZERO_NUMBERS,
   PLACE_VALUES,
@@ -81,7 +80,6 @@ export function HomePageClient() {
 
   return (
     <>
-      <MobileAlertDialog />
       <NumberFormsDialog
         open={showNumberFormsDialog}
         onOpenChange={setShowNumberFormsDialog}

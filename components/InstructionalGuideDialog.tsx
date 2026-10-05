@@ -15,6 +15,7 @@ import { Tabs, TabsTrigger, TabsList, TabsContent } from '@/components/ui/tabs'
 import { Question } from '@phosphor-icons/react'
 import { Separator } from './ui/separator'
 import { InstructionalGuideDialogTab } from '@/lib/constants'
+import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
 import { QuickStartSection } from './instructional-guide/QuickStartSection'
 import { ToolbarFeaturesSection } from './instructional-guide/ToolbarFeaturesSection'
 import { ActivitiesSection } from './instructional-guide/ActivitiesSection'
@@ -24,14 +25,22 @@ export function InstructionalGuideDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2" title="Instructional Teachers Guide for Hide Zero Cards">
+        <Button
+          variant="outline"
+          size="sm"
+          className={`gap-2 ${COARSE_POINTER_TOUCH_TARGET}`}
+          title="Instructional Teachers Guide for Hide Zero Cards"
+        >
           <Question className="h-4 w-4" />
-          How to Use
+          <span className="hidden md:inline">How to Use</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto" showCloseButton={true}>
+      <DialogContent
+        className="max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[85vh] overflow-y-auto"
+        showCloseButton={true}
+      >
         <DialogHeader>
-          <DialogTitle className="text-2xl pr-8">Hide Zero Cards - Teacher&apos;s Guide</DialogTitle>
+          <DialogTitle className="text-xl md:text-2xl pr-8">Hide Zero Cards - Teacher&apos;s Guide</DialogTitle>
           <Separator />
           <DialogDescription className="text-muted-foreground">
             Transform how your students understand <strong>place values</strong> with this interactive, hands-on
@@ -39,13 +48,33 @@ export function InstructionalGuideDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue={InstructionalGuideDialogTab.QUICK_START} className="w-full">
+        <Tabs defaultValue={InstructionalGuideDialogTab.QUICK_START} className="w-full min-w-0">
           <div className="flex flex-col gap-4 items-center">
-            <TabsList>
-              <TabsTrigger value={InstructionalGuideDialogTab.QUICK_START}>Quick Start</TabsTrigger>
-              <TabsTrigger value={InstructionalGuideDialogTab.TOOLBAR_FEATURES}>Toolbar Features</TabsTrigger>
-              <TabsTrigger value={InstructionalGuideDialogTab.ACTIVITIES}>Activities</TabsTrigger>
-              <TabsTrigger value={InstructionalGuideDialogTab.ASSESSMENT}>Assessment</TabsTrigger>
+            <TabsList className="max-w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12">
+              <TabsTrigger
+                value={InstructionalGuideDialogTab.QUICK_START}
+                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+              >
+                Quick Start
+              </TabsTrigger>
+              <TabsTrigger
+                value={InstructionalGuideDialogTab.TOOLBAR_FEATURES}
+                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+              >
+                Toolbar Features
+              </TabsTrigger>
+              <TabsTrigger
+                value={InstructionalGuideDialogTab.ACTIVITIES}
+                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+              >
+                Activities
+              </TabsTrigger>
+              <TabsTrigger
+                value={InstructionalGuideDialogTab.ASSESSMENT}
+                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+              >
+                Assessment
+              </TabsTrigger>
             </TabsList>
             <Separator />
             <div className="w-full relative">

@@ -4,6 +4,7 @@ import { CaretDown, ArrowClockwise } from '@phosphor-icons/react'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { PLACE_VALUES } from '@/lib/constants'
 import { RANDOM_NUMBER_TYPE } from '@/lib/constants'
+import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -27,7 +28,11 @@ export function RandomNumberPopover() {
   return (
     <Popover open={showRandomRange} onOpenChange={setShowRandomRange}>
       <PopoverTrigger asChild>
-        <Button size="sm" className="rounded-l-none text-sm px-2 hidden md:block" title="Set random number range">
+        <Button
+          size="sm"
+          className={`rounded-l-none max-md:rounded-md text-sm px-2 ${COARSE_POINTER_TOUCH_TARGET}`}
+          title="Set random number range"
+        >
           <CaretDown className="h-4 w-4" />
         </Button>
       </PopoverTrigger>

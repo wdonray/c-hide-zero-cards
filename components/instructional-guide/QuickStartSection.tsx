@@ -11,7 +11,7 @@ export function QuickStartSection() {
             <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">
               1
             </div>
-            <div>
+            <div className="min-w-0">
               <strong>Enter a number</strong> (1 to 1 billion) in the input field
             </div>
           </div>
@@ -19,7 +19,7 @@ export function QuickStartSection() {
             <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">
               2
             </div>
-            <div>
+            <div className="min-w-0">
               <strong>Watch cards appear</strong> showing each digit
             </div>
           </div>
@@ -27,7 +27,7 @@ export function QuickStartSection() {
             <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">
               3
             </div>
-            <div>
+            <div className="min-w-0">
               <strong>Drag cards</strong> to explore place values
             </div>
           </div>

@@ -1,5 +1,7 @@
 import { useDraggable } from '@/lib/useDraggable'
-import { CARD_COLORS, CARD_X_OFFSET, CARD_Y_OFFSET } from '@/lib/constants'
+import { CARD_COLORS, CARD_Y_OFFSET } from '@/lib/constants'
+import { getCardXOffset } from '@/lib/cardLayout'
+import { useIsMobile } from '@/lib/useIsMobile'
 import { useCallback, useMemo } from 'react'
 
 interface DraggableCardProps {
@@ -21,14 +23,21 @@ export function DraggableCard({
   randomizeTrigger,
   fakeNumbers,
 }: DraggableCardProps) {
+  const isMobile = useIsMobile()
+  // Below the mobile breakpoint the card fan is compressed so every card
+  // stays inside the viewport. Desktop keeps the fixed 36px fan.
+  const xOffset = useMemo(
+    () => getCardXOffset(totalCards, isMobile && typeof window !== 'undefined' ? window.innerWidth : Infinity),
+    [isMobile, totalCards]
+  )
   const useDraggableProps = useMemo(
     () => ({
-      initialX: index * CARD_X_OFFSET,
+      initialX: index * xOffset,
       initialY: index * CARD_Y_OFFSET,
       resetTrigger,
       randomizeTrigger,
     }),
-    [index, resetTrigger, randomizeTrigger]
+    [index, xOffset, resetTrigger, randomizeTrigger]
   )
 
   const cardColor = useCallback((placeValue: number) => CARD_COLORS[placeValue], [])

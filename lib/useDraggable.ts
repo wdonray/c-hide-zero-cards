@@ -1,6 +1,13 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { CARD_RANDOM_X_OFFSET, CARD_RANDOM_Y_OFFSET, CARD_KEYBOARD_MOVE_STEP } from './constants'
+import {
+  CARD_RANDOM_X_OFFSET,
+  CARD_RANDOM_Y_OFFSET,
+  CARD_KEYBOARD_MOVE_STEP,
+  MOBILE_CARD_RANDOM_X_OFFSET,
+  MOBILE_CARD_RANDOM_Y_OFFSET,
+} from './constants'
 import { useHeaderContext } from './useHeaderContext'
+import { useIsMobile } from './useIsMobile'
 
 interface UseDraggableOptions {
   initialX: number
@@ -29,6 +36,7 @@ export function useDraggable({
   randomizeTrigger,
 }: UseDraggableOptions): UseDraggableReturn {
   const { setCardsMoved } = useHeaderContext()
+  const isMobile = useIsMobile()
 
   const [position, setPosition] = useState({ x: initialX, y: initialY })
   const [isDragging, setIsDragging] = useState(false)
@@ -117,12 +125,16 @@ export function useDraggable({
 
   useEffect(() => {
     if (randomizeTrigger !== 0) {
+      // On narrow viewports the desktop scatter would fling cards off-screen,
+      // so Mix uses a tighter scatter that stays inside the workspace.
+      const xOffset = isMobile ? MOBILE_CARD_RANDOM_X_OFFSET : CARD_RANDOM_X_OFFSET
+      const yOffset = isMobile ? MOBILE_CARD_RANDOM_Y_OFFSET : CARD_RANDOM_Y_OFFSET
       setPosition({
-        x: initialX + Math.floor((Math.random() - 0.5) * CARD_RANDOM_X_OFFSET),
-        y: initialY + Math.floor((Math.random() - 0.5) * CARD_RANDOM_Y_OFFSET),
+        x: initialX + Math.floor((Math.random() - 0.5) * xOffset),
+        y: initialY + Math.floor((Math.random() - 0.5) * yOffset),
       })
     }
-  }, [randomizeTrigger, initialX, initialY])
+  }, [randomizeTrigger, initialX, initialY, isMobile])
 
   // Keyboard alternative to pointer dragging (WCAG 2.1.1): arrow keys nudge
   // the card without changing anything visual. Purely additive.

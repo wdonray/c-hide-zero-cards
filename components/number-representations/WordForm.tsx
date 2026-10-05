@@ -86,7 +86,7 @@ export function WordForm({ number, className }: WordFormProps) {
   return (
     <Card className={cn('flex flex-col', className)}>
       <CardContent className="flex-1 flex items-center justify-center">
-        <p className="text-xl font-semibold text-primary leading-relaxed text-center">{wordForm}</p>
+        <p className="w-full text-xl font-semibold text-primary leading-relaxed text-center">{wordForm}</p>
       </CardContent>
     </Card>
   )

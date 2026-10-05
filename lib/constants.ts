@@ -53,6 +53,13 @@ export const PLACE_VALUE_NAMES: Record<number, string> = {
 export const CARD_X_OFFSET = 36
 
 /**
+ * Minimum horizontal spacing between cards on narrow viewports.
+ * getCardXOffset() compresses the fan below CARD_X_OFFSET on mobile but
+ * never below this, so each card still reveals a readable digit slice.
+ */
+export const CARD_X_OFFSET_MOBILE_MIN = 12
+
+/**
  * Default vertical spacing between cards when arranged in order
  */
 export const CARD_Y_OFFSET = 0
@@ -66,6 +73,14 @@ export const CARD_RANDOM_X_OFFSET = 400
  * Maximum vertical offset for random card positioning
  */
 export const CARD_RANDOM_Y_OFFSET = 175
+
+/**
+ * Maximum horizontal/vertical offsets for random card positioning on narrow
+ * viewports. The desktop scatter (±200px/±87px) would fling cards off-screen
+ * on a phone; the mobile scatter keeps them inside the workspace.
+ */
+export const MOBILE_CARD_RANDOM_X_OFFSET = 80
+export const MOBILE_CARD_RANDOM_Y_OFFSET = 80
 
 /**
  * Distance (in pixels) a card moves per arrow-key press when keyboard dragging.
@@ -138,6 +153,12 @@ export const MAX_NUMBER = 1_000_000_000
  * Used to determine when to show mobile-specific UI elements
  */
 export const MOBILE_WIDTH = 768
+
+/**
+ * 44px minimum touch targets on coarse pointers (WCAG 2.5.8), applied as a
+ * responsive/pointer-gated utility so the desktop mouse layout is untouched.
+ */
+export const COARSE_POINTER_TOUCH_TARGET = 'pointer-coarse:min-h-11 pointer-coarse:min-w-11'
 
 // =============================================================================
 // LOCAL STORAGE KEYS
