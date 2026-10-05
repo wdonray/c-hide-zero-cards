@@ -24,7 +24,7 @@ interface UseDraggableReturn {
     onPointerDown: (e: React.PointerEvent) => void
     onPointerMove: (e: React.PointerEvent) => void
     onPointerUp: (e: React.PointerEvent) => void
-    onPointerLeave: (e: React.PointerEvent) => void
+    onPointerCancel: (e: React.PointerEvent) => void
     onKeyDown: (e: React.KeyboardEvent) => void
   }
 }
@@ -57,10 +57,37 @@ export function useDraggable({
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
   const dragOffset = useRef({ x: 0, y: 0 })
+  // The pointer driving the current drag. Multi-touch: only the primary
+  // pointer may start or move a drag; a second finger must never hijack it.
+  const activePointerId = useRef<number | null>(null)
+
+  const endDrag = useCallback((pointerId?: number) => {
+    setIsDragging(false)
+    activePointerId.current = null
+
+    const el = dragRef.current
+    if (el && pointerId !== undefined) {
+      try {
+        // hasPointerCapture guards the implicit release that already
+        // happened on pointerup/pointercancel; releasing again must not
+        // throw (iOS Safari throws NotFoundError on a dead pointer).
+        if (el.hasPointerCapture(pointerId)) {
+          el.releasePointerCapture(pointerId)
+        }
+      } catch {
+        // Capture was already released implicitly; nothing left to do.
+      }
+    }
+  }, [])
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
+      // Ignore non-primary pointers: a second finger touching the card
+      // must not reset the grab offset (which would make the card jump).
+      if (!e.isPrimary) return
+
       e.preventDefault()
+      activePointerId.current = e.pointerId
       setIsDragging(true)
 
       if (dragRef.current) {
@@ -69,7 +96,12 @@ export function useDraggable({
           y: e.clientY - position.y,
         }
 
-        dragRef.current.setPointerCapture(e.pointerId)
+        try {
+          dragRef.current.setPointerCapture(e.pointerId)
+        } catch {
+          // If capture fails the drag still tracks via the document-level
+          // listeners below.
+        }
       }
     },
     [position]
@@ -77,7 +109,7 @@ export function useDraggable({
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
-      if (!isDragging) return
+      if (!isDragging || e.pointerId !== activePointerId.current) return
 
       const newX = e.clientX - dragOffset.current.x
       const newY = e.clientY - dragOffset.current.y
@@ -88,46 +120,65 @@ export function useDraggable({
     [isDragging, setCardsMoved]
   )
 
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    setIsDragging(false)
-
-    if (dragRef.current) {
-      dragRef.current.releasePointerCapture(e.pointerId)
-    }
-  }, [])
-
-  const handlePointerLeave = useCallback(
+  const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
-      if (isDragging) {
-        setIsDragging(false)
-
-        if (dragRef.current) {
-          dragRef.current.releasePointerCapture(e.pointerId)
-        }
-      }
+      if (e.pointerId !== activePointerId.current) return
+      endDrag(e.pointerId)
     },
-    [isDragging]
+    [endDrag]
   )
+
+  const handlePointerCancel = useCallback(
+    (e: React.PointerEvent) => {
+      // iOS Safari fires pointercancel when it takes over the gesture
+      // (scroll/system gesture). End the drag cleanly instead of leaving
+      // isDragging stuck true.
+      if (e.pointerId !== activePointerId.current) return
+      endDrag(e.pointerId)
+    },
+    [endDrag]
+  )
+
+  // NOTE: there is intentionally no onPointerLeave drag-ender. During
+  // pointer capture, boundary events still fire when the physical pointer
+  // leaves the card's bounds — and on a real touchscreen the card lags the
+  // finger (one React state update per touchmove), so any fast flick ends
+  // the drag the instant the finger outruns the card. That is exactly the
+  // "starts and stops, does not follow my finger" bug from real iPhones.
+  // Drags now end only on pointerup / pointercancel, which is also what
+  // makes desktop drags survive the cursor briefly leaving the card.
 
   useEffect(() => {
     if (!isDragging) return
 
     const handleGlobalPointerMove = (e: PointerEvent) => {
+      if (e.pointerId !== activePointerId.current) return
+
       const newX = e.clientX - dragOffset.current.x
       const newY = e.clientY - dragOffset.current.y
       setPosition({ x: newX, y: newY })
     }
 
-    const handleGlobalPointerUp = () => {
+    const handleGlobalPointerUp = (e: PointerEvent) => {
+      if (e.pointerId !== activePointerId.current) return
       setIsDragging(false)
+      activePointerId.current = null
+    }
+
+    const handleGlobalPointerCancel = (e: PointerEvent) => {
+      if (e.pointerId !== activePointerId.current) return
+      setIsDragging(false)
+      activePointerId.current = null
     }
 
     document.addEventListener('pointermove', handleGlobalPointerMove)
     document.addEventListener('pointerup', handleGlobalPointerUp)
+    document.addEventListener('pointercancel', handleGlobalPointerCancel)
 
     return () => {
       document.removeEventListener('pointermove', handleGlobalPointerMove)
       document.removeEventListener('pointerup', handleGlobalPointerUp)
+      document.removeEventListener('pointercancel', handleGlobalPointerCancel)
     }
   }, [isDragging])
 
@@ -212,10 +263,10 @@ export function useDraggable({
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,
       onPointerUp: handlePointerUp,
-      onPointerLeave: handlePointerLeave,
+      onPointerCancel: handlePointerCancel,
       onKeyDown: handleKeyDown,
     }),
-    [handlePointerDown, handlePointerMove, handlePointerUp, handlePointerLeave, handleKeyDown]
+    [handlePointerDown, handlePointerMove, handlePointerUp, handlePointerCancel, handleKeyDown]
   )
 
   return {

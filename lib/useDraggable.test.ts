@@ -1,9 +1,9 @@
 import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { HeaderProvider } from '@/lib/useHeaderContext'
-import { useDraggable } from '@/lib/useDraggable'
 import { MOBILE_CARD_RANDOM_X_OFFSET, MOBILE_CARD_RANDOM_Y_OFFSET } from '@/lib/constants'
+import { useDraggable } from '@/lib/useDraggable'
 
 function renderDraggable(initialX = 10, initialY = 20) {
   // Mirrors production: HomePageClient always passes both triggers (0 initially).
@@ -17,12 +17,25 @@ function renderDraggable(initialX = 10, initialY = 20) {
   hook.result.current.dragRef.current = {
     setPointerCapture: () => {},
     releasePointerCapture: () => {},
+    hasPointerCapture: () => false,
   } as unknown as HTMLDivElement
   return hook
 }
 
-function pointerEvent(clientX: number, clientY: number): ReactPointerEvent {
-  return { clientX, clientY, preventDefault: () => {}, pointerId: 1 } as ReactPointerEvent
+function pointerEvent(
+  clientX: number,
+  clientY: number,
+  overrides?: { pointerId?: number; isPrimary?: boolean }
+): ReactPointerEvent {
+  return {
+    clientX,
+    clientY,
+    preventDefault: () => {},
+    pointerId: overrides?.pointerId ?? 1,
+    // Production pointers are always primary unless a second finger is down;
+    // the hook ignores non-primary pointers so they can't hijack a drag.
+    isPrimary: overrides?.isPrimary ?? true,
+  } as ReactPointerEvent
 }
 
 describe('useDraggable', () => {
@@ -85,6 +98,7 @@ describe('useDraggable', () => {
     result.current.dragRef.current = {
       setPointerCapture: () => {},
       releasePointerCapture: () => {},
+      hasPointerCapture: () => false,
     } as unknown as HTMLDivElement
     act(() => {
       result.current.handlers.onPointerDown(pointerEvent(100, 120))
@@ -95,6 +109,96 @@ describe('useDraggable', () => {
     expect(result.current.position).toEqual({ x: 60, y: 70 })
     rerender({ resetTrigger: 1 })
     expect(result.current.position).toEqual({ x: 10, y: 20 })
+  })
+
+  it('exposes onPointerCancel instead of onPointerLeave', () => {
+    const { result } = renderDraggable()
+    expect('onPointerCancel' in result.current.handlers).toBe(true)
+    expect('onPointerLeave' in result.current.handlers).toBe(false)
+  })
+
+  it('ignores a non-primary pointerdown so a second finger cannot hijack the drag', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120, { pointerId: 1, isPrimary: true }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      result.current.handlers.onPointerMove(pointerEvent(150, 170, { pointerId: 1, isPrimary: true }))
+    })
+    // drag offset was (100 - 10, 120 - 20) = (90, 100)
+    expect(result.current.position).toEqual({ x: 60, y: 70 })
+
+    // Second finger touches down elsewhere: must not reset the grab offset.
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(300, 300, { pointerId: 2, isPrimary: false }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    // Second finger moves widely: the card must not follow it.
+    act(() => {
+      result.current.handlers.onPointerMove(pointerEvent(500, 500, { pointerId: 2, isPrimary: false }))
+    })
+    expect(result.current.position).toEqual({ x: 60, y: 70 })
+
+    // The primary finger still drives the drag.
+    act(() => {
+      result.current.handlers.onPointerMove(pointerEvent(190, 170, { pointerId: 1, isPrimary: true }))
+    })
+    expect(result.current.position).toEqual({ x: 100, y: 70 })
+
+    // Lifting the second finger does not end the drag.
+    act(() => {
+      result.current.handlers.onPointerUp(pointerEvent(500, 500, { pointerId: 2, isPrimary: false }))
+    })
+    expect(result.current.isDragging).toBe(true)
+
+    // Lifting the primary finger ends it.
+    act(() => {
+      result.current.handlers.onPointerUp(pointerEvent(190, 170, { pointerId: 1, isPrimary: true }))
+    })
+    expect(result.current.isDragging).toBe(false)
+  })
+
+  it('ends the drag on pointercancel without getting stuck', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120))
+    })
+    act(() => {
+      result.current.handlers.onPointerMove(pointerEvent(150, 170))
+    })
+    expect(result.current.position).toEqual({ x: 60, y: 70 })
+
+    // iOS Safari fires pointercancel when it takes over the gesture.
+    act(() => {
+      result.current.handlers.onPointerCancel(pointerEvent(150, 170))
+    })
+    expect(result.current.isDragging).toBe(false)
+    // The card stays where the cancel happened; it does not jump.
+    expect(result.current.position).toEqual({ x: 60, y: 70 })
+
+    // A fresh drag afterwards works normally (no stuck state).
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(200, 200, { pointerId: 3 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      result.current.handlers.onPointerMove(pointerEvent(230, 240, { pointerId: 3 }))
+    })
+    // drag offset was (200 - 60, 200 - 70) = (140, 130)
+    expect(result.current.position).toEqual({ x: 90, y: 110 })
+  })
+
+  it('ignores pointerup from a pointer that is not driving the drag', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120, { pointerId: 1 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      result.current.handlers.onPointerUp(pointerEvent(0, 0, { pointerId: 9 }))
+    })
+    expect(result.current.isDragging).toBe(true)
   })
 
   it('does not re-seat when resetTrigger is undefined and only the initial position changes', () => {
@@ -120,39 +224,6 @@ describe('useDraggable', () => {
     expect(result.current.position).toEqual({ x: 0, y: 10 })
   })
 
-  it('stops dragging on pointer leave and releases capture', () => {
-    const releasePointerCapture = vi.fn()
-    const { result } = renderDraggable()
-    result.current.dragRef.current = {
-      setPointerCapture: () => {},
-      releasePointerCapture,
-    } as unknown as HTMLDivElement
-    act(() => {
-      result.current.handlers.onPointerDown(pointerEvent(100, 120))
-    })
-    expect(result.current.isDragging).toBe(true)
-    act(() => {
-      result.current.handlers.onPointerLeave(pointerEvent(150, 170))
-    })
-    expect(result.current.isDragging).toBe(false)
-    expect(releasePointerCapture).toHaveBeenCalledTimes(1)
-  })
-
-  it('ignores pointer leave when not dragging', () => {
-    const releasePointerCapture = vi.fn()
-    const { result } = renderDraggable()
-    result.current.dragRef.current = {
-      setPointerCapture: () => {},
-      releasePointerCapture,
-    } as unknown as HTMLDivElement
-    act(() => {
-      result.current.handlers.onPointerLeave(pointerEvent(150, 170))
-    })
-    expect(result.current.isDragging).toBe(false)
-    expect(releasePointerCapture).not.toHaveBeenCalled()
-    expect(result.current.position).toEqual({ x: 10, y: 20 })
-  })
-
   it('follows document-level pointer moves and stops on document pointer up', () => {
     const { result } = renderDraggable()
     act(() => {
@@ -160,17 +231,21 @@ describe('useDraggable', () => {
     })
     // The hook listens on document while dragging so fast drags keep tracking.
     act(() => {
-      document.dispatchEvent(Object.assign(new Event('pointermove', { bubbles: true }), { clientX: 200, clientY: 220 }))
+      document.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, clientX: 200, clientY: 220, pointerId: 1 })
+      )
     })
     // drag offset was (100 - 10, 120 - 20) = (90, 100)
     expect(result.current.position).toEqual({ x: 110, y: 120 })
     act(() => {
-      document.dispatchEvent(new Event('pointerup', { bubbles: true }))
+      document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1 }))
     })
     expect(result.current.isDragging).toBe(false)
     // After pointer up the global listeners are removed: further moves are ignored.
     act(() => {
-      document.dispatchEvent(Object.assign(new Event('pointermove', { bubbles: true }), { clientX: 999, clientY: 999 }))
+      document.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, clientX: 999, clientY: 999, pointerId: 1 })
+      )
     })
     expect(result.current.position).toEqual({ x: 110, y: 120 })
   })
@@ -241,22 +316,6 @@ describe('useDraggable', () => {
     expect(result.current.isDragging).toBe(false)
   })
 
-  it('stops dragging on pointer leave without an attached element', () => {
-    const { result } = renderHook(
-      () => useDraggable({ initialX: 10, initialY: 20, resetTrigger: 0, randomizeTrigger: 0 }),
-      { wrapper: HeaderProvider }
-    )
-    act(() => {
-      result.current.handlers.onPointerDown(pointerEvent(100, 120))
-    })
-    expect(result.current.isDragging).toBe(true)
-    act(() => {
-      result.current.handlers.onPointerLeave(pointerEvent(150, 170))
-    })
-    // The releasePointerCapture guard is skipped (no element); dragging ends.
-    expect(result.current.isDragging).toBe(false)
-  })
-
   it('treats an undefined randomizeTrigger as a zero-seeded scatter', () => {
     const { result, rerender } = renderHook(
       ({ randomizeTrigger }: { randomizeTrigger?: number }) =>
@@ -274,5 +333,67 @@ describe('useDraggable', () => {
     )
     rerenderOther({ randomizeTrigger: undefined })
     expect(other.current.position).toEqual(result.current.position)
+  })
+
+  it('ends the drag cleanly when releasePointerCapture throws on a dead pointer', () => {
+    // iOS Safari throws NotFoundError if capture was already released
+    // implicitly; the hook must swallow it and still end the drag.
+    const { result } = renderDraggable()
+    result.current.dragRef.current = {
+      setPointerCapture: () => {},
+      releasePointerCapture: () => {
+        throw new DOMException('pointer capture released', 'NotFoundError')
+      },
+      hasPointerCapture: () => true,
+    } as unknown as HTMLDivElement
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      result.current.handlers.onPointerUp(pointerEvent(100, 120))
+    })
+    expect(result.current.isDragging).toBe(false)
+  })
+
+  it('ends the drag on a document-level pointercancel from the active pointer', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      document.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 }))
+    })
+    expect(result.current.isDragging).toBe(false)
+  })
+
+  it('ignores pointercancel from a pointer that is not driving the drag', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120, { pointerId: 1 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    // React-level cancel from another pointer: ignored.
+    act(() => {
+      result.current.handlers.onPointerCancel(pointerEvent(0, 0, { pointerId: 9 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    // Document-level move/up/cancel from another pointer: all ignored, the
+    // drag keeps tracking the original finger.
+    act(() => {
+      document.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, clientX: 999, clientY: 999, pointerId: 9 })
+      )
+    })
+    expect(result.current.position).toEqual({ x: 10, y: 20 })
+    act(() => {
+      document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 9 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      document.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerId: 9 }))
+    })
+    expect(result.current.isDragging).toBe(true)
   })
 })
