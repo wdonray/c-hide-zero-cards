@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/Header'
 import { Toolbar } from '@/components/Toolbar'
+import { MobileActionBar } from '@/components/MobileActionBar'
 import { Footer } from '@/components/Footer'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { HeaderProvider } from '@/lib/useHeaderContext'
@@ -187,15 +188,20 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationJsonLd) }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background max-md:flex max-md:min-h-dvh max-md:flex-col`}
+      >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <HydrationCheck>
             <FirstTimeVisitorProvider>
               <HeaderProvider>
                 <Header />
                 <Toolbar />
-                <main className="min-h-screen container m-auto p-8 transition-all duration-300">{children}</main>
+                <main className="min-h-screen container m-auto p-8 transition-all duration-300 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
+                  {children}
+                </main>
                 <Footer />
+                <MobileActionBar />
                 <WelcomeDialog />
               </HeaderProvider>
             </FirstTimeVisitorProvider>

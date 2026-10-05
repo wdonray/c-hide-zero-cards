@@ -2,12 +2,14 @@
 
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
+import { useIsMobile } from '@/lib/useIsMobile'
 import { Button } from '@/components/ui/button'
 import { CaretUp, CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
 import { RandomNumberPopover } from './RandomNumberPopover'
 
 export function Toolbar() {
+  const isMobile = useIsMobile()
   const {
     isHeaderCollapsed,
     toggleHeader,
@@ -28,6 +30,12 @@ export function Toolbar() {
     setInputNumber(null)
     focusNumberInput()
   }
+
+  // On mobile the top toolbar is superseded by the bottom action bar
+  // (MobileActionBar), which carries the same actions with visible labels.
+  // Unmounting (rather than CSS-hiding) keeps a single instance of each
+  // control in the DOM and the accessibility tree.
+  if (isMobile) return null
 
   return (
     <>

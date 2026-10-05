@@ -1,6 +1,6 @@
 import { useDraggable } from '@/lib/useDraggable'
 import { CARD_COLORS, CARD_Y_OFFSET } from '@/lib/constants'
-import { getCardXOffset } from '@/lib/cardLayout'
+import { getCardXOffset, getMobileCardMetrics } from '@/lib/cardLayout'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { useCallback, useMemo } from 'react'
 
@@ -24,11 +24,19 @@ export function DraggableCard({
   fakeNumbers,
 }: DraggableCardProps) {
   const isMobile = useIsMobile()
-  // Below the mobile breakpoint the card fan is compressed so every card
-  // stays inside the viewport. Desktop keeps the fixed 36px fan.
-  const xOffset = useMemo(
-    () => getCardXOffset(totalCards, isMobile && typeof window !== 'undefined' ? window.innerWidth : Infinity),
+  // Below the mobile breakpoint the cards are the hero: they grow to fill
+  // the viewport (fewer digits = bigger cards) while the fan keeps the exact
+  // desktop peeking character via a proportional offset. Desktop keeps the
+  // fixed 36px fan at text-6xl.
+  const mobileMetrics = useMemo(
+    () => (isMobile && typeof window !== 'undefined' ? getMobileCardMetrics(totalCards, window.innerWidth) : null),
     [isMobile, totalCards]
+  )
+  const xOffset = useMemo(
+    () =>
+      mobileMetrics?.xOffset ??
+      getCardXOffset(totalCards, isMobile && typeof window !== 'undefined' ? window.innerWidth : Infinity),
+    [isMobile, mobileMetrics, totalCards]
   )
   const useDraggableProps = useMemo(
     () => ({
@@ -57,6 +65,16 @@ export function DraggableCard({
         userSelect: 'none',
         touchAction: 'none',
         zIndex: totalCards + index,
+        // Mobile hero sizing: font size, tracking, and padding scale with the
+        // adaptive metrics; the Tailwind text-lg/tracking classes above apply
+        // only when no metrics are present (desktop / SSR).
+        ...(mobileMetrics
+          ? {
+              fontSize: `${mobileMetrics.fontSize}px`,
+              letterSpacing: `${Math.round(mobileMetrics.fontSize * 0.3)}px`,
+              padding: `${Math.round(mobileMetrics.fontSize * 0.35)}px ${Math.round(mobileMetrics.fontSize * 0.15)}px`,
+            }
+          : {}),
       }}
       {...handlers}
     >
