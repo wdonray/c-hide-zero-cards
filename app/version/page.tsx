@@ -21,6 +21,8 @@ async function getRecentReleases(): Promise<Release[]> {
     const res = await fetch(RELEASES_API, {
       headers,
       next: { revalidate: 300 },
+      // Fail fast: on timeout the client component retries from the
+      // visitor's browser, so the page still renders without waiting.
       signal: AbortSignal.timeout(4000),
     })
     if (!res.ok) return []
