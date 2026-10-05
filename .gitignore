@@ -39,3 +39,7 @@ next-env.d.ts
 
 # docs
 SEO_STRATEGY.md
+
+# Playwright
+/test-results/
+/playwright-report/
