@@ -4,14 +4,13 @@ import { useLayoutEffect, useMemo, useEffect, useRef, useState } from 'react'
 import { NumberInput } from '@/components/NumberInput'
 import { DraggableCard } from '@/components/DraggableCard'
 import {
-  FAKE_ZERO_NUMBERS,
   PLACE_VALUES,
   LOCAL_STORAGE_KEYS,
   FIRST_TIME_TOAST_DURATION,
   FIRST_TIME_TOAST_STYLE,
   NumberFormsDialogTab,
 } from '@/lib/constants'
-import { getFanExtent, getFanPositions, getMobileCardMetrics, getPeekText } from '@/lib/cardLayout'
+import { getFanExtent, getFanPositions, getMobileCardMetrics } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
@@ -20,6 +19,9 @@ import { ZeroStateIndicator } from '@/components/ZeroStateIndicator'
 import { toast } from 'sonner'
 import { FirstTimeToast } from '@/components/FirstTimeToast'
 import { ArrowFatUpIcon } from '@phosphor-icons/react'
+
+/** A fan item: a place-value card, or a thousands-separator comma. */
+type FanItem = { kind: 'card'; cardIndex: number } | { kind: 'comma' }
 
 export function HomePageClient() {
   const {
@@ -38,28 +40,41 @@ export function HomePageClient() {
 
   const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.WORD)
 
+  // All cards are always rendered, highest place value first. Hiding zeros
+  // never removes cards (that collapsed 800,502 to "852" and destroyed
+  // place-value structure); zero cards stay in the fan with their text
+  // blanked instead, so toggling never shifts the layout.
   const cards = useMemo(() => {
     if (!inputNumber) return []
     const numberString = inputNumber.toString()
     const digits = numberString.split('')
-    const cards = digits.toReversed().map((digit, index) => ({
-      firstDigit: parseInt(digit) || 0,
-      placeValue: PLACE_VALUES[index],
-      fakeNumbers: digit === '0' ? FAKE_ZERO_NUMBERS[index] : null,
-    }))
+    return digits
+      .toReversed()
+      .map((digit, index) => ({
+        firstDigit: parseInt(digit) || 0,
+        placeValue: PLACE_VALUES[index],
+      }))
+      .toReversed()
+  }, [inputNumber])
 
-    // Filter out zero cards if showZeroCards is false
-    const filteredCards = showZeroCards ? cards : cards.filter((card) => card.firstDigit !== 0)
+  // Display text per card ("800,000", "0", "500", "2"). A zero card's value
+  // is 0 and it displays "0" (no fake zero numbers). The mobile fan metrics
+  // need these to model the fan width.
+  const displayTexts = useMemo(() => cards.map((card) => (card.firstDigit * card.placeValue).toLocaleString()), [cards])
 
-    return filteredCards.toReversed()
-  }, [inputNumber, showZeroCards])
-
-  // Display text per card ("800,000", "500", "2", or a fake zero like
-  // "00,000"). The mobile fan metrics need these to model the wide peeks.
-  const displayTexts = useMemo(
-    () => cards.map((card) => card.fakeNumbers ?? (card.firstDigit * card.placeValue).toLocaleString()),
-    [cards]
-  )
+  // Fan items: cards interleaved with thousands-separator commas (one after
+  // every 3 digits from the right, never after the last card). Commas are
+  // non-interactive, always visible, and participate in layout like cards.
+  const items = useMemo(() => {
+    const result: FanItem[] = []
+    cards.forEach((_, i) => {
+      result.push({ kind: 'card', cardIndex: i })
+      if (i < cards.length - 1 && (cards.length - 1 - i) % 3 === 0) {
+        result.push({ kind: 'comma' })
+      }
+    })
+    return result
+  }, [cards])
 
   // Fan metrics, lifted from DraggableCard: the parent needs the font size
   // to size the fan wrapper, and every card shares the same fan.
@@ -70,26 +85,24 @@ export function HomePageClient() {
     [isMobile, displayTexts]
   )
 
-  // Fan layout: each card anchors on its cumulative peek offset (the sum of
-  // the previous cards' significant-prefix peeks: "800," / "500" / "2")
-  // inside a wrapper sized to the fan extent. The wrapper is a flex item of
-  // the workspace (which centers it via justify-content), so the visible
-  // fan is centered even though card widths vary with place value.
-  // shrink-0 keeps an oversized fan from being flex-shrunk (the one-card
-  // mobile fan can exceed the viewport; it then overflows centered, as the
-  // cards did before this change).
+  // Fan layout: each item anchors on its cumulative offset (the sum of the
+  // previous items' widths) inside a wrapper sized to the fan extent. The
+  // wrapper is a flex item of the workspace (which centers it via
+  // justify-content), so the visible fan is centered. shrink-0 keeps an
+  // oversized fan from being flex-shrunk (the one-card mobile fan can
+  // exceed the viewport; it then overflows centered, as the cards did
+  // before this change).
   //
-  // Peek widths are measured empirically, never modeled: a Range over each
-  // card's significant prefix ("800," in "800,000") gives its exact rendered
-  // width in place, with the card's real font, tracking, and letter-spacing.
-  // A char-count model is too imprecise with the comma, so it is only used
-  // inside getMobileCardMetrics to choose the mobile font size.
+  // Each card's peek fits exactly one digit (padLeft + one full digit
+  // advance, measured empirically in place with a Range over the first
+  // character, so the leading digit is never clipped). Commas contribute
+  // their measured width. The last card shows its full natural width.
   //
-  // The extent is the cumulative peeks plus the LAST (top) card's natural
+  // The extent is the cumulative widths plus the LAST (top) card's natural
   // width, never a max over all cards: max-ing let a wide back card
   // ("700,000") inflate the top card ("5") to ~3x its natural width. Each
   // card gets an assigned width (extent - fanX) with its text left-aligned
-  // and overflow hidden, so every peek shows its significant prefix and the
+  // and overflow hidden, so every peek shows its leading digit and the
   // fan's right edge is flush. A card away from its fan home (dragged,
   // Mix-scattered, keyboard-moved) renders at its natural width instead, so
   // the full place value stays readable.
@@ -97,48 +110,56 @@ export function HomePageClient() {
   // Natural widths are derived from the text itself (inner.scrollWidth +
   // the card's horizontal padding), not the card's offsetWidth: the inner
   // div shrink-fits its text, so this is the content-driven width on every
-  // pass (first paint, font swap, resize) with no drift. Measured in a
-  // layout effect so the first paint already has the correct size (no flash).
+  // pass (first paint, font swap, resize) with no drift. visibility:hidden
+  // on a blanked zero card preserves layout, so measurement works
+  // identically whether zeros are shown or hidden. Measured in a layout
+  // effect so the first paint already has the correct size (no flash).
   const fanRef = useRef<HTMLDivElement>(null)
   const [fanLayout, setFanLayout] = useState<{
     key: string
     extent: number
     height: number
     naturals: number[]
-    positions: number[]
+    itemX: number[]
   } | null>(null)
   const [measureTick, setMeasureTick] = useState(0)
-  const measureKey = `${inputNumber}|${showZeroCards}|${mobileMetrics?.fontSize ?? 'd'}`
+  // Note: showZeroCards is intentionally absent: blanking a zero card does
+  // not change any measured width, so the layout is toggle-invariant.
+  const measureKey = `${inputNumber}|${mobileMetrics?.fontSize ?? 'd'}`
 
   useLayoutEffect(() => {
     const fanEl = fanRef.current
     if (!fanEl || cards.length === 0) return
     const children = Array.from(fanEl.children) as HTMLElement[]
-    if (children.length !== cards.length) return
-    const naturals = children.map((child) => {
+    if (children.length !== items.length) return
+
+    const naturals: number[] = new Array(cards.length)
+    // Width contribution per fan item: single-digit peek for cards (except
+    // the last, which shows its full natural width), measured width for
+    // commas.
+    const itemWidths: number[] = children.map((child, itemIdx) => {
+      const item = items[itemIdx]
+      if (item.kind === 'comma') return child.scrollWidth
       const style = getComputedStyle(child)
       const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
-      return (child.firstElementChild?.scrollWidth ?? 0) + padX
-    })
-    // Peek widths: left padding plus the rendered width of the significant
-    // prefix, measured in place with a Range (exact font, tracking, and
-    // letter-spacing; the comma's trailing spacing is included because the
-    // comma is followed by more text in the card). The last card shows its
-    // full natural width, so it has no peek.
-    const peekWidths = children.map((child, i) => {
-      if (i === children.length - 1) return 0
-      const padLeft = parseFloat(getComputedStyle(child).paddingLeft)
+      const natural = (child.firstElementChild?.scrollWidth ?? 0) + padX
+      naturals[item.cardIndex] = natural
+      if (item.cardIndex === cards.length - 1) return natural
+      // Single-digit peek: left padding plus the rendered width of the
+      // first character, measured in place with a Range (exact font,
+      // tracking, and letter-spacing).
+      const padLeft = parseFloat(style.paddingLeft)
       const inner = child.firstElementChild as HTMLElement | null
       const textNode = inner?.firstChild as Text | null
-      const peekLength = getPeekText(displayTexts[i]).length
-      if (!textNode || peekLength === 0) return padLeft
+      if (!textNode || textNode.length === 0) return padLeft
       const range = document.createRange()
       range.setStart(textNode, 0)
-      range.setEnd(textNode, Math.min(peekLength, textNode.length))
+      range.setEnd(textNode, 1)
       return padLeft + range.getBoundingClientRect().width
     })
-    const positions = getFanPositions(peekWidths.slice(0, -1))
-    const extent = getFanExtent(peekWidths.slice(0, -1), naturals[naturals.length - 1])
+
+    const itemX = getFanPositions(itemWidths)
+    const extent = getFanExtent(itemWidths, naturals[naturals.length - 1])
     const height = Math.max(...children.map((child) => child.offsetHeight))
     setFanLayout((prev) =>
       prev?.key === measureKey &&
@@ -146,12 +167,12 @@ export function HomePageClient() {
       prev.height === height &&
       prev.naturals.length === naturals.length &&
       prev.naturals.every((w, i) => w === naturals[i]) &&
-      prev.positions.length === positions.length &&
-      prev.positions.every((x, i) => x === positions[i])
+      prev.itemX.length === itemX.length &&
+      prev.itemX.every((x, i) => x === itemX[i])
         ? prev
-        : { key: measureKey, extent, height, naturals, positions }
+        : { key: measureKey, extent, height, naturals, itemX }
     )
-  }, [measureKey, cards.length, displayTexts, measureTick])
+  }, [measureKey, cards.length, items, measureTick])
 
   // Re-measure once web fonts arrive (card widths are text-driven) and on
   // resize/zoom (the mobile fan metrics depend on the viewport width).
@@ -178,6 +199,28 @@ export function HomePageClient() {
       toast(<FirstTimeToast />, { duration: FIRST_TIME_TOAST_DURATION, style: FIRST_TIME_TOAST_STYLE })
     }
   }, [cards])
+
+  const commaClassName =
+    'flex items-center select-none tabular-nums font-bold text-white text-lg md:text-6xl tracking-[10px] md:tracking-[20px] py-4 md:py-10'
+  const commaStyle = (x: number): React.CSSProperties => ({
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    transform: `translate(${x}px, 0)`,
+    // Commas sit above the card backgrounds they overlap (each card's
+    // assigned width extends under the following items).
+    zIndex: 2 * cards.length,
+    // Mobile hero sizing matches the cards (font size, tracking, vertical
+    // padding); the Tailwind text/tracking/py classes above apply on
+    // desktop. Horizontal padding stays 0: the comma is just its glyph.
+    ...(mobileMetrics
+      ? {
+          fontSize: `${mobileMetrics.fontSize}px`,
+          letterSpacing: `${Math.round(mobileMetrics.fontSize * 0.3)}px`,
+          padding: `${Math.round(mobileMetrics.fontSize * 0.35)}px 0`,
+        }
+      : {}),
+  })
 
   return (
     <>
@@ -224,23 +267,40 @@ export function HomePageClient() {
               className="relative shrink-0"
               style={layout ? { width: layout.extent, height: layout.height } : undefined}
             >
-              {cards.map((card, index) => (
-                <DraggableCard
-                  key={`${card.firstDigit}-${card.placeValue}-${index}`}
-                  firstDigit={card.firstDigit}
-                  placeValue={card.placeValue}
-                  fakeNumbers={card.fakeNumbers}
-                  index={index}
-                  totalCards={cards.length}
-                  fanX={layout ? layout.positions[index] : 0}
-                  mobileMetrics={mobileMetrics}
-                  fanWidth={layout ? layout.extent - layout.positions[index] : undefined}
-                  naturalWidth={layout ? layout.naturals[index] : undefined}
-                  resetTrigger={resetTrigger}
-                  randomizeTrigger={randomizeTrigger}
-                  scatterArea={scatterArea}
-                />
-              ))}
+              {items.map((item, itemIdx) => {
+                if (item.kind === 'comma') {
+                  return (
+                    <span
+                      key={`comma-${itemIdx}`}
+                      data-testid="fan-comma"
+                      aria-hidden="true"
+                      className={commaClassName}
+                      style={commaStyle(layout ? layout.itemX[itemIdx] : 0)}
+                    >
+                      ,
+                    </span>
+                  )
+                }
+                const card = cards[item.cardIndex]
+                const fanX = layout ? layout.itemX[itemIdx] : 0
+                return (
+                  <DraggableCard
+                    key={`${card.firstDigit}-${card.placeValue}-${item.cardIndex}`}
+                    firstDigit={card.firstDigit}
+                    placeValue={card.placeValue}
+                    index={item.cardIndex}
+                    totalCards={cards.length}
+                    fanX={fanX}
+                    mobileMetrics={mobileMetrics}
+                    fanWidth={layout ? layout.extent - fanX : undefined}
+                    naturalWidth={layout ? layout.naturals[item.cardIndex] : undefined}
+                    hiddenZero={card.firstDigit === 0 && !showZeroCards}
+                    resetTrigger={resetTrigger}
+                    randomizeTrigger={randomizeTrigger}
+                    scatterArea={scatterArea}
+                  />
+                )
+              })}
             </div>
           )}
         </main>

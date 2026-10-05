@@ -1,39 +1,39 @@
 import { describe, expect, it } from 'vitest'
-import { getFanExtent, getFanPositions, getMobileCardMetrics, getPeekText } from './cardLayout'
+import { getCommaCount, getFanExtent, getFanPositions, getMobileCardMetrics, singleDigitPeekWidth } from './cardLayout'
 
-describe('getPeekText', () => {
-  it('keeps the significant prefix up to and including the first comma', () => {
-    expect(getPeekText('800,000')).toBe('800,')
-    expect(getPeekText('40,000')).toBe('40,')
-    expect(getPeekText('1,000,000')).toBe('1,')
-    expect(getPeekText('1,000')).toBe('1,')
-    expect(getPeekText('00,000')).toBe('00,')
+describe('getCommaCount', () => {
+  it('places no comma for 3 or fewer cards', () => {
+    expect(getCommaCount(1)).toBe(0)
+    expect(getCommaCount(3)).toBe(0)
   })
 
-  it('keeps the full text when there is no comma', () => {
-    expect(getPeekText('500')).toBe('500')
-    expect(getPeekText('90')).toBe('90')
-    expect(getPeekText('5')).toBe('5')
-    expect(getPeekText('0')).toBe('0')
+  it('places one comma after every 3 digits from the right', () => {
+    expect(getCommaCount(4)).toBe(1) // 1,000
+    expect(getCommaCount(6)).toBe(1) // 800,502
+    expect(getCommaCount(7)).toBe(2) // 1,234,567
+    expect(getCommaCount(10)).toBe(3) // 9,000,000,000
   })
+})
 
-  it('keeps place values readable when zeros are hidden', () => {
-    // 800,502 with zeros hidden is "800,000" / "500" / "2": the fan must
-    // read "800," / "500" / "2", never collapse to "852".
-    expect([getPeekText('800,000'), getPeekText('500'), getPeekText('2')]).toEqual(['800,', '500', '2'])
+describe('singleDigitPeekWidth', () => {
+  it('fits the card padding plus one digit advance plus letter-spacing', () => {
+    // padLeft (15% of font size, rounded) + 0.92em (0.62 digit advance +
+    // 0.3 letter-spacing, matching the empirical Range measurement).
+    expect(singleDigitPeekWidth(60)).toBe(Math.round(60 * 0.15) + Math.ceil(0.92 * 60))
+    expect(singleDigitPeekWidth(34)).toBe(Math.round(34 * 0.15) + Math.ceil(0.92 * 34))
   })
 })
 
 describe('getFanPositions', () => {
-  it('starts the first card at 0 and stacks each card on the previous peek', () => {
+  it('starts the first item at 0 and stacks each item on the previous width', () => {
     expect(getFanPositions([])).toEqual([0])
     expect(getFanPositions([100])).toEqual([0, 100])
     expect(getFanPositions([100, 60, 40])).toEqual([0, 100, 160, 200])
   })
 
-  it('handles uneven peek widths', () => {
-    const positions = getFanPositions([228, 173, 118])
-    expect(positions).toEqual([0, 228, 401, 519])
+  it('handles uneven item widths (peeks and commas)', () => {
+    const positions = getFanPositions([46, 46, 20, 46])
+    expect(positions).toEqual([0, 46, 92, 112, 158])
   })
 })
 
@@ -42,17 +42,17 @@ describe('getFanExtent', () => {
     expect(getFanExtent([], 70)).toBe(70)
   })
 
-  it('sums the peeks plus the last card natural width', () => {
-    // 800,502 hidden on desktop: peeks "800," (~228px) and "500" (~173px)
-    // plus the "2" card's natural width (~71px).
-    expect(getFanExtent([228, 173], 71)).toBe(228 + 173 + 71)
+  it('sums the item widths plus the last card natural width', () => {
+    // 800,502 on desktop: single-digit peeks plus one comma plus the "2"
+    // card's natural width.
+    expect(getFanExtent([46, 46, 20, 46, 46], 71)).toBe(46 * 4 + 20 + 71)
   })
 
   it('drives the extent from measured widths, never a wide back card', () => {
     // The "700,000" back card is ~379px wide, but the extent is the peeks
     // plus the "5" card's natural width, so the top card keeps its natural
     // width instead of becoming a giant block.
-    expect(getFanExtent([63, 63, 63, 63, 118], 71)).toBe(63 * 4 + 118 + 71)
+    expect(getFanExtent([46, 46, 46, 46, 46], 71)).toBe(46 * 5 + 71)
   })
 })
 
@@ -88,48 +88,43 @@ describe('getMobileCardMetrics', () => {
       '9',
     ]
     const { fontSize } = getMobileCardMetrics(texts, 375)
-    // Fan model: sum of peek widths (pad + peek chars at 0.92em) plus the
-    // last card's full width. Recompute the model here to assert the fit.
+    // Fan model: single-digit peeks plus commas plus the last card's full
+    // width. Recompute the model here to assert the fit.
+    const n = texts.length
+    const commas = Math.floor((n - 1) / 3)
     const pad = Math.round(fontSize * 0.15)
-    const peekChars = texts.slice(0, -1).map((t) => getPeekText(t).length)
     const fanWidth =
-      peekChars.reduce((sum, c) => sum + pad + c * 0.92 * fontSize, 0) +
+      (n - 1) * (pad + Math.ceil(0.62 * fontSize)) +
+      commas * 0.6 * fontSize +
       2 * pad +
-      texts[texts.length - 1].length * 0.92 * fontSize
+      texts[n - 1].length * 0.92 * fontSize
     expect(fanWidth).toBeLessThanOrEqual(375 - 32)
   })
 
   it('fits the fan on a narrow 320px viewport too', () => {
-    const texts = [
-      '9,000,000,000',
-      '900,000,000',
-      '90,000,000',
-      '9,000,000',
-      '900,000',
-      '90,000',
-      '9,000',
-      '900',
-      '90',
-      '9',
-    ]
+    const texts = ['1,000', '200', '30', '4']
     const { fontSize } = getMobileCardMetrics(texts, 320)
+    const n = texts.length
+    const commas = Math.floor((n - 1) / 3)
     const pad = Math.round(fontSize * 0.15)
-    const peekChars = texts.slice(0, -1).map((t) => getPeekText(t).length)
     const fanWidth =
-      peekChars.reduce((sum, c) => sum + pad + c * 0.92 * fontSize, 0) +
+      (n - 1) * (pad + Math.ceil(0.62 * fontSize)) +
+      commas * 0.6 * fontSize +
       2 * pad +
-      texts[texts.length - 1].length * 0.92 * fontSize
+      texts[n - 1].length * 0.92 * fontSize
     expect(fanWidth).toBeLessThanOrEqual(320 - 32)
   })
 
-  it('shrinks until the wide-peek fan fits on very narrow viewports', () => {
-    // 208px viewport, 4 cards with wide peeks: the 60px starting guess
-    // overshoots, so the fit loop decrements until the modeled fan fits.
+  it('shrinks until the fan fits on very narrow viewports', () => {
+    // 208px viewport, 4 cards: the 60px starting guess overshoots, so the
+    // fit loop decrements until the modeled fan fits.
     const { fontSize } = getMobileCardMetrics(['1,000', '200', '30', '4'], 208)
     expect(fontSize).toBeLessThan(60)
+    const n = 4
+    const commas = Math.floor((n - 1) / 3)
     const pad = Math.round(fontSize * 0.15)
     const fanWidth =
-      pad + 2 * 0.92 * fontSize + pad + 3 * 0.92 * fontSize + pad + 2 * 0.92 * fontSize + 2 * pad + 1 * 0.92 * fontSize
+      (n - 1) * (pad + Math.ceil(0.62 * fontSize)) + commas * 0.6 * fontSize + 2 * pad + 1 * 0.92 * fontSize
     expect(fanWidth).toBeLessThanOrEqual(208 - 32)
   })
 
@@ -151,11 +146,10 @@ describe('getMobileCardMetrics', () => {
     }
   })
 
-  it('accounts for wide peeks: 800,502 hidden needs room for "800,"', () => {
-    // The significant-prefix peeks ("800,", "500") are much wider than
-    // single digits, so the font must shrink more than the old model did.
-    const wide = getMobileCardMetrics(['800,000', '500', '2'], 375).fontSize
-    const narrow = getMobileCardMetrics(['800', '500', '2'], 375).fontSize
-    expect(wide).toBeLessThanOrEqual(narrow)
+  it('accounts for commas: more digits need a smaller font', () => {
+    // 800,502 (6 cards, 1 comma) needs room for the comma element.
+    const withComma = getMobileCardMetrics(['800,000', '0', '0', '500', '0', '2'], 375).fontSize
+    const withoutComma = getMobileCardMetrics(['800', '50', '2'], 375).fontSize
+    expect(withComma).toBeLessThanOrEqual(withoutComma)
   })
 })
