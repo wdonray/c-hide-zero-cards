@@ -188,7 +188,7 @@ test.describe('mobile core flows', () => {
     await expect(dialog.getByText('1,234')).toBeVisible()
   })
 
-  test("opens the teacher's guide from the More menu and switches tabs", async ({ page }) => {
+  test("opens the teacher's guide from the More menu with all sections stacked", async ({ page }) => {
     await page.getByRole('button', { name: 'More actions' }).click()
     const sheet = page.getByRole('dialog', { name: 'More actions' })
     await sheet.getByTitle('Instructional Teachers Guide for Hide Zero Cards', { exact: true }).click()
@@ -196,9 +196,11 @@ test.describe('mobile core flows', () => {
     const dialog = page.getByRole('dialog', { name: "Hide Zero Cards - Teacher's Guide" })
     await expect(dialog).toBeVisible()
 
-    for (const tab of ['Quick Start', 'Toolbar Features', 'Activities', 'Assessment']) {
-      await dialog.getByRole('tab', { name: tab }).click()
-      await expect(dialog.getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true')
+    // Mobile renders every section as a stacked, vertically-scrolling block —
+    // no tab row, each labeled by a real heading in tab order.
+    await expect(dialog.getByRole('tablist')).toHaveCount(0)
+    for (const heading of ['Quick Start', 'Toolbar Features', 'Activities', 'Assessment']) {
+      await expect(dialog.getByRole('heading', { name: heading, exact: true })).toBeVisible()
     }
   })
 })
