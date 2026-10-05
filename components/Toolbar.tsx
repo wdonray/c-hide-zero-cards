@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { CaretUp, CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
 import { RandomNumberPopover } from './RandomNumberPopover'
+import { ZeroStateIndicator } from './ZeroStateIndicator'
 
 export function Toolbar() {
   const isMobile = useIsMobile()
@@ -149,6 +150,7 @@ export function Toolbar() {
             {isHeaderCollapsed ? <CaretDown className="h-4 w-4" /> : <CaretUp className="h-4 w-4" />}
           </Button>
         </div>
+        <ZeroStateIndicator className="pb-1.5 text-center" />
       </div>
     </>
   )
