@@ -36,7 +36,7 @@ jobs:
           # Docs, legal, and CI-process files never change the deployed site.
           # If every file in this push matches, skip the version bump
           # automatically.
-          if git diff --name-only HEAD~1 HEAD | grep -qvE '(\\.md$|^LICENSE$|^\\.github/)'; then
+          if git diff --name-only HEAD~1 HEAD | grep -qvE '(\.md$|^LICENSE$|^\.github/)'; then
             echo "needed=true" >> "$GITHUB_OUTPUT"
             echo "Release-worthy changes detected."
           else
