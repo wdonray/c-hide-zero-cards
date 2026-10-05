@@ -43,13 +43,22 @@ export function DraggableCard({
   )
   const useDraggableProps = useMemo(
     () => ({
-      initialX: index * xOffset,
+      // The fan is anchored on each card's CENTER, not its left edge (see
+      // the left:50% + translate(-50%) below): cards with different content
+      // widths ("100,000" vs "5") share the exact same anchor point.
+      // Without this, each card's static position depended on its own width
+      // and the cascade came out uneven and off-center — visibly ragged once
+      // zero cards were filtered out of the layout. Spreading initialX
+      // symmetrically around the anchor centers the whole fan.
+      initialX: (index - (totalCards - 1) / 2) * xOffset,
       initialY: index * CARD_Y_OFFSET,
+      // Stable Mix seed on the original fan formula (see useDraggable).
+      scatterSeed: index * xOffset,
       resetTrigger,
       randomizeTrigger,
       scatterArea,
     }),
-    [index, xOffset, resetTrigger, randomizeTrigger, scatterArea]
+    [index, xOffset, totalCards, resetTrigger, randomizeTrigger, scatterArea]
   )
 
   const cardColor = useCallback((placeValue: number) => CARD_COLORS[placeValue], [])
@@ -75,7 +84,13 @@ export function DraggableCard({
       className={`flex items-center justify-center gap-0 px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
       style={{
         position: 'absolute',
-        transform: `translate(${position.x}px, ${position.y}px)`,
+        // Anchor every card on the workspace's horizontal center: left:50%
+        // puts each card's left edge at the center, and the -50% shift (of
+        // the card's own width) centers the card on that point regardless of
+        // its content width. position.x/y then place the card's CENTER, so
+        // the fan spacing stays perfectly even for any mix of card widths.
+        left: '50%',
+        transform: `translate(calc(-50% + ${position.x}px), ${position.y}px)`,
         userSelect: 'none',
         touchAction: 'none',
         zIndex: totalCards + index,
