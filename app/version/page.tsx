@@ -39,7 +39,7 @@ export default async function VersionPage() {
   const initialReleases = await getRecentReleases()
 
   return (
-    <div className="flex items-start justify-center px-4 md:px-16 pt-6 md:pt-24 pb-16">
+    <div className="flex items-start justify-center px-4 md:px-16 pt-6 md:pt-8 pb-16">
       <EnablePageScroll />
       <VersionInfo currentVersion={VERSION} initialReleases={initialReleases} />
     </div>

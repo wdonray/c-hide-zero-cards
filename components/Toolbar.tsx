@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
 import { useIsMobile } from '@/lib/useIsMobile'
@@ -11,6 +12,7 @@ import { ZeroStateIndicator } from './ZeroStateIndicator'
 
 export function Toolbar() {
   const isMobile = useIsMobile()
+  const pathname = usePathname()
   const {
     isHeaderCollapsed,
     toggleHeader,
@@ -31,6 +33,11 @@ export function Toolbar() {
     setInputNumber(null)
     focusNumberInput()
   }
+
+  // The /version page is informational; the card actions are meaningless
+  // there, so the toolbar unmounts entirely (same pattern as the mobile
+  // action bar).
+  if (pathname === '/version') return null
 
   // On mobile the top toolbar is superseded by the bottom action bar
   // (MobileActionBar), which carries the same actions with visible labels.
