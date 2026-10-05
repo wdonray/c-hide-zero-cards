@@ -2,6 +2,7 @@ import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardE
 import { describe, expect, it } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { HeaderProvider } from '@/lib/useHeaderContext'
+import { MOBILE_CARD_RANDOM_X_OFFSET, MOBILE_CARD_RANDOM_Y_OFFSET } from '@/lib/constants'
 import { useDraggable } from '@/lib/useDraggable'
 
 function renderDraggable(initialX = 10, initialY = 20) {
@@ -198,5 +199,139 @@ describe('useDraggable', () => {
       result.current.handlers.onPointerUp(pointerEvent(0, 0, { pointerId: 9 }))
     })
     expect(result.current.isDragging).toBe(true)
+  })
+
+  it('does not re-seat when resetTrigger is undefined and only the initial position changes', () => {
+    const { result, rerender } = renderHook(
+      ({ initialX }) => useDraggable({ initialX, initialY: 20, resetTrigger: undefined, randomizeTrigger: 0 }),
+      { wrapper: HeaderProvider, initialProps: { initialX: 10 } }
+    )
+    rerender({ initialX: 50 })
+    // The reset branch is skipped for an undefined trigger: position keeps
+    // its state value rather than jumping to the new initial.
+    expect(result.current.position).toEqual({ x: 10, y: 20 })
+  })
+
+  it('moves the card with ArrowLeft and ArrowUp', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onKeyDown({ key: 'ArrowLeft', preventDefault: () => {} } as ReactKeyboardEvent)
+    })
+    expect(result.current.position).toEqual({ x: 0, y: 20 })
+    act(() => {
+      result.current.handlers.onKeyDown({ key: 'ArrowUp', preventDefault: () => {} } as ReactKeyboardEvent)
+    })
+    expect(result.current.position).toEqual({ x: 0, y: 10 })
+  })
+
+  it('follows document-level pointer moves and stops on document pointer up', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120))
+    })
+    // The hook listens on document while dragging so fast drags keep tracking.
+    act(() => {
+      document.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, clientX: 200, clientY: 220, pointerId: 1 })
+      )
+    })
+    // drag offset was (100 - 10, 120 - 20) = (90, 100)
+    expect(result.current.position).toEqual({ x: 110, y: 120 })
+    act(() => {
+      document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1 }))
+    })
+    expect(result.current.isDragging).toBe(false)
+    // After pointer up the global listeners are removed: further moves are ignored.
+    act(() => {
+      document.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, clientX: 999, clientY: 999, pointerId: 1 })
+      )
+    })
+    expect(result.current.position).toEqual({ x: 110, y: 120 })
+  })
+
+  it('scatters deterministically when randomizeTrigger changes', () => {
+    const { result, rerender } = renderHook(
+      ({ randomizeTrigger }) => useDraggable({ initialX: 10, initialY: 20, resetTrigger: 0, randomizeTrigger }),
+      { wrapper: HeaderProvider, initialProps: { randomizeTrigger: 0 } }
+    )
+    rerender({ randomizeTrigger: 1 })
+    const scattered = result.current.position
+    // Actually scattered (not the initial fan position)...
+    expect(scattered).not.toEqual({ x: 10, y: 20 })
+    // ...and deterministic for the same trigger: a second hook with the same
+    // inputs lands in the identical spot.
+    const { result: other, rerender: rerenderOther } = renderHook(
+      ({ randomizeTrigger }) => useDraggable({ initialX: 10, initialY: 20, resetTrigger: 0, randomizeTrigger }),
+      { wrapper: HeaderProvider, initialProps: { randomizeTrigger: 0 } }
+    )
+    rerenderOther({ randomizeTrigger: 1 })
+    expect(other.current.position).toEqual(scattered)
+  })
+
+  it('uses the tighter mobile scatter on narrow viewports', () => {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      configurable: true,
+      value: () => ({
+        matches: true,
+        media: '',
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+      }),
+    })
+    const { result, rerender } = renderHook(
+      ({ randomizeTrigger }) => useDraggable({ initialX: 10, initialY: 20, resetTrigger: 0, randomizeTrigger }),
+      { wrapper: HeaderProvider, initialProps: { randomizeTrigger: 0 } }
+    )
+    rerender({ randomizeTrigger: 1 })
+    expect(Math.abs(result.current.position.x - 10)).toBeLessThanOrEqual(MOBILE_CARD_RANDOM_X_OFFSET / 2)
+    expect(Math.abs(result.current.position.y - 20)).toBeLessThanOrEqual(MOBILE_CARD_RANDOM_Y_OFFSET / 2)
+  })
+
+  it('drags without pointer capture when no element is attached', () => {
+    // renderHook never attaches dragRef to a DOM node, so dragRef.current is
+    // null: the pointer-capture guards are skipped but dragging still works.
+    const { result } = renderHook(
+      () => useDraggable({ initialX: 10, initialY: 20, resetTrigger: 0, randomizeTrigger: 0 }),
+      { wrapper: HeaderProvider }
+    )
+    expect(result.current.dragRef.current).toBeNull()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      result.current.handlers.onPointerMove(pointerEvent(150, 170))
+    })
+    // No drag offset was captured, so the card follows the raw pointer.
+    expect(result.current.position).toEqual({ x: 150, y: 170 })
+    act(() => {
+      result.current.handlers.onPointerUp(pointerEvent(150, 170))
+    })
+    expect(result.current.isDragging).toBe(false)
+  })
+
+  it('treats an undefined randomizeTrigger as a zero-seeded scatter', () => {
+    const { result, rerender } = renderHook(
+      ({ randomizeTrigger }: { randomizeTrigger?: number }) =>
+        useDraggable({ initialX: 10, initialY: 20, resetTrigger: 0, randomizeTrigger }),
+      { wrapper: HeaderProvider, initialProps: { randomizeTrigger: 1 as number | undefined } }
+    )
+    const before = result.current.position
+    // undefined !== 0, so it scatters; the ?? 0 seeds the PRNG deterministically.
+    rerender({ randomizeTrigger: undefined })
+    expect(result.current.position).not.toEqual(before)
+    const { result: other, rerender: rerenderOther } = renderHook(
+      ({ randomizeTrigger }: { randomizeTrigger?: number }) =>
+        useDraggable({ initialX: 10, initialY: 20, resetTrigger: 0, randomizeTrigger }),
+      { wrapper: HeaderProvider, initialProps: { randomizeTrigger: 1 as number | undefined } }
+    )
+    rerenderOther({ randomizeTrigger: undefined })
+    expect(other.current.position).toEqual(result.current.position)
   })
 })

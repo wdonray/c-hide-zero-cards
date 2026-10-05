@@ -49,18 +49,18 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!revealCards && <DialogOverlay />}
       <DialogContent
-        className={`${revealCards ? 'md:-left-5 md:top-1 md:translate-x-0 md:translate-y-0' : ''}`}
+        className={`max-md:max-h-[calc(100dvh-2rem)] max-md:overflow-y-auto ${revealCards ? 'md:-left-5 md:top-1 md:translate-x-0 md:translate-y-0' : ''}`}
         showCloseButton={true}
         hideOverlay={revealCards}
       >
-        <DialogHeader className="flex flex-col gap-4">
-          <DialogTitle className="flex items-center gap-2 text-base md:text-lg max-md:pr-8">
+        <DialogHeader className="flex flex-col gap-4 max-md:gap-2">
+          <DialogTitle className="flex items-center gap-2 text-base md:text-lg max-md:pr-8 max-md:leading-snug">
             <Layers className="h-5 w-5 shrink-0" />
             <span className="min-w-0">Number Forms & Representations</span>
           </DialogTitle>
           <Separator />
           <DialogDescription>
-            <span className="flex flex-row flex-wrap items-center gap-x-6 gap-y-3">
+            <span className="flex flex-row flex-wrap items-center gap-x-6 gap-y-3 max-md:gap-x-3 max-md:gap-y-2">
               <span className="min-w-0">Explore different ways to write and understand your number!</span>
               <Button size="sm" onClick={() => setRevealCards(!revealCards)} className={COARSE_POINTER_TOUCH_TARGET}>
                 {revealCards ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -75,8 +75,8 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
           onValueChange={(value) => setSelectedTab(value as NumberFormsDialogTab)}
           className="w-full min-w-0"
         >
-          <div className="flex flex-col gap-4 items-center">
-            <TabsList className="max-w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12">
+          <div className="flex flex-col gap-4 max-md:gap-3 items-center w-full min-w-0">
+            <TabsList className="max-md:w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12">
               <TabsTrigger
                 value={NumberFormsDialogTab.WORD}
                 className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
@@ -104,16 +104,16 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
             </TabsList>
             <div className="w-full relative">
               <TabsContent value={NumberFormsDialogTab.EXPANDED} className="mt-0">
-                <ExpandedForm className="h-[65vh]" number={number} />
+                <ExpandedForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
               </TabsContent>
               <TabsContent value={NumberFormsDialogTab.STANDARD} className="mt-0">
-                <StandardForm className="h-[65vh]" number={number} />
+                <StandardForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
               </TabsContent>
               <TabsContent value={NumberFormsDialogTab.WORD} className="mt-0">
-                <WordForm className="h-[65vh]" number={number} />
+                <WordForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
               </TabsContent>
               <TabsContent value={NumberFormsDialogTab.UNIT} className="mt-0">
-                <UnitForm className="h-[65vh]" number={number} />
+                <UnitForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
               </TabsContent>
             </div>
           </div>

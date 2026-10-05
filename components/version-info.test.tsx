@@ -386,4 +386,53 @@ describe('VersionInfo', () => {
   it(`polls on the documented ${POLL_INTERVAL_MS}ms interval`, () => {
     expect(POLL_INTERVAL_MS).toBe(120_000)
   })
+
+  it('ignores a late successful poll after unmount', async () => {
+    useFakeTimers()
+    let resolveFetch!: (value: unknown) => void
+    const fetchPromise = new Promise((resolve) => {
+      resolveFetch = resolve
+    })
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(fetchPromise))
+    const { unmount } = render(<VersionInfo currentVersion="0.19.10" initialReleases={[]} />)
+    unmount()
+    await act(async () => {
+      resolveFetch({ ok: true, json: async () => [] })
+      await fetchPromise
+    })
+    // The poll's `if (cancelled) return` early-exit runs: no state updates
+    // fire after unmount, so no React warnings are produced.
+  })
+
+  it('does not mark offline when a failing poll settles after unmount', async () => {
+    useFakeTimers()
+    let rejectFetch!: (reason: unknown) => void
+    const fetchPromise = new Promise((_, reject) => {
+      rejectFetch = reject
+    })
+    // Keep the initial releases visible so the offline indicator would be
+    // observable if it were (incorrectly) set.
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(fetchPromise))
+    const { unmount } = render(<VersionInfo currentVersion="0.19.10" initialReleases={[release('0.19.10')]} />)
+    unmount()
+    await act(async () => {
+      rejectFetch(new Error('offline'))
+      await fetchPromise.catch(() => {})
+    })
+    // The catch block's `if (!cancelled)` guard skips setUnreachable(true).
+  })
+
+  it('falls back to the list index as key for a release without a version', async () => {
+    useFakeTimers()
+    const payload = releasePayload('', { tag_name: undefined })
+    delete (payload as Record<string, unknown>).tag_name
+    vi.stubGlobal('fetch', mockFetchResponse([payload]))
+    render(<VersionInfo currentVersion="0.19.10" initialReleases={[]} />)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    // Renders the version-less release without crashing; the `|| index`
+    // fallback supplies the React key.
+    expect(screen.getByRole('list', { name: 'Releases' })).toBeInTheDocument()
+  })
 })

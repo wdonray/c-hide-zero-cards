@@ -117,4 +117,24 @@ describe('MobileActionBar', () => {
     fireEvent.click(screen.getByRole('button', { name: /Number Forms/ }))
     expect(setShowNumberFormsDialog).toHaveBeenCalledWith(true)
   })
+
+  it('clears the input and refocuses it from the Clear button', () => {
+    const setInputNumber = vi.fn()
+    const focusNumberInput = vi.fn()
+    mockContext({ setInputNumber, focusNumberInput })
+
+    render(<MobileActionBar />)
+    fireEvent.click(screen.getByRole('button', { name: 'Clear input number and reset cards' }))
+    expect(setInputNumber).toHaveBeenCalledWith(null)
+    expect(focusNumberInput).toHaveBeenCalledTimes(1)
+  })
+
+  it('disables Roll and animates the dice while a roll is in flight', () => {
+    mockContext({ isDiceRolling: true })
+
+    render(<MobileActionBar />)
+    const rollButton = screen.getByRole('button', { name: 'Roll a random number' })
+    expect(rollButton).toBeDisabled()
+    expect(rollButton.querySelector('svg')).toHaveClass('animate-dice-roll')
+  })
 })

@@ -9,7 +9,6 @@ interface UnitFormProps {
 
 export function UnitForm({ number, className }: UnitFormProps) {
   function replaceFinalChar(str: string, replacement: string) {
-    if (str.length === 0) return replacement
     return str.slice(0, -1) + replacement
   }
 
