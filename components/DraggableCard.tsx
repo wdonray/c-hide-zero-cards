@@ -52,6 +52,8 @@ export function DraggableCard({
       // symmetrically around the anchor centers the whole fan.
       initialX: (index - (totalCards - 1) / 2) * xOffset,
       initialY: index * CARD_Y_OFFSET,
+      // Stable Mix seed on the original fan formula (see useDraggable).
+      scatterSeed: index * xOffset,
       resetTrigger,
       randomizeTrigger,
       scatterArea,

@@ -6,6 +6,13 @@ import { useIsMobile } from './useIsMobile'
 interface UseDraggableOptions {
   initialX: number
   initialY: number
+  /**
+   * Stable per-card discriminator for the Mix scatter PRNG. This deliberately
+   * keeps the original fan formula (index * xOffset): the scatter pattern
+   * must stay identical when the fan layout changes, so Mix behavior never
+   * reshuffles under a layout fix.
+   */
+  scatterSeed: number
   resetTrigger?: number
   randomizeTrigger?: number
   /**
@@ -74,6 +81,7 @@ function resolveScatterArea(
 export function useDraggable({
   initialX,
   initialY,
+  scatterSeed,
   resetTrigger,
   randomizeTrigger,
   scatterArea,
@@ -247,8 +255,8 @@ export function useDraggable({
     if (randomizeTrigger !== 0) {
       // Container-relative scatter: each card lands at a random spot fully
       // inside the visible workspace rect, on any screen size. Seeded per
-      // click and per card, so each Mix re-scatters unpredictably.
-      const rand = mulberry32(((randomizeTrigger ?? 0) * 2654435761 + initialX * 40503 + initialY * 65599) >>> 0)
+      // Mix click and per card, so each Mix re-scatters unpredictably.
+      const rand = mulberry32(((randomizeTrigger ?? 0) * 2654435761 + scatterSeed * 40503) >>> 0)
       const area = resolveScatterArea(cardEl, scatterArea)
       if (area) {
         // position is the transform offset from the card's static (centered)

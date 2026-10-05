@@ -144,8 +144,22 @@ test.describe('keyboard operability', () => {
     await expect(firstCard).toHaveAttribute('aria-label', /place value card\. Use arrow keys to move it\./)
 
     await firstCard.focus()
+
+    // Cards anchor on their center: translate(calc(-50% +/- <x>px), <y>px)
+    // (the browser serializes "calc(-50% + -44px)" as "calc(-50% - 44px)").
+    const parseX = (transform: string): number => {
+      const m = /translate\(calc\(-50% ([+-]) ([-\d.]+)px\),\s*([-\d.]+)px\)/.exec(transform)
+      if (!m) throw new Error(`unparseable transform: ${transform}`)
+      return parseFloat(m[2]) * (m[1] === '-' ? -1 : 1)
+    }
+    const before = parseX((await firstCard.getAttribute('style')) ?? '')
     await page.keyboard.press('ArrowRight')
 
-    await expect(firstCard).toHaveJSProperty('style.transform', 'translate(10px, 0px)')
+    await expect
+      .poll(async () => {
+        const style = (await firstCard.getAttribute('style')) ?? ''
+        return parseX(style) - before
+      })
+      .toBe(10)
   })
 })
