@@ -58,9 +58,11 @@ async function dispatchPointer(
 }
 
 function parseTranslate(transform: string): { x: number; y: number } {
-  const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(transform)
+  // Cards anchor on their center: translate(calc(-50% +/- <x>px), <y>px).
+  // (The browser serializes "calc(-50% + -42px)" as "calc(-50% - 42px)".)
+  const m = /translate\(calc\(-50% ([+-]) ([-\d.]+)px\),\s*([-\d.]+)px\)/.exec(transform)
   if (!m) throw new Error(`unparseable transform: ${transform}`)
-  return { x: parseFloat(m[1]), y: parseFloat(m[2]) }
+  return { x: parseFloat(m[2]) * (m[1] === '-' ? -1 : 1), y: parseFloat(m[3]) }
 }
 
 async function cardPos(card: Locator): Promise<{ x: number; y: number }> {
