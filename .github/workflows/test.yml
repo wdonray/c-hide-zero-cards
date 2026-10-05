@@ -88,6 +88,25 @@ jobs:
         env:
           CI: 'true'
 
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v7
+
+      - name: Use Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22.13.1'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
+
   build:
     name: Build
     runs-on: ubuntu-latest
