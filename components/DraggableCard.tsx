@@ -1,8 +1,9 @@
 import { useDraggable } from '@/lib/useDraggable'
 import { CARD_COLORS, CARD_Y_OFFSET } from '@/lib/constants'
+import type { ScatterArea } from '@/lib/useHeaderContext'
 import { getCardXOffset, getMobileCardMetrics } from '@/lib/cardLayout'
 import { useIsMobile } from '@/lib/useIsMobile'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 interface DraggableCardProps {
   firstDigit: number
@@ -11,6 +12,7 @@ interface DraggableCardProps {
   totalCards: number
   resetTrigger?: number
   randomizeTrigger?: number
+  scatterArea?: ScatterArea | null
   fakeNumbers: string | null
 }
 
@@ -21,6 +23,7 @@ export function DraggableCard({
   totalCards,
   resetTrigger,
   randomizeTrigger,
+  scatterArea,
   fakeNumbers,
 }: DraggableCardProps) {
   const isMobile = useIsMobile()
@@ -44,18 +47,29 @@ export function DraggableCard({
       initialY: index * CARD_Y_OFFSET,
       resetTrigger,
       randomizeTrigger,
+      scatterArea,
     }),
-    [index, xOffset, resetTrigger, randomizeTrigger]
+    [index, xOffset, resetTrigger, randomizeTrigger, scatterArea]
   )
 
   const cardColor = useCallback((placeValue: number) => CARD_COLORS[placeValue], [])
-  const { position, dragRef, handlers } = useDraggable(useDraggableProps)
+  // The card element, mirrored into state via callback ref so the hook can
+  // measure it at scatter time without reading a ref during render.
+  const [cardEl, setCardEl] = useState<HTMLDivElement | null>(null)
+  const { position, dragRef, handlers } = useDraggable({ ...useDraggableProps, cardEl })
+  const setRefs = useCallback(
+    (el: HTMLDivElement | null) => {
+      dragRef.current = el
+      setCardEl(el)
+    },
+    [dragRef]
+  )
 
   const displayValue = fakeNumbers !== null ? fakeNumbers : (firstDigit * placeValue).toLocaleString()
 
   return (
     <div
-      ref={dragRef}
+      ref={setRefs}
       tabIndex={0}
       aria-label={`${displayValue} place value card. Use arrow keys to move it.`}
       className={`flex items-center justify-center gap-0 px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}

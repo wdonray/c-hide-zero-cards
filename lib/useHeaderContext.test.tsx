@@ -132,6 +132,37 @@ describe('useHeaderContext', () => {
     expect(t.ctx.cardsMoved).toBe(false)
   })
 
+  it('measures the workspace rect when Mix is pressed', () => {
+    const t = setup()
+    expect(t.ctx.scatterArea).toBeNull()
+    const workspace = document.createElement('main')
+    vi.spyOn(workspace, 'getBoundingClientRect').mockReturnValue({
+      x: 8,
+      y: 120,
+      width: 359,
+      height: 480,
+      top: 120,
+      left: 8,
+      right: 367,
+      bottom: 600,
+      toJSON: () => {},
+    })
+    // Attach via the exposed ref, as HomePageClient does.
+    t.ctx.workspaceRef.current = workspace
+    act(() => t.ctx.handleRandomizeCardPosition())
+    expect(t.ctx.scatterArea).toEqual({ x: 8, y: 120, width: 359, height: 480 })
+    expect(t.ctx.randomizeTrigger).toBe(1)
+  })
+
+  it('clears the scatter area when the workspace is not measurable', () => {
+    const t = setup()
+    // No workspace attached (or a zero-size rect): scatterArea stays null
+    // and Mix still bumps the trigger; cards simply do not move.
+    act(() => t.ctx.handleRandomizeCardPosition())
+    expect(t.ctx.scatterArea).toBeNull()
+    expect(t.ctx.randomizeTrigger).toBe(1)
+  })
+
   it('toggles zero-card visibility', () => {
     const t = setup()
     act(() => t.ctx.toggleZeroCards())

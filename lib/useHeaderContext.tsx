@@ -4,6 +4,18 @@ import { createContext, useContext, useState, ReactNode, useEffect, useRef } fro
 import { DEFAULT_MAX_RANDOM_NUMBER, LOCAL_STORAGE_KEYS, RANDOM_NUMBER_TYPE } from '@/lib/constants'
 import { NumberInputRef } from '@/components/NumberInput'
 
+/**
+ * The card workspace's bounding rect in viewport coordinates, measured when
+ * Mix is pressed. Cards scatter within this rect so they stay fully visible
+ * on any screen size, never under the header, footer, or action bar.
+ */
+export interface ScatterArea {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 interface HeaderContextType {
   isHeaderCollapsed: boolean
   toggleHeader: () => void
@@ -14,6 +26,10 @@ interface HeaderContextType {
   setShowRandomRange: (value: boolean) => void
   resetTrigger: number
   randomizeTrigger: number
+  /** Workspace rect measured at the last Mix click; null before the first Mix. */
+  scatterArea: ScatterArea | null
+  /** Ref attached to the card workspace element by HomePageClient. */
+  workspaceRef: React.RefObject<HTMLElement | null>
   randomNumberRange: [number, number]
   showRandomRange: boolean
   isDiceRolling: boolean
@@ -54,6 +70,10 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const [cardsMoved, setCardsMoved] = useState(false)
 
   const numberInputRef = useRef<NumberInputRef>(null)
+  // Attached to the card workspace <main> by HomePageClient; read when Mix
+  // is pressed so the scatter uses the actually visible area.
+  const workspaceRef = useRef<HTMLElement | null>(null)
+  const [scatterArea, setScatterArea] = useState<ScatterArea | null>(null)
 
   // Clearing the input also re-seats the cards and resets the triggers.
   // Centralized here (was a setState-in-effect in HomePageClient watching
@@ -117,6 +137,15 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   }
 
   function handleRandomizeCardPosition() {
+    // Measure the visible workspace now (not the viewport): the scatter
+    // bounds track the real layout, so cards never land under the header,
+    // the footer, or the mobile action bar on any screen size.
+    const rect = workspaceRef.current?.getBoundingClientRect()
+    setScatterArea(
+      rect && rect.width > 0 && rect.height > 0
+        ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+        : null
+    )
     setRandomizeTrigger((prev) => prev + 1)
     setCardsMoved(true)
   }
@@ -141,6 +170,8 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         setShowRandomRange,
         resetTrigger,
         randomizeTrigger,
+        scatterArea,
+        workspaceRef,
         randomNumberRange,
         showRandomRange,
         isDiceRolling,

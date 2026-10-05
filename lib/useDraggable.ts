@@ -1,12 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import {
-  CARD_RANDOM_X_OFFSET,
-  CARD_RANDOM_Y_OFFSET,
-  CARD_KEYBOARD_MOVE_STEP,
-  MOBILE_CARD_RANDOM_X_OFFSET,
-  MOBILE_CARD_RANDOM_Y_OFFSET,
-} from './constants'
-import { useHeaderContext } from './useHeaderContext'
+import { CARD_KEYBOARD_MOVE_STEP, CARD_WORKSPACE_SELECTOR } from './constants'
+import { useHeaderContext, type ScatterArea } from './useHeaderContext'
 import { useIsMobile } from './useIsMobile'
 
 interface UseDraggableOptions {
@@ -14,6 +8,20 @@ interface UseDraggableOptions {
   initialY: number
   resetTrigger?: number
   randomizeTrigger?: number
+  /**
+   * Workspace rect (viewport coordinates) measured when Mix was pressed.
+   * The scatter keeps every card fully inside it. A live measurement is
+   * preferred when the card is mounted; this is the fallback for
+   * environments without layout (unit tests, SSR).
+   */
+  scatterArea?: ScatterArea | null
+  /**
+   * The card element, supplied by the component via callback ref into state
+   * (reading it here keeps render-phase measurement lint-clean: refs must
+   * not be read during render). Used to measure the card and find the
+   * workspace ancestor at scatter time.
+   */
+  cardEl?: HTMLDivElement | null
 }
 
 interface UseDraggableReturn {
@@ -44,11 +52,32 @@ function mulberry32(seed: number) {
   }
 }
 
+/**
+ * Resolve the rect Mix scatters within. Prefers a live measurement of the
+ * workspace element (fresh even if the layout changed since Mix was pressed,
+ * e.g. a breakpoint flip re-scatter); falls back to the area measured at Mix
+ * time, which is also what unit tests inject. Null when there is no usable
+ * area (SSR, or Mix pressed with no workspace mounted).
+ */
+function resolveScatterArea(
+  cardEl: HTMLDivElement | null | undefined,
+  measuredAtMix: ScatterArea | null | undefined
+): ScatterArea | null {
+  const workspace = cardEl?.closest?.(CARD_WORKSPACE_SELECTOR) ?? null
+  const rect = workspace?.getBoundingClientRect?.()
+  if (rect && rect.width > 0 && rect.height > 0) {
+    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+  }
+  return measuredAtMix ?? null
+}
+
 export function useDraggable({
   initialX,
   initialY,
   resetTrigger,
   randomizeTrigger,
+  scatterArea,
+  cardEl,
 }: UseDraggableOptions): UseDraggableReturn {
   const { setCardsMoved } = useHeaderContext()
   const isMobile = useIsMobile()
@@ -216,16 +245,29 @@ export function useDraggable({
   ) {
     setPrevRandomizeDeps({ trigger: randomizeTrigger, x: initialX, y: initialY, mobile: isMobile })
     if (randomizeTrigger !== 0) {
-      // On narrow viewports the desktop scatter would fling cards off-screen,
-      // so Mix uses a tighter scatter that stays inside the workspace.
-      // Seeded per click and per card: each Mix re-scatters unpredictably.
+      // Container-relative scatter: each card lands at a random spot fully
+      // inside the visible workspace rect, on any screen size. Seeded per
+      // click and per card, so each Mix re-scatters unpredictably.
       const rand = mulberry32(((randomizeTrigger ?? 0) * 2654435761 + initialX * 40503 + initialY * 65599) >>> 0)
-      const xOffset = isMobile ? MOBILE_CARD_RANDOM_X_OFFSET : CARD_RANDOM_X_OFFSET
-      const yOffset = isMobile ? MOBILE_CARD_RANDOM_Y_OFFSET : CARD_RANDOM_Y_OFFSET
-      setPosition({
-        x: initialX + Math.floor((rand() - 0.5) * xOffset),
-        y: initialY + Math.floor((rand() - 0.5) * yOffset),
-      })
+      const area = resolveScatterArea(cardEl, scatterArea)
+      if (area) {
+        // position is the transform offset from the card's static (centered)
+        // spot; derive that spot from the live card rect so the random
+        // workspace-origin target converts exactly. Without a mounted
+        // element (unit tests) the static spot is assumed centered.
+        const cardRect = cardEl?.getBoundingClientRect()
+        const cardW = cardRect?.width ?? 0
+        const cardH = cardRect?.height ?? 0
+        const maxX = Math.max(0, area.width - cardW)
+        const maxY = Math.max(0, area.height - cardH)
+        const targetX = Math.floor(rand() * (maxX + 1))
+        const targetY = Math.floor(rand() * (maxY + 1))
+        const staticX = cardRect ? cardRect.left - position.x - area.x : (area.width - cardW) / 2
+        const staticY = cardRect ? cardRect.top - position.y - area.y : (area.height - cardH) / 2
+        setPosition({ x: targetX - staticX, y: targetY - staticY })
+      }
+      // Without a measured area (SSR, or no workspace mounted) the cards
+      // stay put; the next Mix measures again.
     }
   }
 
