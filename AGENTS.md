@@ -46,6 +46,21 @@ behavior on your own.
 
 ## Conventions
 
+- **Mobile is responsive, portrait-first.** No mobile warning dialog, no
+  rotation lock (iOS Safari cannot lock orientation, so a rotate nag would just
+  replace one annoyance with another).
+- **Card fan stays a fan.** `useIsMobile()` (matchMedia, SSR-safe) plus
+  `getCardXOffset()` in `lib/cardLayout.ts` drive the layout: desktop keeps the
+  fixed 36px cascading overlap; below 768px the _same_ fan compresses so all
+  10 cards fit a 375px viewport. Never reflow into a grid or plain row.
+- **44px touch targets are coarse-pointer-gated.** Use
+  `COARSE_POINTER_TOUCH_TARGET` (`pointer-coarse:min-h-11 min-w-11`) so the
+  desktop mouse layout is untouched.
+- **Card colors are a known mobile contrast exception.** White digits on the
+  place-value palette fall below 4.5:1 at mobile text sizes; the palette is the
+  teaching design, so it is a documented axe filter in `e2e/a11y.spec.ts`
+  pending the owner's call, same standing as the Roll button.
+
 - **No em dashes in user-facing copy.** Use commas, colons, or split the
   sentence instead.
 - **Copy must stay truthful.** Don't invent metrics, testimonials, or

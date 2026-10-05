@@ -54,10 +54,12 @@ export const NumberInput = forwardRef<NumberInputRef, NumberInputProps>(({ value
       ref={inputRef}
       type="text"
       inputMode="numeric"
+      pattern="[0-9]*"
+      enterKeyHint="done"
       value={formattedNumber}
       placeholder="Type a number here!"
       onChange={handleInputChange}
-      className={`!text-4xl !font-semibold !h-16 !px-6 ${!isTouched ? 'animate-pulse' : ''}`}
+      className={`!text-4xl !font-semibold !h-16 !px-6 max-md:!text-2xl max-md:!px-4 ${!isTouched ? 'animate-pulse' : ''}`}
     />
   )
 })

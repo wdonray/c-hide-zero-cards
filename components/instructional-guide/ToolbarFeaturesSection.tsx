@@ -13,7 +13,7 @@ export function ToolbarFeaturesSection() {
         <div className="pl-4">
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
                   Roll Button & Random Range
                 </h4>
@@ -63,7 +63,7 @@ export function ToolbarFeaturesSection() {
 
         <div className="pl-4">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">Clear Input</h4>
               <p className="text-muted-foreground">
                 Click the <strong>X button</strong> to clear the current number and start fresh.
@@ -80,7 +80,7 @@ export function ToolbarFeaturesSection() {
 
         <div className="pl-4">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">Zero Cards Toggle</h4>
               <p className="text-muted-foreground">
                 Toggle between <strong>showing/hiding zero cards</strong>. When hidden, only non-zero digits are
@@ -102,7 +102,7 @@ export function ToolbarFeaturesSection() {
 
         <div className="pl-4">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">Mix Cards</h4>
               <p className="text-muted-foreground">
                 Click <strong>Mix</strong> to randomly scatter all cards across the screen.
@@ -119,7 +119,7 @@ export function ToolbarFeaturesSection() {
 
         <div className="pl-4">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">Reset Position</h4>
               <p className="text-muted-foreground">
                 Click <strong>Reset</strong> to instantly return all cards to their original positions.
@@ -138,7 +138,7 @@ export function ToolbarFeaturesSection() {
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-foreground mb-2 text-slate-700 dark:text-slate-300">
                     Number Forms & Representations
                   </h4>

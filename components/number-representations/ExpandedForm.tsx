@@ -38,7 +38,7 @@ export function ExpandedForm({ number, className }: ExpandedFormProps) {
   return (
     <Card className={cn('flex flex-col', className)}>
       <CardContent className="flex-1 flex items-center justify-center">
-        <p className="text-lg font-mono tabular-nums font-medium text-primary leading-relaxed text-center">
+        <p className="w-full text-lg font-mono tabular-nums font-medium text-primary leading-relaxed text-center">
           {expandedForm}
         </p>
       </CardContent>
