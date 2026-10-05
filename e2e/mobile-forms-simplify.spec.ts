@@ -18,7 +18,7 @@ async function seedAndGoto(page: Page) {
 async function openNumberForms(page: Page): Promise<Locator> {
   await page.getByPlaceholder('Type a number here!').fill('1234')
   await page.getByTitle(/Number Forms/, { exact: false }).click()
-  const dialog = page.getByRole('dialog', { name: 'Number Forms & Representations' })
+  const dialog = page.getByRole('dialog', { name: /Number Forms/ })
   await expect(dialog).toBeVisible()
   return dialog
 }
@@ -41,7 +41,7 @@ test.describe('mobile header simplification', () => {
 
   test('header icon is hidden', async ({ page }) => {
     const dialog = await openNumberForms(page)
-    const title = dialog.getByRole('heading', { name: 'Number Forms & Representations' })
+    const title = dialog.getByRole('heading', { name: 'Number Forms' })
     // Still in the DOM (desktop keeps it), but not rendered on mobile.
     await expect(title.locator('svg')).toBeHidden()
   })
@@ -51,9 +51,9 @@ test.describe('mobile header simplification', () => {
     await expect(dialog.getByText('Explore different ways to write and understand your number!')).toBeHidden()
   })
 
-  test('title is visible, clear of the close button, and padded from the edge', async ({ page }) => {
+  test('title is visible, single-line, clear of the close button, and padded from the edge', async ({ page }) => {
     const dialog = await openNumberForms(page)
-    const title = dialog.getByRole('heading', { name: 'Number Forms & Representations' })
+    const title = dialog.getByRole('heading', { name: 'Number Forms' })
     await expect(title).toBeVisible()
 
     // Measure the text span, not the heading box: the heading reserves
@@ -68,6 +68,8 @@ test.describe('mobile header simplification', () => {
     const t = textBox!,
       c = closeBox!,
       d = dialogBox!
+    // Single line: the short mobile title must not wrap.
+    expect(t.height).toBeLessThanOrEqual(32)
     // No overlap between the title text and the X button.
     const overlaps = t.x < c.x + c.width && t.x + t.width > c.x && t.y < c.y + c.height && t.y + t.height > c.y
     expect(overlaps).toBe(false)

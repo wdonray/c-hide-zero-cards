@@ -18,7 +18,7 @@ async function seedAndGoto(page: Page) {
 async function openNumberForms(page: Page): Promise<Locator> {
   await page.getByPlaceholder('Type a number here!').fill('1234')
   await page.getByTitle(/Number Forms/, { exact: false }).click()
-  const dialog = page.getByRole('dialog', { name: 'Number Forms & Representations' })
+  const dialog = page.getByRole('dialog', { name: /Number Forms/ })
   await expect(dialog).toBeVisible()
   return dialog
 }

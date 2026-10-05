@@ -68,7 +68,11 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
         <DialogHeader className="flex flex-col gap-4 max-md:gap-2">
           <DialogTitle className="flex items-center gap-2 text-base md:text-lg max-md:pr-12 max-md:text-lg max-md:leading-normal max-md:py-1">
             <Layers className="h-5 w-5 shrink-0 max-md:hidden" aria-hidden="true" />
-            <span className="min-w-0">Number Forms & Representations</span>
+            {/* Mobile uses the short title so the header stays on one line;
+                desktop keeps the full title. */}
+            <span className="min-w-0 max-md:whitespace-nowrap">
+              {isMobile ? 'Number Forms' : 'Number Forms & Representations'}
+            </span>
           </DialogTitle>
           <Separator />
           {/* Mobile keeps the header lean: subheader text and the reveal
