@@ -83,16 +83,25 @@ jobs:
       - name: Bump version
         if: steps.check.outputs.needed == 'true'
         run: |
-          # Guard: if the tag already exists (a concurrent run won the race),
-          # skip cleanly instead of failing the run.
+          # Guard: if the tag already exists, determine why before proceeding.
           NEXT="$(node -p "const v=require('./package.json').version.split('.').map(Number);const t='${{ steps.version-type.outputs.newversion }}';if(t==='major'){v[0]++;v[1]=0;v[2]=0}else if(t==='minor'){v[1]++;v[2]=0}else{v[2]++}v.join('.')")"
           if git rev-parse -q --verify "refs/tags/v$NEXT" >/dev/null; then
-            echo "Tag v$NEXT already exists; skipping bump."
-            exit 0
+            if git merge-base --is-ancestor "v$NEXT" main 2>/dev/null; then
+              echo "Tag v$NEXT is already on main; skipping bump."
+              exit 0
+            fi
+            # Orphaned tag: a past race pushed the tag but its commit never
+            # landed on main (git pushes refs independently). It was never
+            # released, so remove it and proceed with a clean bump.
+            echo "Tag v$NEXT is orphaned (not on main); deleting it and proceeding."
+            git push --delete origin "v$NEXT"
+            git tag -d "v$NEXT"
           fi
           npm version ${{ steps.version-type.outputs.newversion }} -m "chore: bump version to %s [deploy]"
 
       - name: Push changes and tags
         if: steps.check.outputs.needed == 'true'
         run: |
-          git push origin main --follow-tags
+          # --atomic: the commit and tag land together or not at all, so a
+          # rejected branch push can never leave an orphaned tag behind.
+          git push --atomic origin main --follow-tags
