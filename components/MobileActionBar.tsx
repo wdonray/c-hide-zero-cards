@@ -1,6 +1,7 @@
 'use client'
 
 import { type ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import { DiceSix, Shuffle, ArrowClockwise, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
 import { useHeaderContext } from '@/lib/useHeaderContext'
@@ -52,6 +53,7 @@ const ICON_CLASS = 'h-5 w-5'
  */
 export function MobileActionBar() {
   const isMobile = useIsMobile()
+  const pathname = usePathname()
   const {
     handleRandomNumber,
     isDiceRolling,
@@ -69,6 +71,10 @@ export function MobileActionBar() {
   // Unmounted (not CSS-hidden) off-mobile so the desktop toolbar remains the
   // only instance of these controls in the DOM and accessibility tree.
   if (!isMobile) return null
+
+  // The /version page is informational; the card actions are meaningless
+  // there, so the bar stays out of the way.
+  if (pathname === '/version') return null
 
   function handleClearInput() {
     setInputNumber(null)
