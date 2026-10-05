@@ -334,4 +334,66 @@ describe('useDraggable', () => {
     rerenderOther({ randomizeTrigger: undefined })
     expect(other.current.position).toEqual(result.current.position)
   })
+
+  it('ends the drag cleanly when releasePointerCapture throws on a dead pointer', () => {
+    // iOS Safari throws NotFoundError if capture was already released
+    // implicitly; the hook must swallow it and still end the drag.
+    const { result } = renderDraggable()
+    result.current.dragRef.current = {
+      setPointerCapture: () => {},
+      releasePointerCapture: () => {
+        throw new DOMException('pointer capture released', 'NotFoundError')
+      },
+      hasPointerCapture: () => true,
+    } as unknown as HTMLDivElement
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      result.current.handlers.onPointerUp(pointerEvent(100, 120))
+    })
+    expect(result.current.isDragging).toBe(false)
+  })
+
+  it('ends the drag on a document-level pointercancel from the active pointer', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      document.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 }))
+    })
+    expect(result.current.isDragging).toBe(false)
+  })
+
+  it('ignores pointercancel from a pointer that is not driving the drag', () => {
+    const { result } = renderDraggable()
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120, { pointerId: 1 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    // React-level cancel from another pointer: ignored.
+    act(() => {
+      result.current.handlers.onPointerCancel(pointerEvent(0, 0, { pointerId: 9 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    // Document-level move/up/cancel from another pointer: all ignored, the
+    // drag keeps tracking the original finger.
+    act(() => {
+      document.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, clientX: 999, clientY: 999, pointerId: 9 })
+      )
+    })
+    expect(result.current.position).toEqual({ x: 10, y: 20 })
+    act(() => {
+      document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 9 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      document.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerId: 9 }))
+    })
+    expect(result.current.isDragging).toBe(true)
+  })
 })
