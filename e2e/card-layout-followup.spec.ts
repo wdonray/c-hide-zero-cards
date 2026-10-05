@@ -1,15 +1,14 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * Card layout follow-up (owner reports 2026-10-05):
+ * Card fan with wide significant-prefix peeks (owner feedback 2026-10-05,
+ * supersedes the single-digit-peek direction):
  *
- * 1. Typing "940,934" and hiding zeros left the back (higher place-value)
- *    cards too long: their peeks were far wider than one fan offset (a "40"
- *    double peek) and the visible fan sat left of center. The fan now
- *    anchors on evenly spaced left edges with a flush right edge, so every
- *    peek is exactly one offset and the visible fan is centered.
- * 2. When numbers spawn (typing or Roll), the fan must be centered in the
- *    page from the first frame.
+ * Hiding zeros on 800,502 collapsed the fan to "852" (single-digit peeks),
+ * which reads as the wrong number and destroys place-value meaning — and
+ * the thousands comma never appeared. Each card's peek now fits its
+ * significant prefix ("800,000" -> "800,", "500" -> "500"), so the fan
+ * reads "800," / "500" / "2" with the comma visible.
  */
 
 async function seed(page: Page) {
@@ -30,7 +29,48 @@ function cardBoxes(page: Page) {
   })
 }
 
-test.describe('card layout follow-up', () => {
+/**
+ * For each card except the last: the significant prefix (up to and
+ * including the first comma, else the full text) must match the expected
+ * text, and the prefix must be fully visible — its rendered right edge sits
+ * at or left of the covering card's left edge. The last card has no peek
+ * (it shows its full natural width), so expectedPeeks has one entry per
+ * card except the last.
+ */
+async function expectSignificantPrefixes(page: Page, expectedPeeks: string[]) {
+  const result = await page.evaluate(() => {
+    const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
+    return els.slice(0, -1).map((el, i) => {
+      const fullText = el.innerText
+      const commaIndex = fullText.indexOf(',')
+      const peekText = commaIndex === -1 ? fullText : fullText.slice(0, commaIndex + 1)
+      // Rendered rect of the significant prefix within the visible text.
+      const inner = el.firstElementChild as HTMLElement
+      const textNode = inner.firstChild as Text
+      const range = document.createRange()
+      range.setStart(textNode, 0)
+      range.setEnd(textNode, Math.min(peekText.length, textNode.length))
+      const pr = range.getBoundingClientRect()
+      const style = getComputedStyle(el)
+      const letterSpacing = parseFloat(style.letterSpacing) || 0
+      const nextLeft = els[i + 1].getBoundingClientRect().x
+      return {
+        peekText,
+        // Exclude trailing letter-spacing: the prefix ink ends where its
+        // advance box ends minus the spacing after it.
+        prefixRight: pr.x + pr.width - letterSpacing,
+        nextLeft,
+      }
+    })
+  })
+  expect(result.map((r) => r.peekText)).toEqual(expectedPeeks)
+  for (const r of result) {
+    // The significant prefix is fully visible, not clipped by the next card.
+    expect(r.prefixRight).toBeLessThanOrEqual(r.nextLeft + 1)
+  }
+}
+
+test.describe('card fan wide peeks', () => {
   for (const vp of [
     { name: 'mobile', width: 375, height: 667, mobile: true },
     { name: 'desktop', width: 1280, height: 800, mobile: false },
@@ -46,27 +86,51 @@ test.describe('card layout follow-up', () => {
         await seed(page)
       })
 
-      test('940,934 with zeros hidden: even peeks, flush right edge, centered fan', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('940934')
+      test('800,502 hidden reads "800," / "500" / "2", never "852"', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('800502')
         await page.getByTitle('Hide zero cards', { exact: true }).click()
         const cards = await cardBoxes(page)
 
-        // The zero card is gone; the rest compact as if it never existed.
-        expect(cards.map((c) => c.text)).toEqual(['900,000', '40,000', '900', '30', '4'])
+        // The zero cards are gone; the rest keep their place values.
+        expect(cards.map((c) => c.text)).toEqual(['800,000', '500', '2'])
 
-        // Every peek is exactly one fan offset: no "40" double peek from the
-        // wide back cards.
-        const lefts = cards.map((c) => c.left)
-        const peeks = lefts.slice(1).map((l, i) => l - lefts[i])
-        expect(Math.max(...peeks) - Math.min(...peeks)).toBeLessThanOrEqual(2)
+        // Each peek shows its significant prefix, comma included — the fan
+        // reads "800," / "500" / "2", not "852".
+        await expectSignificantPrefixes(page, ['800,', '500'])
 
         // Right edges flush: no trailing-zero slivers from the back cards.
         const rights = cards.map((c) => c.right)
         expect(Math.max(...rights) - Math.min(...rights)).toBeLessThanOrEqual(2)
 
         // The visible fan is centered in the page.
+        const lefts = cards.map((c) => c.left)
         const fanCenter = (Math.min(...lefts) + Math.max(...rights)) / 2
         expect(Math.abs(fanCenter - vp.width / 2)).toBeLessThanOrEqual(3)
+      })
+
+      test('800,502 shown keeps the thousands comma visible in the "800," peek', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('800502')
+        const cards = await cardBoxes(page)
+        expect(cards.map((c) => c.text)).toEqual(['800,000', '00,000', '0,000', '500', '00', '2'])
+        // Significant prefixes: commas stay visible ("800,", "00,", "0,").
+        await expectSignificantPrefixes(page, ['800,', '00,', '0,', '500', '00'])
+      })
+
+      test('940,934 hidden shows readable place values', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('940934')
+        await page.getByTitle('Hide zero cards', { exact: true }).click()
+        const cards = await cardBoxes(page)
+        expect(cards.map((c) => c.text)).toEqual(['900,000', '40,000', '900', '30', '4'])
+        // No "40" double peek confusion: each card's significant prefix is
+        // fully readable ("900,", "40,", "900", "30").
+        await expectSignificantPrefixes(page, ['900,', '40,', '900', '30'])
+      })
+
+      test('172,695 shows readable place values', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('172695')
+        const cards = await cardBoxes(page)
+        expect(cards.map((c) => c.text)).toEqual(['100,000', '70,000', '2,000', '600', '90', '5'])
+        await expectSignificantPrefixes(page, ['100,', '70,', '2,', '600', '90'])
       })
 
       test('spawned fan is centered from the first frame', async ({ page }) => {
@@ -91,90 +155,30 @@ test.describe('card layout follow-up', () => {
         }
       })
 
-      test('every peek shows its leading digit and the top card is natural width', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('763285')
-        const probes = await page.evaluate(() => {
-          const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
-          return els.map((el) => {
-            const r = el.getBoundingClientRect()
-            const inner = el.firstElementChild as HTMLElement
-            const ir = inner.getBoundingClientRect()
-            const style = getComputedStyle(el)
-            const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
-            return {
-              text: el.innerText,
-              cardWidth: r.width,
-              // How far the text's left edge sits past the card's left
-              // padding: ~0 when left-aligned, large when centered in a
-              // widened card (the buried-digit regression).
-              textPastPad: ir.x - r.x - parseFloat(style.paddingLeft),
-              natural: inner.scrollWidth + padX,
-            }
-          })
-        })
-        expect(probes.map((p) => p.text)).toEqual(['700,000', '60,000', '3,000', '200', '80', '5'])
-        // Every leading digit sits at the left padding: no blank slivers,
-        // no digits buried under the next card.
-        for (const p of probes) {
-          expect(Math.abs(p.textPastPad)).toBeLessThanOrEqual(2)
-        }
-        // The top card keeps its natural width: no giant block with a
-        // lonely centered digit.
-        const top = probes[probes.length - 1]
-        expect(Math.abs(top.cardWidth - top.natural)).toBeLessThanOrEqual(2)
-      })
-
-      test('every peek fits its leading digit with room to spare', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('172695')
-        // For each card but the last: the leading digit's glyph right edge
-        // must sit at or left of the covering card's left edge (the peek
-        // fits padLeft + one full digit advance). The last card is on top,
-        // so it is fully visible by construction.
-        const clips = await page.evaluate(() => {
-          const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
-          const cards = els.map((el) => {
-            const r = el.getBoundingClientRect()
-            const inner = el.firstElementChild as HTMLElement
-            const textNode = inner.firstChild as Text
-            const range = document.createRange()
-            range.setStart(textNode, 0)
-            range.setEnd(textNode, 1)
-            const cr = range.getBoundingClientRect()
-            const style = getComputedStyle(el)
-            const letterSpacing = parseFloat(style.letterSpacing) || 0
-            // Exclude trailing letter-spacing: the digit's ink ends where
-            // its advance box ends minus the spacing after it.
-            return { left: r.x, glyphRight: cr.x + cr.width - letterSpacing }
-          })
-          return cards.slice(0, -1).map((c, i) => c.glyphRight - cards[i + 1].left)
-        })
-        expect(clips.length).toBeGreaterThan(0)
-        for (const clip of clips) {
-          expect(clip).toBeLessThanOrEqual(1)
-        }
-      })
-
       test('a displaced card shows its full place-value text unclipped', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('763285')
         const first = page
           .getByRole('application', { name: 'Draggable place value cards' })
           .locator(':scope > div')
           .first()
-        // Outer width minus natural text width: negative at fan home (the
-        // wide back card is clipped to its assigned width), ~0 displaced.
-        const widthDiff = () =>
-          first.evaluate((el: HTMLElement) => {
-            const r = el.getBoundingClientRect()
-            const inner = el.firstElementChild as HTMLElement
-            const style = getComputedStyle(el)
-            return r.width - (inner.scrollWidth + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight))
-          })
-        expect(await widthDiff()).toBeLessThan(0)
-        // Keyboard-displace the card: the full text must show, unclipped.
+        // Keyboard-displace the card: it must shrink-wrap its full text
+        // (no assigned fan width, no overflow clipping) so "700,000" reads
+        // in full.
         await first.focus()
         await page.keyboard.press('ArrowRight')
         await page.keyboard.press('ArrowRight')
-        expect(Math.abs(await widthDiff())).toBeLessThanOrEqual(2)
+        const diff = await first.evaluate((el: HTMLElement) => {
+          const r = el.getBoundingClientRect()
+          const inner = el.firstElementChild as HTMLElement
+          const style = getComputedStyle(el)
+          const ir = inner.getBoundingClientRect()
+          return {
+            widthDiff: r.width - (inner.scrollWidth + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)),
+            textClipped: ir.right > r.right + 1,
+          }
+        })
+        expect(Math.abs(diff.widthDiff)).toBeLessThanOrEqual(2)
+        expect(diff.textClipped).toBe(false)
       })
     })
   }

@@ -9,15 +9,15 @@ interface DraggableCardProps {
   placeValue: number
   index: number
   totalCards: number
-  /** Fan offset for this fan, computed by the parent (it also sizes the fan wrapper). */
-  xOffset: number
+  /** Fan x position for this card, computed by the parent (it also sizes the fan wrapper). */
+  fanX: number
   /** Adaptive mobile metrics for this fan, computed by the parent (null on desktop). */
   mobileMetrics: MobileCardMetrics | null
   /**
-   * Explicit card width so the fan's right edge is flush: extent - index *
-   * xOffset. Text is left-aligned with overflow hidden, so the leading digit
-   * sits at the left padding (visible in every peek) and the rest clips.
-   * Undefined until the parent has measured the fan.
+   * Explicit card width so the fan's right edge is flush: extent - fanX.
+   * Text is left-aligned with overflow hidden, so the significant prefix
+   * ("800,") sits at the left padding (visible in every peek) and the rest
+   * clips. Undefined until the parent has measured the fan.
    */
   fanWidth?: number
   /**
@@ -39,7 +39,7 @@ export function DraggableCard({
   placeValue,
   index,
   totalCards,
-  xOffset,
+  fanX,
   mobileMetrics,
   fanWidth,
   naturalWidth,
@@ -50,17 +50,17 @@ export function DraggableCard({
 }: DraggableCardProps) {
   const useDraggableProps = useMemo(
     () => ({
-      // The fan anchors on evenly spaced LEFT edges (index * xOffset), not
-      // on card centers: card widths vary with place value ("900,000" vs
-      // "4"), and center anchoring made the back cards' peeks far wider
-      // than one offset (a "40" double peek) and the visible fan lopsided.
-      // Even left edges keep every peek exactly one xOffset wide; the
-      // parent sizes the fan wrapper to the measured extent and centers it,
-      // so the visible fan is centered too.
-      initialX: index * xOffset,
+      // The fan anchors on cumulative peek widths (fanX), not on card
+      // centers or even offsets: each card's peek fits its significant
+      // prefix ("800,", "500"), so peeks vary with place value. The parent
+      // measures the peeks and centers the fan wrapper, so the visible fan
+      // is centered regardless of per-card content widths.
+      initialX: fanX,
       initialY: index * CARD_Y_OFFSET,
-      // Stable Mix seed on the original fan formula (see useDraggable).
-      scatterSeed: index * xOffset,
+      // Stable per-card discriminator for the Mix scatter PRNG: the index
+      // alone is stable across renders, so the scatter pattern never
+      // reshuffles under a layout change (see useDraggable).
+      scatterSeed: index,
       resetTrigger,
       randomizeTrigger,
       scatterArea,
@@ -69,7 +69,7 @@ export function DraggableCard({
       // their full text.
       naturalCardWidth: naturalWidth,
     }),
-    [index, xOffset, resetTrigger, randomizeTrigger, scatterArea, naturalWidth]
+    [index, fanX, resetTrigger, randomizeTrigger, scatterArea, naturalWidth]
   )
 
   const cardColor = useCallback((placeValue: number) => CARD_COLORS[placeValue], [])
@@ -90,9 +90,9 @@ export function DraggableCard({
   // A card away from its fan home (dragged, dropped, Mix-scattered,
   // keyboard-moved) renders at its natural width with visible overflow so
   // the full place value shows. At home it keeps the assigned fan width
-  // with overflow hidden: left-aligned text puts the leading digit at the
-  // left padding, visible in every peek, and the right edge stays flush.
-  const isDisplaced = position.x !== index * xOffset || position.y !== index * CARD_Y_OFFSET
+  // with overflow hidden: left-aligned text puts the significant prefix at
+  // the left padding, visible in every peek, and the right edge stays flush.
+  const isDisplaced = position.x !== fanX || position.y !== index * CARD_Y_OFFSET
   const atFanHome = fanWidth !== undefined && !isDisplaced
 
   return (
@@ -103,10 +103,9 @@ export function DraggableCard({
       className={`flex items-center justify-start gap-0 ${atFanHome ? 'overflow-hidden' : ''} px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
       style={{
         position: 'absolute',
-        // Cards anchor on the fan wrapper's left edge: the parent spaces
-        // left edges evenly (index * xOffset) and centers the wrapper, so
-        // every peek is exactly one offset wide and the visible fan is
-        // centered regardless of per-card content widths.
+        // Cards anchor on the fan wrapper's left edge at their cumulative
+        // peek offset (fanX); the parent centers the wrapper, so the
+        // visible fan is centered regardless of per-card content widths.
         left: 0,
         transform: `translate(${position.x}px, ${position.y}px)`,
         userSelect: 'none',

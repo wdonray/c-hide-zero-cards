@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   CARD_COLORS,
-  CARD_X_OFFSET,
   CARD_Y_OFFSET,
   DEFAULT_MAX_RANDOM_NUMBER,
   FAKE_ZERO_NUMBERS,
@@ -49,7 +48,6 @@ describe('game limits', () => {
 
 describe('ui constants', () => {
   it('defines card layout offsets', () => {
-    expect(CARD_X_OFFSET).toBe(46)
     expect(CARD_Y_OFFSET).toBe(0)
   })
 
