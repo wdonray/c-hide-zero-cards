@@ -49,12 +49,16 @@ behavior on your own.
 - **Mobile is responsive, portrait-first.** No mobile warning dialog, no
   rotation lock (iOS Safari cannot lock orientation, so a rotate nag would just
   replace one annoyance with another).
-- **Card fan stays a fan.** `useIsMobile()` (matchMedia, SSR-safe) plus
-  `getCardXOffset()` in `lib/cardLayout.ts` drive the layout: desktop keeps the
-  fixed 46px cascading overlap (8px card padding plus one full digit advance
-  at 60px text, so no leading digit is clipped); below 768px the _same_ fan
-  compresses so all 10 cards fit a 375px viewport. Never reflow into a grid
-  or plain row.
+- **Card fan stays a fan.** `useIsMobile()` (matchMedia, SSR-safe) drives the
+  layout: each card's peek shows its SIGNIFICANT PREFIX (up to and including
+  the first comma, else the full text: "800," / "40," / "500" / "5"), measured
+  empirically in place with a Range so the thousands comma is visible and
+  each remaining card's place value stays readable (2026-10-05 redesign,
+  superseding the single-digit-peek approach). Card i sits at the cumulative
+  sum of the previous cards' peek widths; the last card shows its full
+  natural width. Below 768px the _same_ fan compresses via
+  `getMobileCardMetrics()` in `lib/cardLayout.ts` so the whole fan fits a
+  375px viewport. Never reflow into a grid or plain row.
 - **44px touch targets are coarse-pointer-gated.** Use
   `COARSE_POINTER_TOUCH_TARGET` (`pointer-coarse:min-h-11 min-w-11`) so the
   desktop mouse layout is untouched.
@@ -74,24 +78,26 @@ behavior on your own.
   footer, never `position: fixed`, so no overlap math is needed.
 - **Hero card sizing.** `getMobileCardMetrics()` in `lib/cardLayout.ts`
   scales the fan up on mobile (fewer digits = bigger cards, capped at the
-  desktop 60px) while keeping every peek exactly one digit wide (offset =
-  card left padding + ceil(0.62 * font size), min 12px, so the leading digit
-  is never clipped). The fan is vertically centered via a
-  mobile-only flex-column chain (body > main > section > workspace). The
-  cards anchor on evenly spaced left edges (`index * xOffset`) inside a
-  wrapper sized to `(n-1) * xOffset + naturalWidth(last card)` (`getFanExtent()`
-  in `lib/cardLayout.ts`) that the flex workspace centers via `justify-content`,
-  so the visible fan is centered even though card widths vary with place value.
-  Card text is left-aligned with `overflow: hidden` at fan home, so every peek
-  shows its leading digit and each card's right edge lands flush at
-  `extent - index * xOffset`; the extent is driven by the last (top, narrowest)
-  card alone, never by a wide back card (max-ing over all cards once inflated
-  the top card to ~3x its natural width). A card away from its fan home
-  (dragged, Mix-scattered, keyboard-moved) renders at its natural width with
-  visible overflow so the full place value shows, and the Mix scatter clamp
-  uses that natural width. Widths are
-  measured in a layout effect, so the first paint already has the correct
-  size (no flash, and spawned numbers are centered from the first frame).
+  desktop 60px) and chooses a font size so the sum of the per-card peek
+  widths plus the last card's natural width fits the viewport (sum-of-peeks
+  char model + shrink-to-fit loop, 10px floor). The fan is vertically
+  centered via a mobile-only flex-column chain (body > main > section >
+  workspace). The cards anchor on cumulative peek widths inside a wrapper
+  sized to sum(peeks) + naturalWidth(last card) (`getFanExtent(peekWidths,
+naturalWidth)` in `lib/cardLayout.ts`) that the flex workspace centers via
+  `justify-content`, so the visible fan is centered even though card widths
+  vary with place value. Card text is left-aligned with `overflow: hidden`
+  at fan home, so every peek shows its significant prefix and each card's
+  right edge lands flush at the extent; the extent is the cumulative peeks
+  plus the last (top) card's natural width, never a max over all cards
+  (max-ing once inflated the top card to ~3x its natural width). A card away
+  from its fan home (dragged, Mix-scattered, keyboard-moved) renders at its
+  natural width with visible overflow so the full place value shows, and the
+  Mix scatter clamp uses that natural width. Widths are measured in a layout
+  effect, so the first paint already has the correct size (no flash, and
+  spawned numbers are centered from the first frame). Desktop keeps the
+  per-card measured peeks (no fixed offset); `getCardXOffset`,
+  `CARD_X_OFFSET`, and the mobile peek char models were removed.
 
 - **No em dashes in user-facing copy.** Use commas, colons, or split the
   sentence instead.

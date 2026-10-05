@@ -11,7 +11,7 @@ import {
   FIRST_TIME_TOAST_STYLE,
   NumberFormsDialogTab,
 } from '@/lib/constants'
-import { getCardXOffset, getFanExtent, getMobileCardMetrics } from '@/lib/cardLayout'
+import { getFanExtent, getFanPositions, getMobileCardMetrics, getPeekText } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
@@ -54,24 +54,24 @@ export function HomePageClient() {
     return filteredCards.toReversed()
   }, [inputNumber, showZeroCards])
 
-  // Fan metrics, lifted from DraggableCard: the parent needs the offset to
-  // size the fan wrapper, and every card shares the same fan.
-  // Below the mobile breakpoint the cards are the hero: they grow to fill
-  // the viewport (fewer digits = bigger cards) while the fan keeps the exact
-  // desktop peeking character via a proportional offset. Desktop keeps the
-  // fixed 36px fan at text-6xl.
-  const mobileMetrics = useMemo(
-    () => (isMobile && typeof window !== 'undefined' ? getMobileCardMetrics(cards.length, window.innerWidth) : null),
-    [isMobile, cards.length]
-  )
-  const xOffset = useMemo(
-    () =>
-      mobileMetrics?.xOffset ??
-      getCardXOffset(cards.length, isMobile && typeof window !== 'undefined' ? window.innerWidth : Infinity),
-    [isMobile, mobileMetrics, cards.length]
+  // Display text per card ("800,000", "500", "2", or a fake zero like
+  // "00,000"). The mobile fan metrics need these to model the wide peeks.
+  const displayTexts = useMemo(
+    () => cards.map((card) => card.fakeNumbers ?? (card.firstDigit * card.placeValue).toLocaleString()),
+    [cards]
   )
 
-  // Fan layout: cards anchor on evenly spaced left edges (index * xOffset)
+  // Fan metrics, lifted from DraggableCard: the parent needs the font size
+  // to size the fan wrapper, and every card shares the same fan.
+  // Below the mobile breakpoint the cards are the hero: they grow to fill
+  // the viewport (fewer digits = bigger cards). Desktop keeps text-6xl.
+  const mobileMetrics = useMemo(
+    () => (isMobile && typeof window !== 'undefined' ? getMobileCardMetrics(displayTexts, window.innerWidth) : null),
+    [isMobile, displayTexts]
+  )
+
+  // Fan layout: each card anchors on its cumulative peek offset (the sum of
+  // the previous cards' significant-prefix peeks: "800," / "500" / "2")
   // inside a wrapper sized to the fan extent. The wrapper is a flex item of
   // the workspace (which centers it via justify-content), so the visible
   // fan is centered even though card widths vary with place value.
@@ -79,14 +79,20 @@ export function HomePageClient() {
   // mobile fan can exceed the viewport; it then overflows centered, as the
   // cards did before this change).
   //
-  // The extent is (n - 1) peeks plus the LAST (top, narrowest) card's natural
+  // Peek widths are measured empirically, never modeled: a Range over each
+  // card's significant prefix ("800," in "800,000") gives its exact rendered
+  // width in place, with the card's real font, tracking, and letter-spacing.
+  // A char-count model is too imprecise with the comma, so it is only used
+  // inside getMobileCardMetrics to choose the mobile font size.
+  //
+  // The extent is the cumulative peeks plus the LAST (top) card's natural
   // width, never a max over all cards: max-ing let a wide back card
   // ("700,000") inflate the top card ("5") to ~3x its natural width. Each
-  // card gets an assigned width (extent - index * xOffset) with its text
-  // left-aligned and overflow hidden, so every peek shows its leading digit
-  // and the fan's right edge is flush. A card away from its fan home
-  // (dragged, Mix-scattered, keyboard-moved) renders at its natural width
-  // instead, so the full place value stays readable.
+  // card gets an assigned width (extent - fanX) with its text left-aligned
+  // and overflow hidden, so every peek shows its significant prefix and the
+  // fan's right edge is flush. A card away from its fan home (dragged,
+  // Mix-scattered, keyboard-moved) renders at its natural width instead, so
+  // the full place value stays readable.
   //
   // Natural widths are derived from the text itself (inner.scrollWidth +
   // the card's horizontal padding), not the card's offsetWidth: the inner
@@ -99,9 +105,10 @@ export function HomePageClient() {
     extent: number
     height: number
     naturals: number[]
+    positions: number[]
   } | null>(null)
   const [measureTick, setMeasureTick] = useState(0)
-  const measureKey = `${inputNumber}|${showZeroCards}|${xOffset}`
+  const measureKey = `${inputNumber}|${showZeroCards}|${mobileMetrics?.fontSize ?? 'd'}`
 
   useLayoutEffect(() => {
     const fanEl = fanRef.current
@@ -113,20 +120,38 @@ export function HomePageClient() {
       const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
       return (child.firstElementChild?.scrollWidth ?? 0) + padX
     })
-    // Extent from the last card only: a wide back card must never inflate
-    // the top card.
-    const extent = getFanExtent(naturals[naturals.length - 1], cards.length, xOffset)
+    // Peek widths: left padding plus the rendered width of the significant
+    // prefix, measured in place with a Range (exact font, tracking, and
+    // letter-spacing; the comma's trailing spacing is included because the
+    // comma is followed by more text in the card). The last card shows its
+    // full natural width, so it has no peek.
+    const peekWidths = children.map((child, i) => {
+      if (i === children.length - 1) return 0
+      const padLeft = parseFloat(getComputedStyle(child).paddingLeft)
+      const inner = child.firstElementChild as HTMLElement | null
+      const textNode = inner?.firstChild as Text | null
+      const peekLength = getPeekText(displayTexts[i]).length
+      if (!textNode || peekLength === 0) return padLeft
+      const range = document.createRange()
+      range.setStart(textNode, 0)
+      range.setEnd(textNode, Math.min(peekLength, textNode.length))
+      return padLeft + range.getBoundingClientRect().width
+    })
+    const positions = getFanPositions(peekWidths.slice(0, -1))
+    const extent = getFanExtent(peekWidths.slice(0, -1), naturals[naturals.length - 1])
     const height = Math.max(...children.map((child) => child.offsetHeight))
     setFanLayout((prev) =>
       prev?.key === measureKey &&
       prev.extent === extent &&
       prev.height === height &&
       prev.naturals.length === naturals.length &&
-      prev.naturals.every((w, i) => w === naturals[i])
+      prev.naturals.every((w, i) => w === naturals[i]) &&
+      prev.positions.length === positions.length &&
+      prev.positions.every((x, i) => x === positions[i])
         ? prev
-        : { key: measureKey, extent, height, naturals }
+        : { key: measureKey, extent, height, naturals, positions }
     )
-  }, [measureKey, cards.length, xOffset, measureTick])
+  }, [measureKey, cards.length, displayTexts, measureTick])
 
   // Re-measure once web fonts arrive (card widths are text-driven) and on
   // resize/zoom (the mobile fan metrics depend on the viewport width).
@@ -207,9 +232,9 @@ export function HomePageClient() {
                   fakeNumbers={card.fakeNumbers}
                   index={index}
                   totalCards={cards.length}
-                  xOffset={xOffset}
+                  fanX={layout ? layout.positions[index] : 0}
                   mobileMetrics={mobileMetrics}
-                  fanWidth={layout ? layout.extent - index * xOffset : undefined}
+                  fanWidth={layout ? layout.extent - layout.positions[index] : undefined}
                   naturalWidth={layout ? layout.naturals[index] : undefined}
                   resetTrigger={resetTrigger}
                   randomizeTrigger={randomizeTrigger}

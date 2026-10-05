@@ -1,101 +1,94 @@
-import { CARD_X_OFFSET, CARD_X_OFFSET_MOBILE_MIN, MOBILE_WIDTH } from './constants'
-
 /**
- * Horizontal fan offset between place-value cards.
+ * Significant prefix of a card's display text: the part shown in the card's
+ * peek. Up to and including the first comma if present, so the thousands
+ * separator stays visible ("800,000" -> "800,", "40,000" -> "40,",
+ * "1,000,000" -> "1,"); otherwise the full text ("500" -> "500",
+ * "90" -> "90", "5" -> "5", "0" -> "0"). Each remaining card's place value
+ * stays readable when zeros are hidden: 800,502 reads "800," / "500" / "2",
+ * never "852".
  *
- * Desktop keeps the fixed 46px fan (CARD_X_OFFSET: 8px card padding plus one
- * full digit advance at 60px text). On narrow viewports the fan is
- * compressed so every card stays inside the viewport: each card is
- * centered in the workspace and shifted right by `index * offset`, so the
- * rightmost card's far edge must fit in half the viewport width.
- *
- * Pure function of (totalCards, viewportWidth) so it is unit-testable and
- * behaves identically on server and client for the same inputs.
+ * Pure function of the display text; unit-testable.
  */
-export function getCardXOffset(totalCards: number, viewportWidth: number): number {
-  if (totalCards <= 1 || viewportWidth >= MOBILE_WIDTH) {
-    return CARD_X_OFFSET
-  }
-  // Half the workspace width, minus the page padding (p-8 = 32px per side)
-  // and a small safety margin.
-  const halfAvailable = viewportWidth / 2 - 40
-  // Reserve ~16px for half of the ones-card width (the narrowest card).
-  const maxOffset = Math.floor((halfAvailable - 16) / (totalCards - 1))
-  return Math.min(CARD_X_OFFSET, Math.max(CARD_X_OFFSET_MOBILE_MIN, maxOffset))
-}
-
-/** Conservative longest card-content length (chars) for a fan of n cards. */
-function maxCardChars(totalCards: number): number {
-  if (totalCards >= 10) return 12 // e.g. "0,000,000,000"
-  if (totalCards >= 7) return 11 // e.g. "0,000,000"
-  if (totalCards >= 4) return 8
-  return 6
+export function getPeekText(displayText: string): string {
+  const commaIndex = displayText.indexOf(',')
+  return commaIndex === -1 ? displayText : displayText.slice(0, commaIndex + 1)
 }
 
 export interface MobileCardMetrics {
   /** Card font size in px, chosen so the whole fan fits the viewport. */
   fontSize: number
-  /**
-   * Horizontal fan offset in px: the card's left padding plus one full
-   * digit advance, so every peek shows its leading digit fully instead of
-   * clipping it under the next card.
-   */
-  xOffset: number
 }
 
 /**
- * Visible horizontal extent of a left-edge-anchored card fan, measured from
- * the first card's left edge: (n - 1) even peeks plus the top (last) card's
- * natural width. The extent is driven by the last card alone, never by a
- * wide back card ("700,000"): max-ing over all cards gave the top card
- * ("5") ~3x its natural width, a giant block with a lonely centered digit.
+ * Left-edge x positions for a fan with per-card measured peek widths.
+ * Card 0 starts at 0; each subsequent card starts where the previous
+ * card's peek ends. `peekWidths` has one entry per card except the last
+ * (the last card shows its full natural width, so it has no peek);
+ * the returned array has one entry per card.
  *
- * Pure function of (lastCardWidth, totalCards, xOffset); unit-testable.
+ * Pure function; unit-testable.
  */
-export function getFanExtent(lastCardWidth: number, totalCards: number, xOffset: number): number {
-  if (totalCards === 0) return 0
-  return (totalCards - 1) * xOffset + lastCardWidth
+export function getFanPositions(peekWidths: number[]): number[] {
+  const positions: number[] = [0]
+  for (let i = 0; i < peekWidths.length; i++) {
+    positions.push(positions[i] + peekWidths[i])
+  }
+  return positions
 }
 
 /**
- * Peek width for a mobile fan at the given font size: the card's left
- * padding plus one full digit advance, so the leading digit is never
- * clipped by the next card. (The old 0.6 * fontSize ratio dates from the
- * center-anchored era, when effective peeks were wider; with even
- * left-edge peeks it clipped a few px of digit ink on every card.)
+ * Visible horizontal extent of the fan: the cumulative peek widths plus
+ * the last (top) card's full natural width. Driven by measured widths,
+ * never by a max over cards (max-ing once inflated the top card to ~3x
+ * its natural width).
  *
- * Pure function of fontSize; unit-testable.
+ * Pure function; unit-testable.
  */
-export function mobilePeekForFontSize(fontSize: number): number {
-  // Matches the card's mobile padding override in DraggableCard
-  // (fontSize * 0.15 horizontal).
-  return Math.round(fontSize * 0.15) + Math.ceil(0.62 * fontSize)
+export function getFanExtent(peekWidths: number[], lastCardWidth: number): number {
+  return peekWidths.reduce((sum, w) => sum + w, 0) + lastCardWidth
 }
 
 /**
  * Adaptive card metrics for narrow viewports: the cards are the hero of the
  * app, so instead of the fixed small mobile size they grow to fill the
- * available width — fewer digits means bigger cards. Each peek fits the
- * card's left padding plus one full digit advance (see
- * mobilePeekForFontSize), so every leading digit stays fully visible.
+ * available width — fewer digits means bigger cards. The fan width model
+ * sums the per-card peek widths (each peek fits its significant prefix)
+ * plus the last card's full width, then shrinks the font until the modeled
+ * fan fits the viewport.
  *
- * Pure function of (totalCards, viewportWidth); unit-testable.
+ * Pure function of (displayTexts, viewportWidth); unit-testable.
  */
-export function getMobileCardMetrics(totalCards: number, viewportWidth: number): MobileCardMetrics {
+export function getMobileCardMetrics(displayTexts: string[], viewportWidth: number): MobileCardMetrics {
   // Page padding on mobile (px-4 = 16px per side).
   const available = viewportWidth - 32
-  const chars = maxCardChars(totalCards)
-  // Fan width model: (n-1) peeks at ~0.79 * fontSize plus one full card at
-  // ~0.92 * fontSize per char (0.62 digit advance + 0.3 letter spacing).
-  let fontSize = Math.min(60, Math.floor(available / ((totalCards - 1) * 0.79 + chars * 0.92)))
-  // The offset floor (12px) breaks the proportional model on very narrow
-  // viewports, so shrink until the real fan (with the real clamped offset)
-  // fits. Terminates: each step strictly reduces the fan width.
-  for (;;) {
-    const xOffset = Math.min(CARD_X_OFFSET, Math.max(CARD_X_OFFSET_MOBILE_MIN, mobilePeekForFontSize(fontSize)))
-    if ((totalCards - 1) * xOffset + chars * 0.92 * fontSize <= available || fontSize <= 10) break
+  if (displayTexts.length === 0) return { fontSize: 60 }
+
+  const peekChars = displayTexts.slice(0, -1).map((t) => getPeekText(t).length)
+  const lastChars = displayTexts[displayTexts.length - 1].length
+
+  // Fan width model at font size fs. Each peek is the card's left padding
+  // plus its significant prefix (0.62 digit advance + 0.3 letter-spacing
+  // per char, matching the card's tabular-nums + tracking); the last card
+  // contributes its full natural width (both paddings). pad(fs) matches the
+  // card's mobile padding override (fontSize * 0.15 horizontal). The model
+  // is conservative (a comma is narrower than 0.92em), so the real fan fits
+  // with room to spare.
+  const fanWidthAt = (fs: number) => {
+    const pad = Math.round(fs * 0.15)
+    let width = 2 * pad + lastChars * 0.92 * fs
+    for (const chars of peekChars) {
+      width += pad + chars * 0.92 * fs
+    }
+    return width
+  }
+
+  // Shrink-to-fit: start at the desktop 60px and decrement until the modeled
+  // fan fits. Terminates: fanWidthAt strictly decreases as fs decreases.
+  // The 10px floor keeps text readable (it replaces the old 12px offset
+  // floor now that peeks are per-card measured rather than even).
+  let fontSize = 60
+  while (fontSize > 10 && fanWidthAt(fontSize) > available) {
     fontSize -= 1
   }
-  const xOffset = Math.min(CARD_X_OFFSET, Math.max(CARD_X_OFFSET_MOBILE_MIN, mobilePeekForFontSize(fontSize)))
-  return { fontSize, xOffset }
+  return { fontSize }
 }
