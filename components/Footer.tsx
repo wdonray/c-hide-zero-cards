@@ -1,6 +1,8 @@
 import { BuyMeACoffeeButton } from '@/components/BuyMeACoffeeButton'
 import { VERSION } from '@/lib/version'
 
+const CURRENT_YEAR = new Date().getFullYear()
+
 export function Footer() {
   return (
     <footer className="sticky bottom-0 z-50 w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -27,7 +29,7 @@ export function Footer() {
           <BuyMeACoffeeButton variant="ghost" size="sm" />
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>© {new Date().getFullYear()} Donray Williams</span>
+          <span>© {CURRENT_YEAR} Donray Williams</span>
           <span>•</span>
           <span>v{VERSION}</span>
         </div>
