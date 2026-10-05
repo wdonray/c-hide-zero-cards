@@ -77,8 +77,8 @@ test.describe('toolbar actions', () => {
     await page.getByTitle('Randomize card position', { exact: true }).click()
     await expect(resetButton).toBeEnabled()
 
-    // Card repositioning happens in a React effect, so wait for it to flush
-    // instead of asserting on the first DOM read (racy).
+    // Card repositioning is applied during render, so poll instead of
+    // asserting on the first DOM read (racy).
     await expect
       .poll(async () => {
         const t = await cardDivs.evaluateAll((els) => els.map((el) => (el as HTMLElement).style.transform))

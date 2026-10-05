@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input'
 import { MAX_NUMBER } from '@/lib/constants'
-import { useEffect, useMemo, useState, forwardRef, useImperativeHandle, useRef } from 'react'
+import { useMemo, useState, forwardRef, useImperativeHandle, useRef } from 'react'
 
 interface NumberInputProps {
   value: number | null
@@ -14,6 +14,13 @@ export interface NumberInputRef {
 export const NumberInput = forwardRef<NumberInputRef, NumberInputProps>(({ value, onChange }, ref) => {
   const [isTouched, setIsTouched] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // One-way latch: stop the attention pulse once a number has been entered.
+  // Adjusted during render (React's endorsed pattern for prop-derived state)
+  // instead of an effect: no cascading render, identical behavior.
+  if (value && !isTouched) {
+    setIsTouched(true)
+  }
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -41,12 +48,6 @@ export const NumberInput = forwardRef<NumberInputRef, NumberInputProps>(({ value
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     })
-  }, [value])
-
-  useEffect(() => {
-    if (value) {
-      setIsTouched(true)
-    }
   }, [value])
 
   return (

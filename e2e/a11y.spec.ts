@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { CARD_COLORS } from '@/lib/constants'
 
 /**
  * Automated WCAG 2.2 AA scan of the app, powered by axe-core
@@ -54,7 +53,10 @@ test.describe('accessibility', () => {
               .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
               .analyze()
 
-            expect(withoutBlockedViolations(results)).toEqual([])
+            // No filters: the full WCAG 2.2 AA gate applies, including the
+            // place-value card palette and the Roll button (both recolored to
+            // pass 4.5:1, owner decision 2026-10-05).
+            expect(results.violations).toEqual([])
           })
         }
       }
@@ -95,55 +97,13 @@ test.describe('accessibility', () => {
             .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
             .analyze()
 
-          // The toolbar (with the Roll button) is part of the root layout, so the
-          // same blocked-violation filter applies here as on the home page.
-          expect(withoutBlockedViolations(results)).toEqual([])
+          // Same unfiltered gate as the home page scan above.
+          expect(results.violations).toEqual([])
         })
       }
     })
   }
 })
-
-/**
- * Known blocked violation (owner decision pending, see PLAN.md):
- * the desktop "Roll" button label is white text on blue-500 (#2b7fff) at
- * 3.76:1, below WCAG AA's 4.5:1. Fixing it requires recoloring or resizing
- * button text, which changes the visual design and needs owner approval.
- * This filter keeps the gate strict for every other violation: if the button
- * markup changes, the filter stops matching and the scan fails loudly.
- */
-function withoutBlockedViolations(results: Awaited<ReturnType<AxeBuilder['analyze']>>) {
-  const isBlockedRollButton = (violationId: string, target: readonly unknown[]) =>
-    violationId === 'color-contrast' &&
-    target.some((selector) => typeof selector === 'string' && selector.includes('md\\:flex'))
-
-  return results.violations
-    .map((violation) => ({
-      ...violation,
-      nodes: violation.nodes.filter(
-        (node) => !isBlockedRollButton(violation.id, node.target) && !isBlockedCardText(violation.id, node.target)
-      ),
-    }))
-    .filter((violation) => violation.nodes.length > 0)
-}
-
-/**
- * Known blocked violation (owner decision pending):
- * white digit text on the bright place-value card colors falls below 4.5:1
- * at mobile text sizes (e.g. yellow-300 at 1.32:1, red-500 at 3.8:1). The
- * palette is the teaching design itself (each place value has its color),
- * so recoloring needs the owner's approval just like the Roll button above.
- * Scoped to the CARD_COLORS palette and the card markup: if either changes,
- * the filter stops matching and the scan fails loudly.
- */
-const CARD_TEXT_TARGET = new RegExp(`^\\.(${Object.values(CARD_COLORS).join('|')}) > div$`)
-
-function isBlockedCardText(violationId: string, target: readonly unknown[]) {
-  return (
-    violationId === 'color-contrast' &&
-    target.some((selector) => typeof selector === 'string' && CARD_TEXT_TARGET.test(selector))
-  )
-}
 
 test.describe('keyboard operability', () => {
   test('cards can be moved with arrow keys', async ({ page }) => {

@@ -43,7 +43,7 @@ export function Toolbar() {
                 size="sm"
                 onClick={handleRandomNumber}
                 disabled={isDiceRolling}
-                className={`md:hidden ${COARSE_POINTER_TOUCH_TARGET}`}
+                className={`md:hidden bg-blue-600 hover:bg-blue-700 ${COARSE_POINTER_TOUCH_TARGET}`}
                 title="Roll a random number"
               >
                 <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
@@ -53,7 +53,7 @@ export function Toolbar() {
                 size="sm"
                 onClick={handleRandomNumber}
                 disabled={isDiceRolling}
-                className={`hidden md:flex rounded-r-none ${COARSE_POINTER_TOUCH_TARGET}`}
+                className={`hidden md:flex rounded-r-none bg-blue-600 hover:bg-blue-700 ${COARSE_POINTER_TOUCH_TARGET}`}
                 title="Roll a random number"
               >
                 <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />

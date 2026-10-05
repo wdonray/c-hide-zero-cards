@@ -1,17 +1,24 @@
 'use client'
 
-import { useState, useEffect, ReactNode } from 'react'
+import { useSyncExternalStore, ReactNode } from 'react'
 
 interface HydrationCheckProps {
   children: ReactNode
 }
 
-export function HydrationCheck({ children }: HydrationCheckProps) {
-  const [isHydrated, setIsHydrated] = useState(false)
+function subscribe() {
+  return () => {}
+}
 
-  useEffect(() => {
-    setIsHydrated(true)
-  }, [])
+export function HydrationCheck({ children }: HydrationCheckProps) {
+  // False on the server (and during hydration, matching SSR output), true on
+  // the client afterwards. Replaces the setState-in-effect mount flag with
+  // identical semantics and no cascading render.
+  const isHydrated = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
+  )
 
   if (!isHydrated) {
     return null // Prevent rendering until hydration is complete

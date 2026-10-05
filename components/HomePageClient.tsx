@@ -22,25 +22,16 @@ export function HomePageClient() {
   const {
     inputNumber,
     setInputNumber,
-    setResetTrigger,
-    setRandomizeTrigger,
     resetTrigger,
     randomizeTrigger,
     showZeroCards,
     showNumberFormsDialog,
     setShowNumberFormsDialog,
     isHeaderCollapsed,
-    setCardsMoved,
     numberInputRef,
   } = useHeaderContext()
 
   const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.WORD)
-
-  const [hasShownFirstTimeToast, setHasShownFirstTimeToast] = useState(() => {
-    if (typeof window === 'undefined') return false
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST)
-    return saved !== null ? JSON.parse(saved) : false
-  })
 
   const cards = useMemo(() => {
     if (!inputNumber) return []
@@ -59,24 +50,17 @@ export function HomePageClient() {
   }, [inputNumber, showZeroCards])
 
   useEffect(() => {
-    if (inputNumber === null) {
-      setResetTrigger(0)
-      setRandomizeTrigger(0)
-      setCardsMoved(false)
-    }
-  }, [inputNumber, setResetTrigger, setRandomizeTrigger, setCardsMoved])
-
-  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
+  // One-time toast: guarded by localStorage directly, so the effect only
+  // touches external systems (storage + the toast library) and never state.
   useEffect(() => {
-    if (cards.length > 1 && !hasShownFirstTimeToast) {
-      setHasShownFirstTimeToast(true)
+    if (cards.length > 1 && localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST) === null) {
       localStorage.setItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST, JSON.stringify(true))
       toast(<FirstTimeToast />, { duration: FIRST_TIME_TOAST_DURATION, style: FIRST_TIME_TOAST_STYLE })
     }
-  }, [cards, hasShownFirstTimeToast])
+  }, [cards])
 
   return (
     <>

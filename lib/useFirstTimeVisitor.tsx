@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
+import { createContext, useContext, useState, ReactNode } from 'react'
 import { LOCAL_STORAGE_KEYS } from '@/lib/constants'
 
 interface FirstTimeVisitorContextType {
@@ -12,19 +12,18 @@ interface FirstTimeVisitorContextType {
 const FirstTimeVisitorContext = createContext<FirstTimeVisitorContextType | undefined>(undefined)
 
 export function FirstTimeVisitorProvider({ children }: { children: ReactNode }) {
-  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false)
-  const [hasSeenWelcome, setHasSeenWelcome] = useState(false)
-
-  useEffect(() => {
-    // Check if user has seen the welcome dialog before
-    const hasSeen = localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_WELCOME_DIALOG)
-    if (!hasSeen) {
-      // First time visitor - show welcome dialog
-      setShowWelcomeDialog(true)
-    } else {
-      setHasSeenWelcome(true)
-    }
-  }, [])
+  // Read on first client render instead of in an effect: the lazy initializer
+  // runs client-side (guarded for SSR), so the dialog state is correct from
+  // the first paint with no cascading render. Same end state as the old
+  // mount effect.
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_WELCOME_DIALOG) === null
+  })
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_WELCOME_DIALOG) !== null
+  })
 
   const handleCloseWelcomeDialog = () => {
     setShowWelcomeDialog(false)
