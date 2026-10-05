@@ -16,12 +16,25 @@ import { Question } from '@phosphor-icons/react'
 import { Separator } from './ui/separator'
 import { InstructionalGuideDialogTab } from '@/lib/constants'
 import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
+import { useIsMobile } from '@/lib/useIsMobile'
 import { QuickStartSection } from './instructional-guide/QuickStartSection'
 import { ToolbarFeaturesSection } from './instructional-guide/ToolbarFeaturesSection'
 import { ActivitiesSection } from './instructional-guide/ActivitiesSection'
 import { AssessmentSection } from './instructional-guide/AssessmentSection'
 
 export function InstructionalGuideDialog() {
+  const isMobile = useIsMobile()
+
+  // Mobile (<768px) shows every section as a stacked, vertically-scrolling
+  // block labeled by a real heading — no tab row, no horizontal scrolling.
+  // Desktop keeps the tabbed layout exactly as before.
+  const mobileSections = [
+    { title: 'Quick Start', content: <QuickStartSection /> },
+    { title: 'Toolbar Features', content: <ToolbarFeaturesSection /> },
+    { title: 'Activities', content: <ActivitiesSection /> },
+    { title: 'Assessment', content: <AssessmentSection /> },
+  ]
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -48,51 +61,67 @@ export function InstructionalGuideDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue={InstructionalGuideDialogTab.QUICK_START} className="w-full min-w-0">
-          <div className="flex flex-col gap-4 items-center">
-            <TabsList className="max-w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12">
-              <TabsTrigger
-                value={InstructionalGuideDialogTab.QUICK_START}
-                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
-              >
-                Quick Start
-              </TabsTrigger>
-              <TabsTrigger
-                value={InstructionalGuideDialogTab.TOOLBAR_FEATURES}
-                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
-              >
-                Toolbar Features
-              </TabsTrigger>
-              <TabsTrigger
-                value={InstructionalGuideDialogTab.ACTIVITIES}
-                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
-              >
-                Activities
-              </TabsTrigger>
-              <TabsTrigger
-                value={InstructionalGuideDialogTab.ASSESSMENT}
-                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
-              >
-                Assessment
-              </TabsTrigger>
-            </TabsList>
-            <Separator />
-            <div className="w-full relative">
-              <TabsContent value={InstructionalGuideDialogTab.QUICK_START} className="mt-0">
-                <QuickStartSection />
-              </TabsContent>
-              <TabsContent value={InstructionalGuideDialogTab.TOOLBAR_FEATURES} className="mt-0">
-                <ToolbarFeaturesSection />
-              </TabsContent>
-              <TabsContent value={InstructionalGuideDialogTab.ACTIVITIES} className="mt-0">
-                <ActivitiesSection />
-              </TabsContent>
-              <TabsContent value={InstructionalGuideDialogTab.ASSESSMENT} className="mt-0">
-                <AssessmentSection />
-              </TabsContent>
-            </div>
+        {isMobile ? (
+          <div className="flex w-full min-w-0 flex-col gap-6">
+            {mobileSections.map((section) => {
+              const headingId = `guide-section-${section.title.toLowerCase().replace(/\s+/g, '-')}`
+              return (
+                <section key={section.title} aria-labelledby={headingId} className="w-full min-w-0">
+                  <h3 id={headingId} className="mb-2 text-base font-semibold">
+                    {section.title}
+                  </h3>
+                  {section.content}
+                </section>
+              )
+            })}
           </div>
-        </Tabs>
+        ) : (
+          <Tabs defaultValue={InstructionalGuideDialogTab.QUICK_START} className="w-full min-w-0">
+            <div className="flex flex-col gap-4 items-center">
+              <TabsList className="max-w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12">
+                <TabsTrigger
+                  value={InstructionalGuideDialogTab.QUICK_START}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                >
+                  Quick Start
+                </TabsTrigger>
+                <TabsTrigger
+                  value={InstructionalGuideDialogTab.TOOLBAR_FEATURES}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                >
+                  Toolbar Features
+                </TabsTrigger>
+                <TabsTrigger
+                  value={InstructionalGuideDialogTab.ACTIVITIES}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                >
+                  Activities
+                </TabsTrigger>
+                <TabsTrigger
+                  value={InstructionalGuideDialogTab.ASSESSMENT}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                >
+                  Assessment
+                </TabsTrigger>
+              </TabsList>
+              <Separator />
+              <div className="w-full relative">
+                <TabsContent value={InstructionalGuideDialogTab.QUICK_START} className="mt-0">
+                  <QuickStartSection />
+                </TabsContent>
+                <TabsContent value={InstructionalGuideDialogTab.TOOLBAR_FEATURES} className="mt-0">
+                  <ToolbarFeaturesSection />
+                </TabsContent>
+                <TabsContent value={InstructionalGuideDialogTab.ACTIVITIES} className="mt-0">
+                  <ActivitiesSection />
+                </TabsContent>
+                <TabsContent value={InstructionalGuideDialogTab.ASSESSMENT} className="mt-0">
+                  <AssessmentSection />
+                </TabsContent>
+              </div>
+            </div>
+          </Tabs>
+        )}
         <DialogFooter>
           <DialogClose asChild>
             <Button>Let&apos;s Start Teaching!</Button>
