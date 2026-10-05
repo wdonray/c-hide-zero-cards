@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils'
 
 /**
  * Tiny always-visible readout of the zero-cards toggle state. Rendered above
- * the mobile action bar and under the desktop toolbar so the current state
+ * the mobile action bar and, on desktop, above the number input at the top of
+ * the main content (below the toolbar's bottom border), so the current state
  * is glanceable. role="status" announces changes to screen readers.
  */
 export function ZeroStateIndicator({ className }: { className?: string }) {

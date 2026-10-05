@@ -12,7 +12,9 @@ import {
   NumberFormsDialogTab,
 } from '@/lib/constants'
 import { useHeaderContext } from '@/lib/useHeaderContext'
+import { useIsMobile } from '@/lib/useIsMobile'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
+import { ZeroStateIndicator } from '@/components/ZeroStateIndicator'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
 import { toast } from 'sonner'
 import { FirstTimeToast } from '@/components/FirstTimeToast'
@@ -31,6 +33,7 @@ export function HomePageClient() {
     isHeaderCollapsed,
     numberInputRef,
   } = useHeaderContext()
+  const isMobile = useIsMobile()
 
   const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.WORD)
 
@@ -79,6 +82,10 @@ export function HomePageClient() {
         aria-label="Interactive Place Value Cards"
       >
         <header className="flex flex-col items-center max-md:w-full">
+          {/* Desktop: the zero-state readout lives here, above the number
+              input and below the toolbar's bottom border. Mobile renders its
+              own instance above the bottom action bar instead. */}
+          {!isMobile && <ZeroStateIndicator className="mb-1.5" />}
           <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
         </header>
 

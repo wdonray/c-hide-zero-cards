@@ -3,8 +3,9 @@ import { test, expect, type Page } from '@playwright/test'
 /**
  * Two owner directives (2026-10-05):
  * 1. The Zero toggle state is glanceable: a tiny status text ("Zeros shown"
- *    / "Zeros hidden") sits above the mobile action bar and under the
- *    desktop toolbar, updating instantly with the toggle.
+ *    / "Zeros hidden") sits above the mobile action bar and, on desktop,
+ *    above the number input at the top of the main content (below the
+ *    toolbar's bottom border), updating instantly with the toggle.
  * 2. Opening a dialog/sheet moves focus inside it but NOT onto the close
  *    button, so no focus ring flashes on the X. Focus management itself is
  *    preserved (WCAG 2.4.3).
@@ -42,6 +43,8 @@ test.describe('zero toggle status text', () => {
       await page.getByPlaceholder('Type a number here!').fill('1203')
 
       const status = page.getByRole('status')
+      // Exactly one instance: the mobile bar owns it, the main content does not render it.
+      await expect(status).toHaveCount(1)
       await expect(status).toHaveText('Zeros shown')
 
       await page.getByRole('button', { name: 'Hide zero cards' }).click()
@@ -63,12 +66,14 @@ test.describe('zero toggle status text', () => {
   test.describe('desktop', () => {
     test.use({ viewport: { width: 1280, height: 800 } })
 
-    test('status text under the toolbar reflects the toggle instantly', async ({ page }) => {
+    test('status text above the number input reflects the toggle instantly', async ({ page }) => {
       await seed(page)
       await page.goto('/')
       await page.getByPlaceholder('Type a number here!').fill('1203')
 
       const status = page.getByRole('status')
+      // Exactly one instance: the main content owns it, the toolbar no longer does.
+      await expect(status).toHaveCount(1)
       await expect(status).toHaveText('Zeros shown')
 
       // Desktop toolbar button is named by its visible "Zero" label.
@@ -76,13 +81,17 @@ test.describe('zero toggle status text', () => {
       await zeroButton.click()
       await expect(status).toHaveText('Zeros hidden')
 
-      // Sits below the toolbar button row.
+      // Sits below the toolbar's bottom border and above the number input.
       const statusBox = await status.boundingBox()
-      const buttonBox = await zeroButton.boundingBox()
+      const toolbarBox = await page.locator('div.sticky.z-40').boundingBox()
+      const inputBox = await page.getByPlaceholder('Type a number here!').boundingBox()
       expect(statusBox).not.toBeNull()
-      expect(buttonBox).not.toBeNull()
+      expect(toolbarBox).not.toBeNull()
+      expect(inputBox).not.toBeNull()
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      expect(statusBox!.y).toBeGreaterThanOrEqual(buttonBox!.y + buttonBox!.height - 1)
+      expect(statusBox!.y).toBeGreaterThanOrEqual(toolbarBox!.y + toolbarBox!.height - 1)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      expect(statusBox!.y + statusBox!.height).toBeLessThanOrEqual(inputBox!.y + 1)
     })
   })
 })
