@@ -74,9 +74,14 @@ behavior on your own.
   scales the fan up on mobile (fewer digits = bigger cards, capped at the
   desktop 60px) while keeping the exact cascading-overlap peeking ratio
   (offset = 0.6 x font size, min 12px). The fan is vertically centered via a
-  mobile-only flex-column chain (body > main > section > workspace); the
-  cards themselves are absolutely positioned, so centering works through
-  their static position in the flex workspace, not through flex item layout.
+  mobile-only flex-column chain (body > main > section > workspace). The
+  cards anchor on evenly spaced left edges (`index * xOffset`) inside a
+  measured wrapper (`getFanExtent()` in `lib/cardLayout.ts`) that the flex
+  workspace centers via `justify-content`, so the visible fan is centered
+  even though card widths vary with place value; each card is widened to
+  `extent - index * xOffset` so the right edge stays flush. Widths are
+  measured in a layout effect, so the first paint already has the correct
+  size (no flash, and spawned numbers are centered from the first frame).
 
 - **No em dashes in user-facing copy.** Use commas, colons, or split the
   sentence instead.
@@ -86,9 +91,11 @@ behavior on your own.
 - **SEO is app-scoped.** Correct titles, meta descriptions, and functional
   markup only. Marketing-style SEO (growth, discovery, ranking) is out of
   scope.
-- **Coverage grows; thresholds follow.** `vitest run --coverage` runs in CI.
-  There are no coverage thresholds yet — add them once the suite covers the
-  app, and only ever raise them.
+- **Coverage grows; thresholds follow.** `vitest run --coverage` runs in CI
+  with 100% thresholds (statements/branches/functions/lines) — CI fails if
+  coverage drops. Thresholds only go up; never lower them. New lib code
+  needs unit tests; component files are not loaded by unit tests, so
+  changes there do not affect coverage.
 
 ## Gotchas
 
@@ -98,6 +105,14 @@ behavior on your own.
   screens; Radix then hides each from the accessibility tree. E2E tests that
   target the mobile alert seed `hzc-has-seen-welcome-dialog` in localStorage
   first.
+- Playwright's `baseURL` is hardcoded to `http://localhost:3000`. With
+  `CI=true`, `reuseExistingServer` is false, so Playwright starts its own
+  `next start` on :3000 — a stray personal server on :3217 or elsewhere is
+  ignored. Do not be surprised when local measurement servers go unused by
+  the suite.
+- Never `pkill -f` with a pattern that can match your own command line
+  (e.g. `pkill -f next-server` from a shell whose command contains it).
+  Kill test servers by exact PID from `ps aux | grep "[n]ext-server"`.
 
 ## Testing
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useEffect, useState } from 'react'
+import { useLayoutEffect, useMemo, useEffect, useRef, useState } from 'react'
 import { NumberInput } from '@/components/NumberInput'
 import { DraggableCard } from '@/components/DraggableCard'
 import {
@@ -11,6 +11,7 @@ import {
   FIRST_TIME_TOAST_STYLE,
   NumberFormsDialogTab,
 } from '@/lib/constants'
+import { getCardXOffset, getFanExtent, getMobileCardMetrics } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
@@ -52,6 +53,76 @@ export function HomePageClient() {
 
     return filteredCards.toReversed()
   }, [inputNumber, showZeroCards])
+
+  // Fan metrics, lifted from DraggableCard: the parent needs the offset to
+  // size the fan wrapper, and every card shares the same fan.
+  // Below the mobile breakpoint the cards are the hero: they grow to fill
+  // the viewport (fewer digits = bigger cards) while the fan keeps the exact
+  // desktop peeking character via a proportional offset. Desktop keeps the
+  // fixed 36px fan at text-6xl.
+  const mobileMetrics = useMemo(
+    () => (isMobile && typeof window !== 'undefined' ? getMobileCardMetrics(cards.length, window.innerWidth) : null),
+    [isMobile, cards.length]
+  )
+  const xOffset = useMemo(
+    () =>
+      mobileMetrics?.xOffset ??
+      getCardXOffset(cards.length, isMobile && typeof window !== 'undefined' ? window.innerWidth : Infinity),
+    [isMobile, mobileMetrics, cards.length]
+  )
+
+  // Fan layout: cards anchor on evenly spaced left edges (index * xOffset)
+  // inside a wrapper sized to the measured fan extent. The wrapper is a flex
+  // item of the workspace (which centers it via justify-content), so the
+  // visible fan is centered even though card widths vary with place value.
+  // shrink-0 keeps an oversized fan from being flex-shrunk (the one-card
+  // mobile fan can exceed the viewport; it then overflows centered, as the
+  // cards did before this change). Each card also gets an assigned width
+  // (extent - index * xOffset) so the fan's right edge is flush: without it,
+  // the wide back cards would extend past the narrower cards stacked on top
+  // and their trailing zeros would peek out on the right. Measured in a
+  // layout effect so the first paint already has the correct size (no flash).
+  //
+  // Natural widths are derived from the text itself (inner.scrollWidth +
+  // the card's horizontal padding), not the card's offsetWidth: the inner
+  // div shrink-fits its text, so this is the content-driven width on every
+  // pass (first paint, font swap, resize) with no drift.
+  const fanRef = useRef<HTMLDivElement>(null)
+  const [fanLayout, setFanLayout] = useState<{ key: string; extent: number; height: number } | null>(null)
+  const [measureTick, setMeasureTick] = useState(0)
+  const measureKey = `${inputNumber}|${showZeroCards}|${xOffset}`
+
+  useLayoutEffect(() => {
+    const fanEl = fanRef.current
+    if (!fanEl || cards.length === 0) return
+    const children = Array.from(fanEl.children) as HTMLElement[]
+    if (children.length !== cards.length) return
+    const naturals = children.map((child) => {
+      const style = getComputedStyle(child)
+      const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+      return (child.firstElementChild?.scrollWidth ?? 0) + padX
+    })
+    const extent = getFanExtent(naturals, xOffset)
+    const height = Math.max(...children.map((child) => child.offsetHeight))
+    setFanLayout((prev) =>
+      prev?.key === measureKey && prev.extent === extent && prev.height === height
+        ? prev
+        : { key: measureKey, extent, height }
+    )
+  }, [measureKey, cards.length, xOffset, measureTick])
+
+  // Re-measure once web fonts arrive (card widths are text-driven) and on
+  // resize/zoom (the mobile fan metrics depend on the viewport width).
+  useEffect(() => {
+    const bump = () => setMeasureTick((t) => t + 1)
+    if (document.fonts) {
+      document.fonts.ready.then(bump).catch(() => {})
+    }
+    window.addEventListener('resize', bump)
+    return () => window.removeEventListener('resize', bump)
+  }, [])
+
+  const layout = fanLayout?.key === measureKey ? fanLayout : null
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -105,9 +176,11 @@ export function HomePageClient() {
             </div>
           ) : (
             <div
+              ref={fanRef}
               role="application"
               aria-label="Draggable place value cards"
-              className="w-full h-full flex items-center justify-center"
+              className="relative shrink-0"
+              style={layout ? { width: layout.extent, height: layout.height } : undefined}
             >
               {cards.map((card, index) => (
                 <DraggableCard
@@ -117,6 +190,9 @@ export function HomePageClient() {
                   fakeNumbers={card.fakeNumbers}
                   index={index}
                   totalCards={cards.length}
+                  xOffset={xOffset}
+                  mobileMetrics={mobileMetrics}
+                  fanWidth={layout ? layout.extent - index * xOffset : undefined}
                   resetTrigger={resetTrigger}
                   randomizeTrigger={randomizeTrigger}
                   scatterArea={scatterArea}

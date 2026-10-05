@@ -40,6 +40,19 @@ export interface MobileCardMetrics {
 }
 
 /**
+ * Visible horizontal extent of a left-edge-anchored card fan, measured from
+ * the first card's left edge: max over cards of (index * xOffset + width).
+ * Card widths shrink with place value, so a back card usually decides the
+ * extent, but the max is taken explicitly rather than assumed.
+ *
+ * Pure function of (cardWidths, xOffset); unit-testable.
+ */
+export function getFanExtent(cardWidths: number[], xOffset: number): number {
+  if (cardWidths.length === 0) return 0
+  return Math.max(...cardWidths.map((width, index) => index * xOffset + width))
+}
+
+/**
  * Adaptive card metrics for narrow viewports: the cards are the hero of the
  * app, so instead of the fixed small mobile size they grow to fill the
  * available width — fewer digits means bigger cards. The fan keeps the exact
