@@ -1,14 +1,19 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * Card fan with wide significant-prefix peeks (owner feedback 2026-10-05,
- * supersedes the single-digit-peek direction):
+ * Card fan: single-digit peeks + separate comma elements + blanked (not
+ * removed) zero cards (owner reference 2026-10-05, supersedes PR #57's
+ * wide-peek design):
  *
- * Hiding zeros on 800,502 collapsed the fan to "852" (single-digit peeks),
- * which reads as the wrong number and destroys place-value meaning — and
- * the thousands comma never appeared. Each card's peek now fits its
- * significant prefix ("800,000" -> "800,", "500" -> "500"), so the fan
- * reads "800," / "500" / "2" with the comma visible.
+ * - Each card's peek fits exactly one digit (the leading digit), measured
+ *   empirically in place with a Range so it is never clipped.
+ * - Thousands separators are separate, non-interactive comma elements at
+ *   every 3 digits from the right, participating in fan layout like cards.
+ * - Hiding zeros never removes cards: zero cards stay in the fan with
+ *   their text blanked (visibility:hidden), preserving place-value
+ *   positions. Hidden 800,502 reads "8","","",",","5","","2", never "852".
+ * - A zero card's value is 0 and it displays "0" (no fake zero numbers):
+ *   701,323 reads "7","0","1",",","3","2","3", never "700,00,1,...".
  */
 
 async function seed(page: Page) {
@@ -19,58 +24,73 @@ async function seed(page: Page) {
   await page.goto('/')
 }
 
-function cardBoxes(page: Page) {
+interface FanItem {
+  kind: 'card' | 'comma'
+  text: string
+  left: number
+  right: number
+}
+
+/** All fan children in DOM order: cards and comma elements. */
+async function fanItems(page: Page): Promise<FanItem[]> {
   return page.evaluate(() => {
-    const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
-    return els.map((el) => {
-      const r = el.getBoundingClientRect()
-      return { text: el.innerText, left: r.x, right: r.x + r.width }
+    const fan = document.querySelector('[role="application"]')!
+    return Array.from(fan.children).map((el) => {
+      const htmlEl = el as HTMLElement
+      const r = htmlEl.getBoundingClientRect()
+      return {
+        kind: (el.getAttribute('data-testid') === 'fan-comma' ? 'comma' : 'card') as 'card' | 'comma',
+        text: htmlEl.innerText,
+        left: r.x,
+        right: r.x + r.width,
+      }
     })
   })
 }
 
 /**
- * For each card except the last: the significant prefix (up to and
- * including the first comma, else the full text) must match the expected
- * text, and the prefix must be fully visible — its rendered right edge sits
- * at or left of the covering card's left edge. The last card has no peek
- * (it shows its full natural width), so expectedPeeks has one entry per
- * card except the last.
+ * Every card except the last shows exactly its leading digit: the first
+ * character's ink (Range width minus trailing letter-spacing) ends at or
+ * before the next fan item's left edge, so the digit is never clipped by
+ * the covering item.
  */
-async function expectSignificantPrefixes(page: Page, expectedPeeks: string[]) {
+async function expectSingleDigitPeeks(page: Page) {
   const result = await page.evaluate(() => {
-    const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
-    return els.slice(0, -1).map((el, i) => {
-      const fullText = el.innerText
-      const commaIndex = fullText.indexOf(',')
-      const peekText = commaIndex === -1 ? fullText : fullText.slice(0, commaIndex + 1)
-      // Rendered rect of the significant prefix within the visible text.
+    const fan = document.querySelector('[role="application"]')!
+    const items = Array.from(fan.children) as HTMLElement[]
+    const cardIndices: number[] = []
+    items.forEach((el, i) => {
+      if (el.getAttribute('data-testid') !== 'fan-comma') cardIndices.push(i)
+    })
+    // All cards except the last one (the last card shows its full width).
+    return cardIndices.slice(0, -1).map((itemIdx) => {
+      const el = items[itemIdx]
       const inner = el.firstElementChild as HTMLElement
       const textNode = inner.firstChild as Text
       const range = document.createRange()
       range.setStart(textNode, 0)
-      range.setEnd(textNode, Math.min(peekText.length, textNode.length))
-      const pr = range.getBoundingClientRect()
-      const style = getComputedStyle(el)
-      const letterSpacing = parseFloat(style.letterSpacing) || 0
-      const nextLeft = els[i + 1].getBoundingClientRect().x
+      range.setEnd(textNode, 1)
+      const r = range.getBoundingClientRect()
+      const letterSpacing = parseFloat(getComputedStyle(el).letterSpacing) || 0
       return {
-        peekText,
-        // Exclude trailing letter-spacing: the prefix ink ends where its
-        // advance box ends minus the spacing after it.
-        prefixRight: pr.x + pr.width - letterSpacing,
-        nextLeft,
+        inkRight: r.x + r.width - letterSpacing,
+        nextLeft: items[itemIdx + 1].getBoundingClientRect().x,
       }
     })
   })
-  expect(result.map((r) => r.peekText)).toEqual(expectedPeeks)
+  expect(result.length).toBeGreaterThan(0)
   for (const r of result) {
-    // The significant prefix is fully visible, not clipped by the next card.
-    expect(r.prefixRight).toBeLessThanOrEqual(r.nextLeft + 1)
+    expect(r.inkRight).toBeLessThanOrEqual(r.nextLeft + 1)
   }
 }
 
-test.describe('card fan wide peeks', () => {
+function expectFanCentered(items: FanItem[], viewportWidth: number) {
+  const fanLeft = Math.min(...items.map((i) => i.left))
+  const fanRight = Math.max(...items.map((i) => i.right))
+  expect(Math.abs((fanLeft + fanRight) / 2 - viewportWidth / 2)).toBeLessThanOrEqual(3)
+}
+
+test.describe('card fan single-digit peeks and commas', () => {
   for (const vp of [
     { name: 'mobile', width: 375, height: 667, mobile: true },
     { name: 'desktop', width: 1280, height: 800, mobile: false },
@@ -86,51 +106,115 @@ test.describe('card fan wide peeks', () => {
         await seed(page)
       })
 
-      test('800,502 hidden reads "800," / "500" / "2", never "852"', async ({ page }) => {
+      test('800,502 shown reads 8,0,0,comma,5,0,2', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
+        const items = await fanItems(page)
+
+        // Six cards plus one comma at the thousands boundary.
+        expect(items.map((i) => i.kind)).toEqual(['card', 'card', 'card', 'comma', 'card', 'card', 'card'])
+        expect(items.map((i) => i.text)).toEqual(['800,000', '0', '0', ',', '500', '0', '2'])
+
+        // The comma sits between the third and fourth cards.
+        const comma = items[3]
+        expect(comma.left).toBeGreaterThanOrEqual(items[2].left)
+        expect(comma.right).toBeLessThanOrEqual(items[4].right)
+        await expect(page.getByTestId('fan-comma')).toBeVisible()
+
+        // Single-digit peeks: each leading digit fully visible.
+        await expectSingleDigitPeeks(page)
+
+        expectFanCentered(items, vp.width)
+      })
+
+      test('800,502 hidden blanks zero cards in position, never "852"', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('800502')
+        const shown = await fanItems(page)
         await page.getByTitle('Hide zero cards', { exact: true }).click()
-        const cards = await cardBoxes(page)
+        const hidden = await fanItems(page)
 
-        // The zero cards are gone; the rest keep their place values.
-        expect(cards.map((c) => c.text)).toEqual(['800,000', '500', '2'])
+        // All cards still present (never removed); zero cards blank.
+        expect(hidden.map((i) => i.kind)).toEqual(['card', 'card', 'card', 'comma', 'card', 'card', 'card'])
+        expect(hidden.map((i) => i.text)).toEqual(['800,000', '', '', ',', '500', '', '2'])
 
-        // Each peek shows its significant prefix, comma included — the fan
-        // reads "800," / "500" / "2", not "852".
-        await expectSignificantPrefixes(page, ['800,', '500'])
+        // The blanked cards keep their text element with visibility:hidden
+        // (layout and measurement intact), and the comma stays visible.
+        const blankedVisibility = await page.evaluate(() => {
+          const fan = document.querySelector('[role="application"]')!
+          return Array.from(fan.children)
+            .filter((el) => el.getAttribute('data-testid') !== 'fan-comma')
+            .map((el) => getComputedStyle((el as HTMLElement).firstElementChild as HTMLElement).visibility)
+        })
+        expect(blankedVisibility).toEqual(['visible', 'hidden', 'hidden', 'visible', 'hidden', 'visible'])
+        await expect(page.getByTestId('fan-comma')).toBeVisible()
 
-        // Right edges flush: no trailing-zero slivers from the back cards.
-        const rights = cards.map((c) => c.right)
-        expect(Math.max(...rights) - Math.min(...rights)).toBeLessThanOrEqual(2)
-
-        // The visible fan is centered in the page.
-        const lefts = cards.map((c) => c.left)
-        const fanCenter = (Math.min(...lefts) + Math.max(...rights)) / 2
-        expect(Math.abs(fanCenter - vp.width / 2)).toBeLessThanOrEqual(3)
+        // No layout shift: every item sits exactly where it was.
+        expect(hidden.length).toBe(shown.length)
+        for (let i = 0; i < shown.length; i++) {
+          expect(Math.abs(hidden[i].left - shown[i].left)).toBeLessThanOrEqual(1)
+          expect(Math.abs(hidden[i].right - shown[i].right)).toBeLessThanOrEqual(1)
+        }
       })
 
-      test('800,502 shown keeps the thousands comma visible in the "800," peek', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('800502')
-        const cards = await cardBoxes(page)
-        expect(cards.map((c) => c.text)).toEqual(['800,000', '00,000', '0,000', '500', '00', '2'])
-        // Significant prefixes: commas stay visible ("800,", "00,", "0,").
-        await expectSignificantPrefixes(page, ['800,', '00,', '0,', '500', '00'])
+      test('701,323 shown reads 7,0,1,comma,3,2,3 ("0", not "00,")', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('701323')
+        const items = await fanItems(page)
+
+        // The zero card displays "0": no fake zero numbers, no "00," peek.
+        expect(items.map((i) => i.kind)).toEqual(['card', 'card', 'card', 'comma', 'card', 'card', 'card'])
+        expect(items.map((i) => i.text)).toEqual(['700,000', '0', '1,000', ',', '300', '20', '3'])
+
+        await expectSingleDigitPeeks(page)
+        expectFanCentered(items, vp.width)
       })
 
-      test('940,934 hidden shows readable place values', async ({ page }) => {
+      test('toggling zero visibility never shifts the fan', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('940934')
+        const shown = await fanItems(page)
+
         await page.getByTitle('Hide zero cards', { exact: true }).click()
-        const cards = await cardBoxes(page)
-        expect(cards.map((c) => c.text)).toEqual(['900,000', '40,000', '900', '30', '4'])
-        // No "40" double peek confusion: each card's significant prefix is
-        // fully readable ("900,", "40,", "900", "30").
-        await expectSignificantPrefixes(page, ['900,', '40,', '900', '30'])
+        const hidden = await fanItems(page)
+        expect(hidden.length).toBe(shown.length)
+        for (let i = 0; i < shown.length; i++) {
+          expect(hidden[i].kind).toBe(shown[i].kind)
+          expect(Math.abs(hidden[i].left - shown[i].left)).toBeLessThanOrEqual(1)
+        }
+
+        // Toggling back restores the texts at the same positions.
+        await page.getByTitle('Show zero cards', { exact: true }).click()
+        const restored = await fanItems(page)
+        expect(restored.map((i) => i.text)).toEqual(shown.map((i) => i.text))
+        for (let i = 0; i < shown.length; i++) {
+          expect(Math.abs(restored[i].left - shown[i].left)).toBeLessThanOrEqual(1)
+        }
       })
 
-      test('172,695 shows readable place values', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('172695')
-        const cards = await cardBoxes(page)
-        expect(cards.map((c) => c.text)).toEqual(['100,000', '70,000', '2,000', '600', '90', '5'])
-        await expectSignificantPrefixes(page, ['100,', '70,', '2,', '600', '90'])
+      test('1,234,567 gets commas at both thousands boundaries', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('1234567')
+        const items = await fanItems(page)
+        expect(items.map((i) => i.kind)).toEqual([
+          'card',
+          'comma',
+          'card',
+          'card',
+          'card',
+          'comma',
+          'card',
+          'card',
+          'card',
+        ])
+        expect(items.map((i) => i.text)).toEqual([
+          '1,000,000',
+          ',',
+          '200,000',
+          '30,000',
+          '4,000',
+          ',',
+          '500',
+          '60',
+          '7',
+        ])
+        await expect(page.getByTestId('fan-comma')).toHaveCount(2)
+        await expectSingleDigitPeeks(page)
       })
 
       test('spawned fan is centered from the first frame', async ({ page }) => {

@@ -3,7 +3,6 @@ import {
   CARD_COLORS,
   CARD_Y_OFFSET,
   DEFAULT_MAX_RANDOM_NUMBER,
-  FAKE_ZERO_NUMBERS,
   FIRST_TIME_TOAST_DURATION,
   InstructionalGuideDialogTab,
   LOCAL_STORAGE_KEYS,
@@ -27,12 +26,6 @@ describe('place value mappings', () => {
       expect(PLACE_VALUE_NAMES[placeValue]).toBeTruthy()
       expect(CARD_COLORS[placeValue]).toMatch(/^bg-(red|yellow|green|blue)-\d{3}$/)
     }
-  })
-
-  it('formats fake zero placeholders per digit position', () => {
-    expect(FAKE_ZERO_NUMBERS[0]).toBe('0')
-    expect(FAKE_ZERO_NUMBERS[3]).toBe('0,000')
-    expect(FAKE_ZERO_NUMBERS[9]).toBe('0,000,000,000')
   })
 })
 

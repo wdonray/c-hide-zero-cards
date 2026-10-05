@@ -82,23 +82,6 @@ export const PLACE_VALUES: Record<number, number> = {
 }
 
 /**
- * Display text for zero digits in different place values
- * Shows how zeros should be formatted (e.g., "0,000" for thousands)
- */
-export const FAKE_ZERO_NUMBERS: Record<number, string> = {
-  0: '0',
-  1: '00',
-  2: '000',
-  3: '0,000',
-  4: '00,000',
-  5: '000,000',
-  6: '0,000,000',
-  7: '00,000,000',
-  8: '000,000,000',
-  9: '0,000,000,000',
-}
-
-/**
  * Maximum number that can be generated randomly
  * Used to limit the range of random number generation
  */

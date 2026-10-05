@@ -50,15 +50,21 @@ behavior on your own.
   rotation lock (iOS Safari cannot lock orientation, so a rotate nag would just
   replace one annoyance with another).
 - **Card fan stays a fan.** `useIsMobile()` (matchMedia, SSR-safe) drives the
-  layout: each card's peek shows its SIGNIFICANT PREFIX (up to and including
-  the first comma, else the full text: "800," / "40," / "500" / "5"), measured
-  empirically in place with a Range so the thousands comma is visible and
-  each remaining card's place value stays readable (2026-10-05 redesign,
-  superseding the single-digit-peek approach). Card i sits at the cumulative
-  sum of the previous cards' peek widths; the last card shows its full
-  natural width. Below 768px the _same_ fan compresses via
-  `getMobileCardMetrics()` in `lib/cardLayout.ts` so the whole fan fits a
-  375px viewport. Never reflow into a grid or plain row.
+  layout: each card's peek fits exactly ONE digit (the leading digit),
+  measured empirically in place with a Range over the first character (padLeft
+  - digit advance + letter-spacing) so the digit is never clipped. Thousands
+    separators are separate, non-interactive comma elements (spans, aria-hidden)
+    at every 3 digits from the right, participating in fan layout like cards.
+    Zero cards are never removed: hiding zeros blanks their text with
+    `visibility: hidden` (layout and measurement intact), so positions are
+    preserved and toggling never shifts the fan (2026-10-05 redesign per owner
+    reference image, superseding PR #57's wide significant-prefix peeks and the
+    single-digit-peek approach before it). A zero card's value is 0 and it
+    displays "0" (FAKE_ZERO_NUMBERS was removed entirely). Card i sits at the
+    cumulative sum of the previous items' widths; the last card shows its full
+    natural width. Below 768px the _same_ fan compresses via
+    `getMobileCardMetrics()` in `lib/cardLayout.ts` so the whole fan fits a
+    375px viewport. Never reflow into a grid or plain row.
 - **44px touch targets are coarse-pointer-gated.** Use
   `COARSE_POINTER_TOUCH_TARGET` (`pointer-coarse:min-h-11 min-w-11`) so the
   desktop mouse layout is untouched.
@@ -78,19 +84,19 @@ behavior on your own.
   footer, never `position: fixed`, so no overlap math is needed.
 - **Hero card sizing.** `getMobileCardMetrics()` in `lib/cardLayout.ts`
   scales the fan up on mobile (fewer digits = bigger cards, capped at the
-  desktop 60px) and chooses a font size so the sum of the per-card peek
-  widths plus the last card's natural width fits the viewport (sum-of-peeks
-  char model + shrink-to-fit loop, 10px floor). The fan is vertically
-  centered via a mobile-only flex-column chain (body > main > section >
-  workspace). The cards anchor on cumulative peek widths inside a wrapper
-  sized to sum(peeks) + naturalWidth(last card) (`getFanExtent(peekWidths,
-naturalWidth)` in `lib/cardLayout.ts`) that the flex workspace centers via
-  `justify-content`, so the visible fan is centered even though card widths
-  vary with place value. Card text is left-aligned with `overflow: hidden`
-  at fan home, so every peek shows its significant prefix and each card's
-  right edge lands flush at the extent; the extent is the cumulative peeks
-  plus the last (top) card's natural width, never a max over all cards
-  (max-ing once inflated the top card to ~3x its natural width). A card away
+  desktop 60px) and chooses a font size so the modeled fan width fits the
+  viewport: (n-1) single-digit peeks + comma elements (0.6em each) + the last
+  card's natural width (sum-of-peeks char model + shrink-to-fit loop, 10px
+  floor). The fan is vertically centered via a mobile-only flex-column chain
+  (body > main > section > workspace). The cards and commas anchor on
+  cumulative item widths inside a wrapper sized to the fan extent
+  (`getFanExtent(itemWidths, naturalWidth)` in `lib/cardLayout.ts`) that the
+  flex workspace centers via `justify-content`, so the visible fan is centered
+  even though card widths vary with place value. Card text is left-aligned with
+  `overflow: hidden` at fan home, so every peek shows its leading digit and
+  each card's right edge lands flush at the extent; the extent is the cumulative
+  item widths plus the last (top) card's natural width, never a max over all
+  cards (max-ing once inflated the top card to ~3x its natural width). A card away
   from its fan home (dragged, Mix-scattered, keyboard-moved) renders at its
   natural width with visible overflow so the full place value shows, and the
   Mix scatter clamp uses that natural width. Widths are measured in a layout

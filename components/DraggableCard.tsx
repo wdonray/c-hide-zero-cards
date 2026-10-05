@@ -15,9 +15,9 @@ interface DraggableCardProps {
   mobileMetrics: MobileCardMetrics | null
   /**
    * Explicit card width so the fan's right edge is flush: extent - fanX.
-   * Text is left-aligned with overflow hidden, so the significant prefix
-   * ("800,") sits at the left padding (visible in every peek) and the rest
-   * clips. Undefined until the parent has measured the fan.
+   * Text is left-aligned with overflow hidden, so the leading digit sits
+   * at the left padding (visible in every peek) and the rest clips.
+   * Undefined until the parent has measured the fan.
    */
   fanWidth?: number
   /**
@@ -28,10 +28,16 @@ interface DraggableCardProps {
    * full card stays inside the scatter area. Undefined until measured.
    */
   naturalWidth?: number
+  /**
+   * A zero card whose text is hidden (the "hide zeros" toggle is on). The
+   * card keeps its color, position, size, and draggability; only its text
+   * is invisible, so the fan's place-value structure is preserved and
+   * toggling never shifts the layout.
+   */
+  hiddenZero: boolean
   resetTrigger?: number
   randomizeTrigger?: number
   scatterArea?: ScatterArea | null
-  fakeNumbers: string | null
 }
 
 export function DraggableCard({
@@ -43,18 +49,17 @@ export function DraggableCard({
   mobileMetrics,
   fanWidth,
   naturalWidth,
+  hiddenZero,
   resetTrigger,
   randomizeTrigger,
   scatterArea,
-  fakeNumbers,
 }: DraggableCardProps) {
   const useDraggableProps = useMemo(
     () => ({
-      // The fan anchors on cumulative peek widths (fanX), not on card
-      // centers or even offsets: each card's peek fits its significant
-      // prefix ("800,", "500"), so peeks vary with place value. The parent
-      // measures the peeks and centers the fan wrapper, so the visible fan
-      // is centered regardless of per-card content widths.
+      // The fan anchors on cumulative peek widths (fanX): each card's peek
+      // fits one full digit, so the leading digit is never clipped. The
+      // parent measures the peeks and centers the fan wrapper, so the
+      // visible fan is centered regardless of per-card content widths.
       initialX: fanX,
       initialY: index * CARD_Y_OFFSET,
       // Stable per-card discriminator for the Mix scatter PRNG: the index
@@ -85,13 +90,14 @@ export function DraggableCard({
     [dragRef]
   )
 
-  const displayValue = fakeNumbers !== null ? fakeNumbers : (firstDigit * placeValue).toLocaleString()
+  // A zero card's value is 0 and it displays "0" (no fake zero numbers).
+  const displayValue = (firstDigit * placeValue).toLocaleString()
 
   // A card away from its fan home (dragged, dropped, Mix-scattered,
   // keyboard-moved) renders at its natural width with visible overflow so
   // the full place value shows. At home it keeps the assigned fan width
-  // with overflow hidden: left-aligned text puts the significant prefix at
-  // the left padding, visible in every peek, and the right edge stays flush.
+  // with overflow hidden: left-aligned text puts the leading digit at the
+  // left padding, visible in every peek, and the right edge stays flush.
   const isDisplaced = position.x !== fanX || position.y !== index * CARD_Y_OFFSET
   const atFanHome = fanWidth !== undefined && !isDisplaced
 
@@ -99,7 +105,11 @@ export function DraggableCard({
     <div
       ref={setRefs}
       tabIndex={0}
-      aria-label={`${displayValue} place value card. Use arrow keys to move it.`}
+      aria-label={
+        hiddenZero
+          ? 'Hidden zero place value card. Use arrow keys to move it.'
+          : `${displayValue} place value card. Use arrow keys to move it.`
+      }
       className={`flex items-center justify-start gap-0 ${atFanHome ? 'overflow-hidden' : ''} px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
       style={{
         position: 'absolute',
@@ -128,7 +138,10 @@ export function DraggableCard({
       }}
       {...handlers}
     >
-      {fakeNumbers !== null ? <div>{fakeNumbers}</div> : <div>{(firstDigit * placeValue).toLocaleString()}</div>}
+      {/* visibility:hidden keeps layout (and measurement) intact while
+          hiding the text: a hidden zero card keeps its position so the
+          fan never shifts when toggling. */}
+      <div style={hiddenZero ? { visibility: 'hidden' } : undefined}>{displayValue}</div>
     </div>
   )
 }

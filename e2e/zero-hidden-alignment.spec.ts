@@ -1,34 +1,31 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 
 /**
- * Zero-hidden fan alignment (teacher report 2026-10-05, follow-up): with
- * "Zeros hidden" the fan must recompute as if zero cards do not exist — no
- * zero card visible, every card's significant prefix fully readable
- * ("800," / "500" / "2", never "852"), right edges flush (no
- * trailing-zero slivers), and the visible fan centered in the workspace.
- * Backs the measured fan: cards anchor on cumulative peek widths and each
- * card is sized so the right edge is flush.
+ * Zero-hidden fan alignment (owner redesign 2026-10-05, supersedes the
+ * remove-cards approach): with "Zeros hidden" every card stays in the fan
+ * at its measured position; zero cards render with their text blanked
+ * (visibility:hidden), never removed. Place-value structure is preserved:
+ * hidden 800,502 reads "8","","",",","5","","2", never "852". Commas stay
+ * visible, right edges stay flush, and the fan stays centered.
  */
 
 interface CardDatum {
   text: string
   left: number
   right: number
+  textVisibility: string
 }
 
-/** Number inputs, the exact card texts expected with zeros hidden, and the
- * significant prefix each peek must show (one entry per card except the
- * last, which shows its full text). */
-const CASES: Array<{ input: string; hiddenTexts: string[]; hiddenPeeks: string[] }> = [
-  { input: '101325', hiddenTexts: ['100,000', '1,000', '300', '20', '5'], hiddenPeeks: ['100,', '1,', '300', '20'] },
-  { input: '1001', hiddenTexts: ['1,000', '1'], hiddenPeeks: ['1,'] },
-  { input: '120', hiddenTexts: ['100', '20'], hiddenPeeks: ['100'] },
-  { input: '1000000', hiddenTexts: ['1,000,000'], hiddenPeeks: [] },
-  // No-zero control: hiding zeros must not change this fan.
-  { input: '12345', hiddenTexts: ['10,000', '2,000', '300', '40', '5'], hiddenPeeks: ['10,', '2,', '300', '40'] },
+/** Number inputs and the card texts expected with zeros shown. Hiding
+ * blanks the "0" cards in place; the texts below list the shown state. */
+const CASES: Array<{ input: string; shownTexts: string[] }> = [
+  { input: '101325', shownTexts: ['100,000', '0', '1,000', '300', '20', '5'] },
+  { input: '1001', shownTexts: ['1,000', '0', '0', '1'] },
+  { input: '120', shownTexts: ['100', '20', '0'] },
+  { input: '1000000', shownTexts: ['1,000,000', '0', '0', '0', '0', '0', '0'] },
+  // No-zero control: hiding zeros must not change this fan at all.
+  { input: '12345', shownTexts: ['10,000', '2,000', '300', '40', '5'] },
 ]
-
-const ZERO_TEXT = /^0[0,]*$/
 
 async function seed(page: Page) {
   await page.addInitScript(() => {
@@ -50,50 +47,18 @@ async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDat
       wsCenterX: ws.x + ws.width / 2,
       cards: els.map((el) => {
         const r = el.getBoundingClientRect()
-        return { text: el.innerText, left: r.x, right: r.x + r.width }
+        return {
+          text: el.innerText,
+          left: r.x,
+          right: r.x + r.width,
+          textVisibility: getComputedStyle(el.firstElementChild as HTMLElement).visibility,
+        }
       }),
     }
   })
 }
 
-/**
- * Each card's significant prefix (up to and including the first comma, else
- * the full text) is fully visible: its rendered right edge sits at or left
- * of the covering card's left edge. expectedPeeks has one entry per card
- * except the last (the last card shows its full natural width, no peek).
- */
-async function expectPrefixesVisible(page: Page, expectedPeeks: string[]) {
-  const result = await page.evaluate(() => {
-    const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
-    return els.slice(0, -1).map((el, i) => {
-      const fullText = el.innerText
-      const commaIndex = fullText.indexOf(',')
-      const peekText = commaIndex === -1 ? fullText : fullText.slice(0, commaIndex + 1)
-      const inner = el.firstElementChild as HTMLElement
-      const textNode = inner.firstChild as Text
-      const range = document.createRange()
-      range.setStart(textNode, 0)
-      range.setEnd(textNode, Math.min(peekText.length, textNode.length))
-      const pr = range.getBoundingClientRect()
-      const style = getComputedStyle(el)
-      const letterSpacing = parseFloat(style.letterSpacing) || 0
-      return {
-        peekText,
-        prefixRight: pr.x + pr.width - letterSpacing,
-        nextLeft: els[i + 1].getBoundingClientRect().x,
-      }
-    })
-  })
-  expect(result.map((r) => r.peekText)).toEqual(expectedPeeks)
-  for (const r of result) {
-    expect(r.prefixRight).toBeLessThanOrEqual(r.nextLeft + 1)
-  }
-}
-
-/**
- * Flush right edges and a visibly centered fan. Peeks vary per card (each
- * fits its significant prefix), so left edges are cumulative, not even.
- */
+/** Flush right edges and a visibly centered fan. */
 function expectFanAligned(wsCenterX: number, data: CardDatum[]) {
   expect(data.length).toBeGreaterThan(0)
   if (data.length > 1) {
@@ -103,14 +68,6 @@ function expectFanAligned(wsCenterX: number, data: CardDatum[]) {
   const fanLeft = Math.min(...data.map((c) => c.left))
   const fanRight = Math.max(...data.map((c) => c.right))
   expect(Math.abs((fanLeft + fanRight) / 2 - wsCenterX)).toBeLessThanOrEqual(3)
-}
-
-async function expectZeroCardsHidden(page: Page, hiddenTexts: string[], hiddenPeeks: string[]) {
-  const { wsCenterX, cards } = await cardData(page)
-  expect(cards.map((c) => c.text)).toEqual(hiddenTexts)
-  expect(cards.every((c) => !ZERO_TEXT.test(c.text))).toBe(true)
-  expectFanAligned(wsCenterX, cards)
-  await expectPrefixesVisible(page, hiddenPeeks)
 }
 
 test.describe('zero-hidden fan alignment', () => {
@@ -129,33 +86,86 @@ test.describe('zero-hidden fan alignment', () => {
         await seed(page)
       })
 
-      for (const { input, hiddenTexts, hiddenPeeks } of CASES) {
-        test(`${input}: fan aligned with zeros shown and hidden`, async ({ page }) => {
+      for (const { input, shownTexts } of CASES) {
+        test(`${input}: zeros blank in place, fan stays aligned`, async ({ page }) => {
           await page.getByPlaceholder('Type a number here!').fill(input)
           const cardEls = cards(page)
           await expect(cardEls).toHaveCount(input.length)
 
-          // Zeros shown: the fan is aligned too.
+          // Zeros shown: every card visible with its full text.
           let data = await cardData(page)
+          expect(data.cards.map((c) => c.text)).toEqual(shownTexts)
+          expect(data.cards.every((c) => c.textVisibility === 'visible')).toBe(true)
           expectFanAligned(data.wsCenterX, data.cards)
+          const shownLefts = data.cards.map((c) => c.left)
 
           await page.getByTitle('Hide zero cards', { exact: true }).click()
-          await expect(cardEls).toHaveCount(hiddenTexts.length)
-          await expectZeroCardsHidden(page, hiddenTexts, hiddenPeeks)
 
-          // Toggling back restores the full fan, still aligned.
+          // No card is removed: the count never changes.
+          await expect(cardEls).toHaveCount(input.length)
+          data = await cardData(page)
+
+          // Zero cards are blank (empty text, visibility:hidden); every
+          // other card keeps its text and visibility.
+          data.cards.forEach((card, i) => {
+            if (shownTexts[i] === '0') {
+              expect(card.text).toBe('')
+              expect(card.textVisibility).toBe('hidden')
+            } else {
+              expect(card.text).toBe(shownTexts[i])
+              expect(card.textVisibility).toBe('visible')
+            }
+          })
+
+          // Positions are untouched by the toggle.
+          data.cards.forEach((card, i) => {
+            expect(Math.abs(card.left - shownLefts[i])).toBeLessThanOrEqual(1)
+          })
+          expectFanAligned(data.wsCenterX, data.cards)
+
+          // Commas stay visible while zeros are hidden.
+          const commaCount = await page.getByTestId('fan-comma').count()
+          expect(commaCount).toBe(Math.floor((input.length - 1) / 3))
+          for (let i = 0; i < commaCount; i++) {
+            await expect(page.getByTestId('fan-comma').nth(i)).toBeVisible()
+          }
+
+          // Toggling back restores every text at the same positions.
           await page.getByTitle('Show zero cards', { exact: true }).click()
           await expect(cardEls).toHaveCount(input.length)
           data = await cardData(page)
+          expect(data.cards.map((c) => c.text)).toEqual(shownTexts)
+          data.cards.forEach((card, i) => {
+            expect(Math.abs(card.left - shownLefts[i])).toBeLessThanOrEqual(1)
+          })
           expectFanAligned(data.wsCenterX, data.cards)
         })
       }
 
-      test('800,502 hidden reads "800," / "500" / "2", never "852"', async ({ page }) => {
+      test('800,502 hidden reads "8","","",",","5","","2", never "852"', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
         await page.getByTitle('Hide zero cards', { exact: true }).click()
-        await expect(cards(page)).toHaveCount(3)
-        await expectZeroCardsHidden(page, ['800,000', '500', '2'], ['800,', '500'])
+
+        // Six cards present (not three): the fan cannot collapse to "852".
+        await expect(cards(page)).toHaveCount(6)
+        const data = await cardData(page)
+        expect(data.cards.map((c) => c.text)).toEqual(['800,000', '', '', '500', '', '2'])
+        expect(data.cards.map((c) => c.textVisibility)).toEqual([
+          'visible',
+          'hidden',
+          'hidden',
+          'visible',
+          'hidden',
+          'visible',
+        ])
+        expectFanAligned(data.wsCenterX, data.cards)
+
+        // The thousands comma is still there, visible, between the "0" and
+        // "500" cards.
+        const comma = page.getByTestId('fan-comma')
+        await expect(comma).toHaveCount(1)
+        await expect(comma).toBeVisible()
+        await expect(comma).toHaveText(',')
       })
 
       test('typing 0 keeps the empty state (input rejects 0)', async ({ page }) => {
