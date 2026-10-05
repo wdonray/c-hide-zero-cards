@@ -69,7 +69,7 @@ c-hide-zero-cards/
 
 - **DraggableCard**: Individual number cards with drag-and-drop
 - **Toolbar**: Control panel with number generation and card manipulation
-- **ExpandDialog**: Shows expanded form of numbers
+- **NumberFormsDialog**: Shows the number in word, unit, expanded, and standard forms
 - **InstructionalGuideDialog**: Help system for teachers
 
 ## Development

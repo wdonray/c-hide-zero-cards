@@ -146,11 +146,6 @@ export default function RootLayout({
       height: 506,
       alt: 'Hide Zero Cards Logo',
     },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: 'https://hidezerocards.org/?q={search_term_string}',
-      'query-input': 'required name=search_term_string',
-    },
     about: {
       '@type': 'Thing',
       name: 'Place Value Education',

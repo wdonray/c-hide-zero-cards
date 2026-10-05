@@ -27,7 +27,7 @@ export function Footer() {
           <BuyMeACoffeeButton variant="ghost" size="sm" />
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>© 2025 Donray Williams</span>
+          <span>© {new Date().getFullYear()} Donray Williams</span>
           <span>•</span>
           <span>v{VERSION}</span>
         </div>
