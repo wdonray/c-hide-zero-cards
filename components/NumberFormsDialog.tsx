@@ -17,6 +17,7 @@ import { WordForm } from './number-representations/WordForm'
 import { UnitForm } from './number-representations/UnitForm'
 import { NumberFormsDialogTab } from '@/lib/constants'
 import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
+import { useIsMobile } from '@/lib/useIsMobile'
 import { Button } from './ui/button'
 import { Separator } from './ui/separator'
 import { EyeSlash, Eye } from '@phosphor-icons/react'
@@ -31,6 +32,7 @@ interface NumberFormsDialogProps {
 
 export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, setSelectedTab }: NumberFormsDialogProps) {
   const [revealCards, setRevealCards] = useState(false)
+  const isMobile = useIsMobile()
 
   // Reset the reveal toggle whenever the dialog opens. Adjusted during render
   // (React's endorsed pattern for prop-derived state) instead of an effect:
@@ -44,6 +46,16 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
   }
 
   if (!number) return null
+
+  // Mobile (<768px) shows every form as a stacked, vertically-scrolling
+  // section with a real heading — no tab row, no horizontal scrolling.
+  // Desktop keeps the tabbed layout exactly as before.
+  const mobileSections = [
+    { title: 'Word Form', content: <WordForm number={number} className="min-h-28" /> },
+    { title: 'Unit Form', content: <UnitForm number={number} className="min-h-28" /> },
+    { title: 'Expanded Form', content: <ExpandedForm number={number} className="min-h-28" /> },
+    { title: 'Standard Form', content: <StandardForm number={number} className="min-h-28" /> },
+  ]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,54 +82,70 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs
-          value={selectedTab}
-          onValueChange={(value) => setSelectedTab(value as NumberFormsDialogTab)}
-          className="w-full min-w-0"
-        >
-          <div className="flex flex-col gap-4 max-md:gap-3 items-center w-full min-w-0">
-            <TabsList className="max-md:w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12">
-              <TabsTrigger
-                value={NumberFormsDialogTab.WORD}
-                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
-              >
-                Word Form
-              </TabsTrigger>
-              <TabsTrigger
-                value={NumberFormsDialogTab.UNIT}
-                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
-              >
-                Unit Form
-              </TabsTrigger>
-              <TabsTrigger
-                value={NumberFormsDialogTab.EXPANDED}
-                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
-              >
-                Expanded Form
-              </TabsTrigger>
-              <TabsTrigger
-                value={NumberFormsDialogTab.STANDARD}
-                className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
-              >
-                Standard Form
-              </TabsTrigger>
-            </TabsList>
-            <div className="w-full relative">
-              <TabsContent value={NumberFormsDialogTab.EXPANDED} className="mt-0">
-                <ExpandedForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
-              </TabsContent>
-              <TabsContent value={NumberFormsDialogTab.STANDARD} className="mt-0">
-                <StandardForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
-              </TabsContent>
-              <TabsContent value={NumberFormsDialogTab.WORD} className="mt-0">
-                <WordForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
-              </TabsContent>
-              <TabsContent value={NumberFormsDialogTab.UNIT} className="mt-0">
-                <UnitForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
-              </TabsContent>
-            </div>
+        {isMobile ? (
+          <div className="flex w-full min-w-0 flex-col gap-5">
+            {mobileSections.map((section) => {
+              const headingId = `number-form-${section.title.toLowerCase().replace(/\s+/g, '-')}`
+              return (
+                <section key={section.title} aria-labelledby={headingId} className="w-full min-w-0">
+                  <h3 id={headingId} className="mb-2 text-base font-semibold">
+                    {section.title}
+                  </h3>
+                  {section.content}
+                </section>
+              )
+            })}
           </div>
-        </Tabs>
+        ) : (
+          <Tabs
+            value={selectedTab}
+            onValueChange={(value) => setSelectedTab(value as NumberFormsDialogTab)}
+            className="w-full min-w-0"
+          >
+            <div className="flex flex-col gap-4 max-md:gap-3 items-center w-full min-w-0">
+              <TabsList className="max-md:w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12">
+                <TabsTrigger
+                  value={NumberFormsDialogTab.WORD}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                >
+                  Word Form
+                </TabsTrigger>
+                <TabsTrigger
+                  value={NumberFormsDialogTab.UNIT}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                >
+                  Unit Form
+                </TabsTrigger>
+                <TabsTrigger
+                  value={NumberFormsDialogTab.EXPANDED}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                >
+                  Expanded Form
+                </TabsTrigger>
+                <TabsTrigger
+                  value={NumberFormsDialogTab.STANDARD}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                >
+                  Standard Form
+                </TabsTrigger>
+              </TabsList>
+              <div className="w-full relative">
+                <TabsContent value={NumberFormsDialogTab.EXPANDED} className="mt-0">
+                  <ExpandedForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
+                </TabsContent>
+                <TabsContent value={NumberFormsDialogTab.STANDARD} className="mt-0">
+                  <StandardForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
+                </TabsContent>
+                <TabsContent value={NumberFormsDialogTab.WORD} className="mt-0">
+                  <WordForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
+                </TabsContent>
+                <TabsContent value={NumberFormsDialogTab.UNIT} className="mt-0">
+                  <UnitForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
+                </TabsContent>
+              </div>
+            </div>
+          </Tabs>
+        )}
       </DialogContent>
     </Dialog>
   )
