@@ -116,10 +116,10 @@ test.describe('mobile core flows', () => {
     await expect(sheet).toBeVisible()
 
     await sheet.getByTitle('Set random number range', { exact: true }).click()
-    await expect(page.getByRole('heading', { name: 'Random Number Range' })).toBeVisible()
-    await page.getByRole('button', { name: '100', exact: true }).click()
-    await page.keyboard.press('Escape')
-    await expect(page.getByRole('heading', { name: 'Random Number Range' })).toBeHidden()
+    await expect(sheet.getByRole('button', { name: 'Up to 100', exact: true })).toBeVisible()
+    await sheet.getByRole('button', { name: 'Up to 100', exact: true }).click()
+    // Selecting a range collapses the inline mobile list.
+    await expect(sheet.getByRole('button', { name: 'Up to 100', exact: true })).toBeHidden()
     await sheet.getByRole('button', { name: 'Close' }).click()
     await expect(sheet).toBeHidden()
 
@@ -255,8 +255,9 @@ test.describe('mobile layout', () => {
       expect(box!.height, `button "${name}" height`).toBeGreaterThanOrEqual(44)
     }
 
-    // The More sheet rows reuse the desktop triggers (range, guide, theme),
-    // which carry the coarse-pointer 44px minimum.
+    // The More sheet rows (guide, theme) reuse the desktop triggers, and the
+    // range row uses the mobile inline control; all carry the coarse-pointer
+    // 44px minimum.
     await bar.getByRole('button', { name: 'More actions' }).click()
     const sheet = page.getByRole('dialog', { name: 'More actions' })
     await expect(sheet).toBeVisible()
