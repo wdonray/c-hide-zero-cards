@@ -80,7 +80,7 @@ export function MobileActionBar() {
       aria-label="Quick actions"
       className="z-50 w-full shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden"
     >
-      <div className="grid grid-cols-7 gap-0.5 px-2 py-1.5">
+      <div className="grid grid-cols-7 gap-0.5 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom),0.375rem)]">
         <BarButton
           label="Roll"
           title="Roll a random number"
