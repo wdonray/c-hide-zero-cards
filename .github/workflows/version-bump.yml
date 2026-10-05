@@ -101,7 +101,18 @@ jobs:
 
       - name: Push changes and tags
         if: steps.check.outputs.needed == 'true'
+        env:
+          VERSION_BUMP_SSH_KEY: ${{ secrets.VERSION_BUMP_SSH_KEY }}
         run: |
+          # Push over SSH with the version-bump deploy key, which is a bypass
+          # actor on the main branch ruleset. GITHUB_TOKEN cannot be a bypass
+          # actor on a user-owned repo, so pushing with it is rejected with
+          # GH013 ("required status checks are expected").
           # --atomic: the commit and tag land together or not at all, so a
           # rejected branch push can never leave an orphaned tag behind.
-          git push --atomic origin main --follow-tags
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VERSION_BUMP_SSH_KEY" > ~/.ssh/version_bump_key
+          chmod 600 ~/.ssh/version_bump_key
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          git remote set-url origin "git@github.com:${{ github.repository }}.git"
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/version_bump_key" git push --atomic origin main --follow-tags
