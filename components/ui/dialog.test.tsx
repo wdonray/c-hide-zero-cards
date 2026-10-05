@@ -81,4 +81,13 @@ describe('Dialog primitives', () => {
     )
     expect(document.querySelector('[data-slot="dialog-overlay"]')).toHaveClass('extra')
   })
+
+  it('lands initial focus on the dialog itself, not the close button', () => {
+    render(<OpenDialog />)
+    const dialog = screen.getByRole('dialog', { name: 'Dialog title' })
+    // Focus moves inside the dialog (WCAG 2.4.3) but not onto the X, so no
+    // focus ring flashes on open.
+    expect(document.activeElement).toBe(dialog)
+    expect(document.activeElement).not.toBe(screen.getByRole('button', { name: 'Close' }))
+  })
 })

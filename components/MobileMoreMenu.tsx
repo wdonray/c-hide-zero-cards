@@ -60,6 +60,15 @@ export function MobileMoreMenu({
         <DialogPrimitive.Content
           data-slot="dialog-content"
           aria-describedby={undefined}
+          tabIndex={-1}
+          onOpenAutoFocus={(event) => {
+            // Land initial focus on the sheet itself instead of the close
+            // button, so no focus ring flashes on open. Focus still moves
+            // inside the sheet for keyboard and screen-reader users
+            // (WCAG 2.4.3); only the X's visible outline goes away.
+            event.preventDefault()
+            ;(event.currentTarget as HTMLElement).focus({ preventScroll: true })
+          }}
           className="bg-background fixed top-auto right-0 bottom-0 left-0 z-50 max-h-[85dvh] max-w-full overflow-y-auto rounded-t-3xl rounded-b-none border border-b-0 p-6 pt-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom"
         >
           <DialogHeader className="mb-3 flex flex-row items-center justify-between gap-4 text-left">

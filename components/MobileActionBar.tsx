@@ -7,6 +7,7 @@ import { Layers } from 'lucide-react'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { MobileMoreMenu } from './MobileMoreMenu'
+import { ZeroStateIndicator } from './ZeroStateIndicator'
 import { cn } from '@/lib/utils'
 
 function BarButton({
@@ -82,73 +83,76 @@ export function MobileActionBar() {
   }
 
   return (
-    <nav
-      aria-label="Quick actions"
-      className="z-50 w-full shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden"
-    >
-      <div className="grid grid-cols-7 gap-0.5 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom),0.375rem)]">
-        <BarButton
-          label="Roll"
-          title="Roll a random number"
-          onClick={handleRandomNumber}
-          disabled={isDiceRolling}
-          primary
-        >
-          <DiceSix className={cn(ICON_CLASS, isDiceRolling && 'animate-dice-roll')} aria-hidden="true" />
-        </BarButton>
-        <BarButton
-          label="Zero"
-          title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
-          onClick={toggleZeroCards}
-          disabled={!inputNumber}
-        >
-          {showZeroCards ? (
-            <EyeSlash className={ICON_CLASS} aria-hidden="true" />
-          ) : (
-            <Eye className={ICON_CLASS} aria-hidden="true" />
-          )}
-        </BarButton>
-        <BarButton
-          label="Mix"
-          title="Randomize card position"
-          onClick={handleRandomizeCardPosition}
-          disabled={!inputNumber}
-        >
-          <Shuffle className={ICON_CLASS} aria-hidden="true" />
-        </BarButton>
-        <BarButton
-          label="Reset"
-          title="Reset cards to original position"
-          onClick={handleResetCardPosition}
-          disabled={!inputNumber || !cardsMoved}
-        >
-          <ArrowClockwise className={ICON_CLASS} aria-hidden="true" />
-        </BarButton>
-        <BarButton
-          label="Clear"
-          title="Clear input number and reset cards"
-          onClick={handleClearInput}
-          disabled={!inputNumber}
-        >
-          <X className={ICON_CLASS} aria-hidden="true" />
-        </BarButton>
-        <BarButton
-          label="Forms"
-          title={
-            inputNumber
-              ? `Number Forms & Representations for ${inputNumber?.toLocaleString()}`
-              : 'Number Forms & Representations'
-          }
-          onClick={() => setShowNumberFormsDialog(true)}
-          disabled={!inputNumber}
-        >
-          <Layers className={ICON_CLASS} aria-hidden="true" />
-        </BarButton>
-        <MobileMoreMenu
-          triggerClassName="flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-muted-foreground transition-colors hover:text-foreground"
-          iconClassName={ICON_CLASS}
-        />
-      </div>
-    </nav>
+    <>
+      <ZeroStateIndicator className="pb-1 text-center" />
+      <nav
+        aria-label="Quick actions"
+        className="z-50 w-full shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden"
+      >
+        <div className="grid grid-cols-7 gap-0.5 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom),0.375rem)]">
+          <BarButton
+            label="Roll"
+            title="Roll a random number"
+            onClick={handleRandomNumber}
+            disabled={isDiceRolling}
+            primary
+          >
+            <DiceSix className={cn(ICON_CLASS, isDiceRolling && 'animate-dice-roll')} aria-hidden="true" />
+          </BarButton>
+          <BarButton
+            label="Zero"
+            title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
+            onClick={toggleZeroCards}
+            disabled={!inputNumber}
+          >
+            {showZeroCards ? (
+              <EyeSlash className={ICON_CLASS} aria-hidden="true" />
+            ) : (
+              <Eye className={ICON_CLASS} aria-hidden="true" />
+            )}
+          </BarButton>
+          <BarButton
+            label="Mix"
+            title="Randomize card position"
+            onClick={handleRandomizeCardPosition}
+            disabled={!inputNumber}
+          >
+            <Shuffle className={ICON_CLASS} aria-hidden="true" />
+          </BarButton>
+          <BarButton
+            label="Reset"
+            title="Reset cards to original position"
+            onClick={handleResetCardPosition}
+            disabled={!inputNumber || !cardsMoved}
+          >
+            <ArrowClockwise className={ICON_CLASS} aria-hidden="true" />
+          </BarButton>
+          <BarButton
+            label="Clear"
+            title="Clear input number and reset cards"
+            onClick={handleClearInput}
+            disabled={!inputNumber}
+          >
+            <X className={ICON_CLASS} aria-hidden="true" />
+          </BarButton>
+          <BarButton
+            label="Forms"
+            title={
+              inputNumber
+                ? `Number Forms & Representations for ${inputNumber?.toLocaleString()}`
+                : 'Number Forms & Representations'
+            }
+            onClick={() => setShowNumberFormsDialog(true)}
+            disabled={!inputNumber}
+          >
+            <Layers className={ICON_CLASS} aria-hidden="true" />
+          </BarButton>
+          <MobileMoreMenu
+            triggerClassName="flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-muted-foreground transition-colors hover:text-foreground"
+            iconClassName={ICON_CLASS}
+          />
+        </div>
+      </nav>
+    </>
   )
 }
