@@ -429,6 +429,38 @@ describe('useDraggable', () => {
     expect(result.current.position).toEqual({ x: -40, y: -40 })
   })
 
+  it('clamps Mix scatter with the natural card width, not the narrower fan-home width', () => {
+    const scatterArea: ScatterArea = { x: 0, y: 0, width: 800, height: 600 }
+    // At fan home the card renders at its assigned (narrower) 50px fan
+    // width, but displaced it shows its full 200px natural width: the
+    // scatter must keep the full card inside the area.
+    const cardEl = {
+      getBoundingClientRect: () => ({ left: 400, top: 300, width: 50, height: 60 }),
+    } as unknown as HTMLDivElement
+    const { result, rerender } = renderHook(
+      ({ randomizeTrigger }: { randomizeTrigger: number }) =>
+        useDraggable({
+          initialX: 10,
+          initialY: 20,
+          scatterSeed: 0,
+          resetTrigger: 0,
+          randomizeTrigger,
+          scatterArea,
+          cardEl,
+          naturalCardWidth: 200,
+        }),
+      { wrapper: HeaderProvider, initialProps: { randomizeTrigger: 0 } }
+    )
+    rerender({ randomizeTrigger: 1 })
+    // Static spot: (400 - 10 - 0, 300 - 20 - 0) = (390, 280); with the
+    // natural 200px width the target range is [0, 600] x [0, 540], so the
+    // 50px live rect must not widen it to [0, 750].
+    expect(result.current.position.x).toBeGreaterThanOrEqual(-390)
+    expect(result.current.position.x).toBeLessThanOrEqual(210)
+    expect(result.current.position.y).toBeGreaterThanOrEqual(-280)
+    expect(result.current.position.y).toBeLessThanOrEqual(260)
+  })
+
   it('drags without pointer capture when no element is attached', () => {
     // renderHook never attaches dragRef to a DOM node, so dragRef.current is
     // null: the pointer-capture guards are skipped but dragging still works.

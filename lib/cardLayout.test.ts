@@ -81,17 +81,18 @@ describe('getMobileCardMetrics', () => {
 
 describe('getFanExtent', () => {
   it('returns 0 for an empty fan', () => {
-    expect(getFanExtent([], CARD_X_OFFSET)).toBe(0)
+    expect(getFanExtent(0, 0, CARD_X_OFFSET)).toBe(0)
   })
 
   it('returns the single card width for a one-card fan', () => {
-    expect(getFanExtent([70], CARD_X_OFFSET)).toBe(70)
+    expect(getFanExtent(70, 1, CARD_X_OFFSET)).toBe(70)
   })
 
-  it('takes the max of index * xOffset + width across cards', () => {
-    // 940,934 zero-hidden on desktop: the 900,000 back card decides.
-    expect(getFanExtent([379, 325, 179, 125, 70], 36)).toBe(379)
-    // A later card can win when it is wide relative to its index.
-    expect(getFanExtent([100, 200, 200], 36)).toBe(2 * 36 + 200)
+  it('drives the extent from the last card only, never a wide back card', () => {
+    // 763,285 on desktop: the "700,000" back card is ~379px wide, but the
+    // extent is 5 peeks plus the "5" card's natural width, so the top card
+    // keeps its natural width instead of becoming a giant block.
+    expect(getFanExtent(70, 6, 36)).toBe(5 * 36 + 70)
+    expect(getFanExtent(39, 6, 26)).toBe(5 * 26 + 39)
   })
 })

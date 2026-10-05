@@ -76,10 +76,17 @@ behavior on your own.
   (offset = 0.6 x font size, min 12px). The fan is vertically centered via a
   mobile-only flex-column chain (body > main > section > workspace). The
   cards anchor on evenly spaced left edges (`index * xOffset`) inside a
-  measured wrapper (`getFanExtent()` in `lib/cardLayout.ts`) that the flex
-  workspace centers via `justify-content`, so the visible fan is centered
-  even though card widths vary with place value; each card is widened to
-  `extent - index * xOffset` so the right edge stays flush. Widths are
+  wrapper sized to `(n-1) * xOffset + naturalWidth(last card)` (`getFanExtent()`
+  in `lib/cardLayout.ts`) that the flex workspace centers via `justify-content`,
+  so the visible fan is centered even though card widths vary with place value.
+  Card text is left-aligned with `overflow: hidden` at fan home, so every peek
+  shows its leading digit and each card's right edge lands flush at
+  `extent - index * xOffset`; the extent is driven by the last (top, narrowest)
+  card alone, never by a wide back card (max-ing over all cards once inflated
+  the top card to ~3x its natural width). A card away from its fan home
+  (dragged, Mix-scattered, keyboard-moved) renders at its natural width with
+  visible overflow so the full place value shows, and the Mix scatter clamp
+  uses that natural width. Widths are
   measured in a layout effect, so the first paint already has the correct
   size (no flash, and spawned numbers are centered from the first frame).
 

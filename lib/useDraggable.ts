@@ -29,6 +29,14 @@ interface UseDraggableOptions {
    * not be read during render). Used to measure the card at scatter time.
    */
   cardEl?: HTMLDivElement | null
+  /**
+   * The card's content-driven natural width, measured by the parent from
+   * the text itself. Mix scatter clamps with this, not the live rect:
+   * at fan home the card renders at its narrower assigned fan width, but
+   * scattered cards show their full text at natural width, and the clamp
+   * must keep the full card inside the scatter area.
+   */
+  naturalCardWidth?: number
 }
 
 interface UseDraggableReturn {
@@ -79,6 +87,7 @@ export function useDraggable({
   randomizeTrigger,
   scatterArea,
   cardEl,
+  naturalCardWidth,
 }: UseDraggableOptions): UseDraggableReturn {
   const { setCardsMoved } = useHeaderContext()
   const isMobile = useIsMobile()
@@ -258,7 +267,10 @@ export function useDraggable({
         // workspace-origin target converts exactly. Without a mounted
         // element (unit tests) the static spot is assumed centered.
         const cardRect = cardEl?.getBoundingClientRect()
-        const cardW = cardRect?.width ?? 0
+        // Clamp with the natural width: at fan home the live rect is the
+        // narrower assigned fan width, but scattered cards render at full
+        // natural width and must still land fully inside the area.
+        const cardW = naturalCardWidth ?? cardRect?.width ?? 0
         const cardH = cardRect?.height ?? 0
         const maxX = Math.max(0, area.width - cardW)
         const maxY = Math.max(0, area.height - cardH)

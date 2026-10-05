@@ -41,15 +41,16 @@ export interface MobileCardMetrics {
 
 /**
  * Visible horizontal extent of a left-edge-anchored card fan, measured from
- * the first card's left edge: max over cards of (index * xOffset + width).
- * Card widths shrink with place value, so a back card usually decides the
- * extent, but the max is taken explicitly rather than assumed.
+ * the first card's left edge: (n - 1) even peeks plus the top (last) card's
+ * natural width. The extent is driven by the last card alone, never by a
+ * wide back card ("700,000"): max-ing over all cards gave the top card
+ * ("5") ~3x its natural width, a giant block with a lonely centered digit.
  *
- * Pure function of (cardWidths, xOffset); unit-testable.
+ * Pure function of (lastCardWidth, totalCards, xOffset); unit-testable.
  */
-export function getFanExtent(cardWidths: number[], xOffset: number): number {
-  if (cardWidths.length === 0) return 0
-  return Math.max(...cardWidths.map((width, index) => index * xOffset + width))
+export function getFanExtent(lastCardWidth: number, totalCards: number, xOffset: number): number {
+  if (totalCards === 0) return 0
+  return (totalCards - 1) * xOffset + lastCardWidth
 }
 
 /**
