@@ -7,6 +7,8 @@ describe('WordForm', () => {
     [0, 'zero'],
     [5, 'five'],
     [19, 'nineteen'],
+    [20, 'twenty'],
+    [30, 'thirty'],
     [42, 'forty-two'],
     [100, 'one hundred'],
     [1234, 'one thousand two hundred thirty-four'],

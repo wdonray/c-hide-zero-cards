@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/Header'
@@ -90,6 +90,15 @@ export const metadata: Metadata = {
     images: ['/logo.png'],
     creator: '@hidezerocards',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  // Cover the full screen (including notch / home-indicator areas) so the
+  // env(safe-area-inset-*) values below resolve; edge chrome then pads itself
+  // clear of the unsafe areas instead of being letterboxed.
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

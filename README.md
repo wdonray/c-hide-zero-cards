@@ -1,6 +1,7 @@
 # Hide Zero Cards
 
 [![Tests](https://github.com/wdonray/c-hide-zero-cards/actions/workflows/test.yml/badge.svg)](https://github.com/wdonray/c-hide-zero-cards/actions/workflows/test.yml)
+[![Coverage: 100%](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/wdonray/c-hide-zero-cards/actions/workflows/test.yml)
 [![Release](https://img.shields.io/github/v/release/wdonray/c-hide-zero-cards)](https://github.com/wdonray/c-hide-zero-cards/releases)
 
 An interactive place value learning tool: type a number, get draggable color-coded cards for each digit, hide the zeros to reveal how place value really works.

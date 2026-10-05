@@ -18,7 +18,11 @@ export function Header() {
   return (
     <header
       className={`sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ${
-        collapsed ? 'h-0 overflow-hidden' : 'h-14'
+        // The top safe-area inset keeps the sticky header clear of the notch /
+        // Dynamic Island once viewport-fit=cover lets the page extend under it.
+        // env() is 0 on desktop, so this is a no-op there: the calc falls back
+        // to exactly h-14 and the padding to 0.
+        collapsed ? 'h-0 overflow-hidden' : 'h-[calc(3.5rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)]'
       }`}
     >
       <div
