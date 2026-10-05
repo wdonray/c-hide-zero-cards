@@ -66,12 +66,14 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
         hideOverlay={revealCards}
       >
         <DialogHeader className="flex flex-col gap-4 max-md:gap-2">
-          <DialogTitle className="flex items-center gap-2 text-base md:text-lg max-md:pr-8 max-md:leading-snug">
-            <Layers className="h-5 w-5 shrink-0" />
+          <DialogTitle className="flex items-center gap-2 text-base md:text-lg max-md:pr-12 max-md:text-lg max-md:leading-normal max-md:py-1">
+            <Layers className="h-5 w-5 shrink-0 max-md:hidden" aria-hidden="true" />
             <span className="min-w-0">Number Forms & Representations</span>
           </DialogTitle>
           <Separator />
-          <DialogDescription>
+          {/* Mobile keeps the header lean: subheader text and the reveal
+              toggle are hidden, desktop keeps both. */}
+          <DialogDescription className="max-md:hidden">
             <span className="flex flex-row flex-wrap items-center gap-x-6 gap-y-3 max-md:gap-x-3 max-md:gap-y-2">
               <span className="min-w-0">Explore different ways to write and understand your number!</span>
               <Button size="sm" onClick={() => setRevealCards(!revealCards)} className={COARSE_POINTER_TOUCH_TARGET}>

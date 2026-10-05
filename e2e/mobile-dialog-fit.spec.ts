@@ -8,8 +8,8 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
  * awkwardly, and the content card was a tall empty box. The dialog now shows
  * all four forms as stacked, vertically-scrolling sections with headings
  * instead of a tab row. These tests assert the dialog fits the viewport,
- * every form section is present, the Reveal-cards toggle still works, and
- * nothing overflows horizontally.
+ * every form section is present, the Reveal-cards toggle is hidden on mobile,
+ * and nothing overflows horizontally.
  */
 test.use({
   viewport: { width: 375, height: 667 },
@@ -58,12 +58,10 @@ test('all four forms are shown as stacked sections (no tab row)', async ({ page 
   await expect(dialog.getByText('1,000 + 200 + 30 + 4')).toBeVisible()
 })
 
-test('reveal cards toggle still works', async ({ page }) => {
+test('reveal cards toggle is hidden on mobile', async ({ page }) => {
   const dialog = await openNumberForms(page)
-  await dialog.getByRole('button', { name: 'Reveal cards' }).click()
-  await expect(dialog.getByRole('button', { name: 'Hide cards' })).toBeVisible()
-  await dialog.getByRole('button', { name: 'Hide cards' }).click()
-  await expect(dialog.getByRole('button', { name: 'Reveal cards' })).toBeVisible()
+  // Owner directive 2026-10-05: the toggle is not offered on mobile.
+  await expect(dialog.getByRole('button', { name: /eveal cards/ })).toHaveCount(0)
 })
 
 test('no horizontal overflow while the dialog is open', async ({ page }) => {

@@ -62,14 +62,12 @@ test.describe('mobile stacked sections', () => {
     expect(overflow).toBeLessThanOrEqual(1)
   })
 
-  test('reveal cards toggle works with the stacked layout', async ({ page }) => {
+  test('reveal cards toggle is not offered on mobile', async ({ page }) => {
     const dialog = await openNumberForms(page)
-    await dialog.getByRole('button', { name: 'Reveal cards' }).click()
-    await expect(dialog.getByRole('button', { name: 'Hide cards' })).toBeVisible()
-    // Sections remain intact while cards are revealed.
+    // Owner directive 2026-10-05: the toggle is not offered on mobile.
+    await expect(dialog.getByRole('button', { name: /eveal cards/ })).toHaveCount(0)
+    // Sections remain intact without the toggle.
     await expect(dialog.getByRole('heading', { name: 'Word Form' })).toBeVisible()
-    await dialog.getByRole('button', { name: 'Hide cards' }).click()
-    await expect(dialog.getByRole('button', { name: 'Reveal cards' })).toBeVisible()
   })
 })
 
