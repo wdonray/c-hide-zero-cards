@@ -10,11 +10,17 @@ vi.mock('@/lib/useHeaderContext', () => ({
   useHeaderContext: vi.fn(),
 }))
 
+vi.mock('next/navigation', () => ({
+  usePathname: vi.fn(),
+}))
+
 import { useIsMobile } from '@/lib/useIsMobile'
 import { useHeaderContext } from '@/lib/useHeaderContext'
+import { usePathname } from 'next/navigation'
 
 const mockUseIsMobile = vi.mocked(useIsMobile)
 const mockUseHeaderContext = vi.mocked(useHeaderContext)
+const mockUsePathname = vi.mocked(usePathname)
 
 function mockContext(overrides: Record<string, unknown> = {}) {
   mockUseHeaderContext.mockReturnValue({
@@ -44,12 +50,19 @@ function mockContext(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockUseIsMobile.mockReturnValue(true)
+  mockUsePathname.mockReturnValue('/')
   mockContext()
 })
 
 describe('MobileActionBar', () => {
   it('renders nothing when not on mobile', () => {
     mockUseIsMobile.mockReturnValue(false)
+    const { container } = render(<MobileActionBar />)
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('renders nothing on the version route', () => {
+    mockUsePathname.mockReturnValue('/version')
     const { container } = render(<MobileActionBar />)
     expect(container).toBeEmptyDOMElement()
   })

@@ -104,7 +104,18 @@ test.describe('accessibility', () => {
           await expect(page.getByRole('heading', { name: 'Version' })).toBeVisible()
 
           if (theme === 'dark') {
-            await switchToDarkTheme(page)
+            if (viewport.name === 'mobile') {
+              // The mobile theme toggle lives in the More sheet, whose
+              // trigger is part of the action bar that /version unmounts.
+              // Switch the theme from the home page; it persists across
+              // navigation.
+              await page.goto('/')
+              await switchToDarkTheme(page)
+              await page.goto('/version')
+              await expect(page.getByRole('heading', { name: 'Version' })).toBeVisible()
+            } else {
+              await switchToDarkTheme(page)
+            }
           }
 
           const results = await new AxeBuilder({ page })
