@@ -5,9 +5,11 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
  *
  * Regression coverage for the mobile dialog overflow: the tab row used to
  * clip the 4th tab (Standard Form was unreachable), the title wrapped
- * awkwardly, and the content card was a tall empty box. These tests assert
- * the dialog fits the viewport, every tab is reachable, the Reveal-cards
- * toggle still works, and nothing overflows horizontally.
+ * awkwardly, and the content card was a tall empty box. The dialog now shows
+ * all four forms as stacked, vertically-scrolling sections with headings
+ * instead of a tab row. These tests assert the dialog fits the viewport,
+ * every form section is present, the Reveal-cards toggle still works, and
+ * nothing overflows horizontally.
  */
 test.use({
   viewport: { width: 375, height: 667 },
@@ -43,15 +45,17 @@ test('dialog fits within the viewport', async ({ page }) => {
   expect(b.y + b.height).toBeLessThanOrEqual(667)
 })
 
-test('all four tabs are reachable and selectable', async ({ page }) => {
+test('all four forms are shown as stacked sections (no tab row)', async ({ page }) => {
   const dialog = await openNumberForms(page)
+  await expect(dialog.getByRole('tablist')).toHaveCount(0)
   for (const name of ['Word Form', 'Unit Form', 'Expanded Form', 'Standard Form']) {
-    const tab = dialog.getByRole('tab', { name })
-    await tab.scrollIntoViewIfNeeded()
-    await tab.click()
-    await expect(tab).toHaveAttribute('aria-selected', 'true')
+    const heading = dialog.getByRole('heading', { name })
+    await heading.scrollIntoViewIfNeeded()
+    await expect(heading).toBeVisible()
   }
-  await expect(dialog.getByRole('tabpanel')).toBeVisible()
+  // Spot-check that each section renders its form content.
+  await expect(dialog.getByText('one thousand two hundred thirty-four')).toBeVisible()
+  await expect(dialog.getByText('1,000 + 200 + 30 + 4')).toBeVisible()
 })
 
 test('reveal cards toggle still works', async ({ page }) => {

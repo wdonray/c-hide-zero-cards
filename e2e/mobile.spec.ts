@@ -170,19 +170,21 @@ test.describe('mobile core flows', () => {
     await expect(page.getByText('Type a number above to see your cards!')).toBeVisible()
   })
 
-  test('opens number forms and switches tabs', async ({ page }) => {
+  test('opens number forms showing all forms as stacked sections', async ({ page }) => {
     await page.getByPlaceholder('Type a number here!').fill('1234')
     await page.getByTitle(/Number Forms/, { exact: false }).click()
 
     const dialog = page.getByRole('dialog', { name: 'Number Forms & Representations' })
     await expect(dialog).toBeVisible()
 
+    // Mobile shows stacked sections, not tabs.
+    await expect(dialog.getByRole('tablist')).toHaveCount(0)
+    for (const name of ['Word Form', 'Unit Form', 'Expanded Form', 'Standard Form']) {
+      await expect(dialog.getByRole('heading', { name })).toBeVisible()
+    }
+
     await expect(dialog.getByText('one thousand two hundred thirty-four')).toBeVisible()
-
-    await dialog.getByRole('tab', { name: 'Expanded Form' }).click()
     await expect(dialog.getByText('1,000 + 200 + 30 + 4')).toBeVisible()
-
-    await dialog.getByRole('tab', { name: 'Standard Form' }).click()
     await expect(dialog.getByText('1,234')).toBeVisible()
   })
 
