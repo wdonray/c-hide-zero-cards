@@ -1,10 +1,10 @@
 import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { HeaderProvider } from '@/lib/useHeaderContext'
 import type { ScatterArea } from '@/lib/useHeaderContext'
-import { CARD_WORKSPACE_SELECTOR } from '@/lib/constants'
 import { useDraggable } from '@/lib/useDraggable'
+import { APP_HEADER_ID, APP_TOOLBAR_ID, APP_FOOTER_ID } from '@/lib/scatterArea'
 
 function renderDraggable(initialX = 10, initialY = 20, index = 0) {
   // Mirrors production: HomePageClient always passes both triggers (0 initially).
@@ -317,16 +317,36 @@ describe('useDraggable', () => {
     expect(result.current.position).toEqual({ x: 10, y: 20 })
   })
 
-  it('prefers a live workspace measurement over the Mix-time area', () => {
+  it('prefers a live chrome measurement over the Mix-time area', () => {
+    // The live region is the visible strip between the header/toolbar and
+    // the footer/action bar, measured from the DOM at scatter time.
+    const domRect = (x: number, y: number, width: number, height: number) => ({
+      x,
+      y,
+      width,
+      height,
+      top: y,
+      left: x,
+      right: x + width,
+      bottom: y + height,
+      toJSON: () => {},
+    })
+    const getById = vi.spyOn(document, 'getElementById').mockImplementation((id: string) => {
+      switch (id) {
+        case APP_HEADER_ID:
+          return { getBoundingClientRect: () => domRect(0, 0, 1024, 56) } as unknown as HTMLElement
+        case APP_TOOLBAR_ID:
+          return { getBoundingClientRect: () => domRect(0, 56, 1024, 48) } as unknown as HTMLElement
+        case APP_FOOTER_ID:
+          return { getBoundingClientRect: () => domRect(0, 700, 1024, 56) } as unknown as HTMLElement
+        default:
+          return null
+      }
+    })
+    // A stale 9999x9999 Mix-time area must lose to the live measurement.
     const scatterArea: ScatterArea = { x: 0, y: 0, width: 9999, height: 9999 }
-    let seenSelector: string | null = null
-    // Mounted card inside a 300x400 workspace at (100, 200); the card's own
-    // rect is 50x60 at (150, 250) with the pre-scatter offset (10, 20).
+    // Card rect 50x60 at (150, 250) with the pre-scatter offset (10, 20).
     const cardEl = {
-      closest: (selector: string) => {
-        seenSelector = selector
-        return { getBoundingClientRect: () => ({ x: 100, y: 200, width: 300, height: 400 }) }
-      },
       getBoundingClientRect: () => ({ left: 150, top: 250, width: 50, height: 60 }),
     } as unknown as HTMLDivElement
     const { result, rerender } = renderHook(
@@ -343,21 +363,22 @@ describe('useDraggable', () => {
       { wrapper: HeaderProvider, initialProps: { randomizeTrigger: 0, cardEl: null as HTMLDivElement | null } }
     )
     rerender({ randomizeTrigger: 1, cardEl })
-    expect(seenSelector).toBe(CARD_WORKSPACE_SELECTOR)
-    // Static spot relative to the workspace: (150 - 10 - 100, 250 - 20 - 200)
-    // = (40, 30); card lands fully inside [0, 250] x [0, 340].
-    expect(result.current.position.x).toBeGreaterThanOrEqual(-40)
-    expect(result.current.position.x).toBeLessThanOrEqual(210)
-    expect(result.current.position.y).toBeGreaterThanOrEqual(-30)
-    expect(result.current.position.y).toBeLessThanOrEqual(310)
+    expect(getById).toHaveBeenCalled()
+    // Live region: y from toolbar bottom (104) to footer top (700), full
+    // jsdom viewport width (1024). Static spot: (150 - 10 - 0, 250 - 20 -
+    // 104) = (140, 126); card lands fully inside [0, 974] x [104, 640].
+    expect(result.current.position.x).toBeGreaterThanOrEqual(-140)
+    expect(result.current.position.x).toBeLessThanOrEqual(834)
+    expect(result.current.position.y).toBeGreaterThanOrEqual(-126)
+    expect(result.current.position.y).toBeLessThanOrEqual(410)
+    getById.mockRestore()
   })
 
   it('falls back to the Mix-time area when the live measurement is empty', () => {
     const scatterArea: ScatterArea = { x: 0, y: 0, width: 800, height: 600 }
-    // closest() finds an element but it has no usable rect: the Mix-time
-    // area wins, and the card rect still sizes the clamp.
+    // No chrome elements in the document (SSR-like): the Mix-time area
+    // wins, and the card rect still sizes the clamp.
     const cardEl = {
-      closest: () => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 0, height: 0 }) }),
       getBoundingClientRect: () => ({ left: 400, top: 300, width: 50, height: 60 }),
     } as unknown as HTMLDivElement
     const { result, rerender } = renderHook(
@@ -384,9 +405,9 @@ describe('useDraggable', () => {
 
   it('clamps the target to the origin when the card is larger than the workspace', () => {
     const scatterArea: ScatterArea = { x: 0, y: 0, width: 30, height: 30 }
-    // 100x100 card in a 30x30 workspace, no workspace ancestor found.
+    // 100x100 card in a 30x30 area, no chrome laid out (live measurement
+    // empty, Mix-time area wins).
     const cardEl = {
-      closest: () => null,
       getBoundingClientRect: () => ({ left: 50, top: 60, width: 100, height: 100 }),
     } as unknown as HTMLDivElement
     const { result, rerender } = renderHook(

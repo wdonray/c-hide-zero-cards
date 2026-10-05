@@ -1,14 +1,11 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 
 /**
- * Mix scatters cards within the measured workspace rect (the flex-1 area
- * between the app header and the footer / mobile action bar), on any screen
- * size. Owner directive 2026-10-05: the old fixed offsets (±80px mobile,
- * ±400/±175 desktop) clustered cards in the middle of the screen instead of
- * using the available space.
- *
- * Clarification: mixed cards must never end up under the header, the bottom
- * action bar, or the footer — every card stays fully inside the workspace.
+ * Mix scatters cards across the full visible strip between the sticky
+ * header (app header + toolbar) and the footer (desktop) / bottom action
+ * bar (mobile), full viewport width. Owner directive 2026-10-05: the old
+ * dashed workspace box is gone, and Mix must use the entire screen area,
+ * never hiding cards under the header, footer, or action bar.
  */
 
 interface Box {
@@ -46,6 +43,27 @@ async function mix(page: Page) {
   await page.getByPlaceholder('Type a number here!').fill('691193')
   await expect(cards(page)).toHaveCount(6)
   await page.getByTitle('Randomize card position').click()
+}
+
+/**
+ * The expected scatter region, measured from the same sticky chrome the
+ * app measures: lowest visible bottom of header/toolbar to highest visible
+ * top of footer/action bar, full viewport width.
+ */
+async function scatterRegion(page: Page): Promise<Box> {
+  return page.evaluate(() => {
+    const rectOf = (id: string): Box | null => {
+      const el = document.getElementById(id)
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      return r.width > 0 && r.height > 0 ? { x: r.x, y: r.y, width: r.width, height: r.height } : null
+    }
+    const tops = [rectOf('app-header'), rectOf('app-toolbar')].filter((r): r is Box => r !== null)
+    const bottoms = [rectOf('app-footer'), rectOf('mobile-action-bar')].filter((r): r is Box => r !== null)
+    const y = Math.max(...tops.map((r) => r.y + r.height))
+    const bottom = Math.min(...bottoms.map((r) => r.y))
+    return { x: 0, y, width: window.innerWidth, height: bottom - y }
+  })
 }
 
 /** Every card fully inside the container (1px tolerance for subpixels). */
@@ -86,27 +104,22 @@ test.describe('mobile mix scatter (375px)', () => {
     await page.goto('/')
   })
 
-  test('spreads mixed cards across the whole workspace', async ({ page }) => {
+  test('spreads mixed cards across the full header-to-action-bar strip', async ({ page }) => {
     await mix(page)
     const boxes = await cardBoxes(page, 6)
-    const workspace = await page.getByLabel('Place value cards workspace').boundingBox()
-    expect(workspace).not.toBeNull()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ws = workspace!
+    const region = await scatterRegion(page)
+    expect(region.height).toBeGreaterThan(300)
 
     for (const [i, box] of boxes.entries()) {
-      expectInside(box, ws, `card ${i}`)
+      expectInside(box, region, `card ${i}`)
     }
 
-    // Well beyond the old ±80px cluster (which spanned ~155px tall): the
-    // cards use the full height of the workspace...
-    const top = Math.min(...boxes.map((b) => b.y))
-    const bottom = Math.max(...boxes.map((b) => b.y + b.height))
-    expect(bottom - top).toBeGreaterThan(250)
-    // ...with cards in the top and bottom thirds, not one middle clump.
+    // Well beyond the old dashed box: the cards use the full height of the
+    // strip, with cards in the top and bottom thirds, not one middle clump.
     const centers = boxes.map((b) => b.y + b.height / 2)
-    expect(Math.min(...centers)).toBeLessThan(ws.y + ws.height / 3)
-    expect(Math.max(...centers)).toBeGreaterThan(ws.y + (ws.height * 2) / 3)
+    expect(Math.max(...centers) - Math.min(...centers)).toBeGreaterThan(region.height * 0.4)
+    expect(Math.min(...centers)).toBeLessThan(region.y + region.height / 3)
+    expect(Math.max(...centers)).toBeGreaterThan(region.y + (region.height * 2) / 3)
   })
 
   test('no mixed card overlaps the header, action bar, or footer', async ({ page }) => {
@@ -120,6 +133,15 @@ test.describe('mobile mix scatter (375px)', () => {
       }
     }
   })
+
+  test('the card area has no dashed border', async ({ page }) => {
+    await page.getByPlaceholder('Type a number here!').fill('691193')
+    await expect(cards(page)).toHaveCount(6)
+    const borderStyle = await page
+      .getByLabel('Place value cards workspace')
+      .evaluate((el) => getComputedStyle(el).borderTopStyle)
+    expect(borderStyle).not.toBe('dashed')
+  })
 })
 
 test.describe('desktop mix scatter (1280px)', () => {
@@ -130,16 +152,20 @@ test.describe('desktop mix scatter (1280px)', () => {
     await page.goto('/')
   })
 
-  test('mixed cards stay fully inside the workspace', async ({ page }) => {
+  test('mixed cards stay fully inside the header-to-footer strip', async ({ page }) => {
     await mix(page)
     const boxes = await cardBoxes(page, 6)
-    const workspace = await page.getByLabel('Place value cards workspace').boundingBox()
-    expect(workspace).not.toBeNull()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ws = workspace!
+    const region = await scatterRegion(page)
+    expect(region.height).toBeGreaterThan(300)
+    expect(region.width).toBe(1280)
     for (const [i, box] of boxes.entries()) {
-      expectInside(box, ws, `card ${i}`)
+      expectInside(box, region, `card ${i}`)
     }
+
+    // The strip is much taller than the removed dashed box: cards spread
+    // across it instead of clustering.
+    const centers = boxes.map((b) => b.y + b.height / 2)
+    expect(Math.max(...centers) - Math.min(...centers)).toBeGreaterThan(region.height * 0.4)
   })
 
   test('no mixed card overlaps the header or footer', async ({ page }) => {
@@ -152,5 +178,14 @@ test.describe('desktop mix scatter (1280px)', () => {
         expect(intersects(box, chromeBox), `card ${i} overlaps the ${label}`).toBe(false)
       }
     }
+  })
+
+  test('the card area has no dashed border', async ({ page }) => {
+    await page.getByPlaceholder('Type a number here!').fill('691193')
+    await expect(cards(page)).toHaveCount(6)
+    const borderStyle = await page
+      .getByLabel('Place value cards workspace')
+      .evaluate((el) => getComputedStyle(el).borderTopStyle)
+    expect(borderStyle).not.toBe('dashed')
   })
 })

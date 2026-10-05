@@ -132,32 +132,43 @@ describe('useHeaderContext', () => {
     expect(t.ctx.cardsMoved).toBe(false)
   })
 
-  it('measures the workspace rect when Mix is pressed', () => {
+  it('measures the scatter region from the chrome when Mix is pressed', () => {
     const t = setup()
     expect(t.ctx.scatterArea).toBeNull()
-    const workspace = document.createElement('main')
-    vi.spyOn(workspace, 'getBoundingClientRect').mockReturnValue({
-      x: 8,
-      y: 120,
-      width: 359,
-      height: 480,
-      top: 120,
-      left: 8,
-      right: 367,
-      bottom: 600,
+    // Full visible strip: header (56px) + toolbar (48px) on top, footer
+    // (56px at y=700) at the bottom, full jsdom viewport width (1024).
+    const domRect = (x: number, y: number, width: number, height: number) => ({
+      x,
+      y,
+      width,
+      height,
+      top: y,
+      left: x,
+      right: x + width,
+      bottom: y + height,
       toJSON: () => {},
     })
-    // Attach via the exposed ref, as HomePageClient does.
-    t.ctx.workspaceRef.current = workspace
+    vi.spyOn(document, 'getElementById').mockImplementation((id: string) => {
+      switch (id) {
+        case 'app-header':
+          return { getBoundingClientRect: () => domRect(0, 0, 1024, 56) } as unknown as HTMLElement
+        case 'app-toolbar':
+          return { getBoundingClientRect: () => domRect(0, 56, 1024, 48) } as unknown as HTMLElement
+        case 'app-footer':
+          return { getBoundingClientRect: () => domRect(0, 700, 1024, 56) } as unknown as HTMLElement
+        default:
+          return null
+      }
+    })
     act(() => t.ctx.handleRandomizeCardPosition())
-    expect(t.ctx.scatterArea).toEqual({ x: 8, y: 120, width: 359, height: 480 })
+    expect(t.ctx.scatterArea).toEqual({ x: 0, y: 104, width: 1024, height: 596 })
     expect(t.ctx.randomizeTrigger).toBe(1)
   })
 
-  it('clears the scatter area when the workspace is not measurable', () => {
+  it('clears the scatter area when no chrome is measurable', () => {
     const t = setup()
-    // No workspace attached (or a zero-size rect): scatterArea stays null
-    // and Mix still bumps the trigger; cards simply do not move.
+    // No header/toolbar/footer/action bar in the document: scatterArea stays
+    // null and Mix still bumps the trigger; cards simply do not move.
     act(() => t.ctx.handleRandomizeCardPosition())
     expect(t.ctx.scatterArea).toBeNull()
     expect(t.ctx.randomizeTrigger).toBe(1)

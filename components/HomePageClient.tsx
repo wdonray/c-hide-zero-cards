@@ -25,7 +25,6 @@ export function HomePageClient() {
     resetTrigger,
     randomizeTrigger,
     scatterArea,
-    workspaceRef,
     showZeroCards,
     showNumberFormsDialog,
     setShowNumberFormsDialog,
@@ -84,8 +83,7 @@ export function HomePageClient() {
         </header>
 
         <main
-          ref={workspaceRef}
-          className={`w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} max-md:h-auto max-md:min-h-[280px] max-md:flex-1 transition-[height] duration-300 lg:border-2 lg:border-dashed lg:border-gray-300 rounded-lg flex items-center justify-center relative`}
+          className={`w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} max-md:h-auto max-md:min-h-[280px] max-md:flex-1 transition-[height] duration-300 flex items-center justify-center relative`}
           aria-label="Place value cards workspace"
         >
           {cards.length === 0 ? (
