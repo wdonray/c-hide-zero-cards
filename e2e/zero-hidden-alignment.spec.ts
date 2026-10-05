@@ -1,17 +1,19 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 
 /**
- * Zero-hidden fan alignment (teacher report 2026-10-05): with "Zeros hidden"
- * the fan must recompute as if zero cards do not exist — no zero card
- * visible, the remaining cards evenly spaced with the standard cascading
- * overlap, and the whole fan centered in the workspace. Backs the fix that
- * anchors every card on its center (left:50% + translate(-50%)) instead of
- * its width-dependent static position.
+ * Zero-hidden fan alignment (teacher report 2026-10-05, follow-up): with
+ * "Zeros hidden" the fan must recompute as if zero cards do not exist — no
+ * zero card visible, every card's left edge evenly spaced (one xOffset peek
+ * each, so no "40" double peeks from the wide back cards), right edges
+ * flush (no trailing-zero slivers), and the visible fan centered in the
+ * workspace. Backs the measured fan wrapper: cards anchor on evenly spaced
+ * left edges and each card is widened so the right edge is flush.
  */
 
 interface CardDatum {
   text: string
-  cx: number
+  left: number
+  right: number
 }
 
 /** Number inputs and the exact card texts expected with zeros hidden. */
@@ -46,23 +48,28 @@ async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDat
       wsCenterX: ws.x + ws.width / 2,
       cards: els.map((el) => {
         const r = el.getBoundingClientRect()
-        return { text: el.innerText, cx: r.x + r.width / 2 }
+        return { text: el.innerText, left: r.x, right: r.x + r.width }
       }),
     }
   })
 }
 
-/** Even spacing (by card centers) and a fan centered in the workspace. */
+/**
+ * Even left-edge spacing (one peek per card), flush right edges, and a
+ * visibly centered fan.
+ */
 function expectFanAligned(wsCenterX: number, data: CardDatum[]) {
   expect(data.length).toBeGreaterThan(0)
   if (data.length > 1) {
-    const centers = data.map((c) => c.cx)
-    const deltas = centers.slice(1).map((c, i) => c - centers[i])
-    expect(Math.max(...deltas) - Math.min(...deltas)).toBeLessThanOrEqual(3)
+    const lefts = data.map((c) => c.left)
+    const deltas = lefts.slice(1).map((l, i) => l - lefts[i])
+    expect(Math.max(...deltas) - Math.min(...deltas)).toBeLessThanOrEqual(2)
+    const rights = data.map((c) => c.right)
+    expect(Math.max(...rights) - Math.min(...rights)).toBeLessThanOrEqual(2)
   }
-  const centers = data.map((c) => c.cx)
-  const fanMid = (centers[0] + centers[centers.length - 1]) / 2
-  expect(Math.abs(fanMid - wsCenterX)).toBeLessThanOrEqual(3)
+  const fanLeft = Math.min(...data.map((c) => c.left))
+  const fanRight = Math.max(...data.map((c) => c.right))
+  expect(Math.abs((fanLeft + fanRight) / 2 - wsCenterX)).toBeLessThanOrEqual(3)
 }
 
 async function expectZeroCardsHidden(page: Page, hiddenTexts: string[]) {

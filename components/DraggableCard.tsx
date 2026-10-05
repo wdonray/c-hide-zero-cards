@@ -1,8 +1,7 @@
 import { useDraggable } from '@/lib/useDraggable'
 import { CARD_COLORS, CARD_Y_OFFSET } from '@/lib/constants'
 import type { ScatterArea } from '@/lib/useHeaderContext'
-import { getCardXOffset, getMobileCardMetrics } from '@/lib/cardLayout'
-import { useIsMobile } from '@/lib/useIsMobile'
+import type { MobileCardMetrics } from '@/lib/cardLayout'
 import { useCallback, useMemo, useState } from 'react'
 
 interface DraggableCardProps {
@@ -10,6 +9,17 @@ interface DraggableCardProps {
   placeValue: number
   index: number
   totalCards: number
+  /** Fan offset for this fan, computed by the parent (it also sizes the fan wrapper). */
+  xOffset: number
+  /** Adaptive mobile metrics for this fan, computed by the parent (null on desktop). */
+  mobileMetrics: MobileCardMetrics | null
+  /**
+   * Explicit card width so the fan's right edge is flush: extent - index *
+   * xOffset. Without it, the wide back cards ("900,000") extend past the
+   * narrower cards stacked on top and their trailing zeros peek out on the
+   * right. Undefined until the parent has measured the fan.
+   */
+  fanWidth?: number
   resetTrigger?: number
   randomizeTrigger?: number
   scatterArea?: ScatterArea | null
@@ -21,36 +31,24 @@ export function DraggableCard({
   placeValue,
   index,
   totalCards,
+  xOffset,
+  mobileMetrics,
+  fanWidth,
   resetTrigger,
   randomizeTrigger,
   scatterArea,
   fakeNumbers,
 }: DraggableCardProps) {
-  const isMobile = useIsMobile()
-  // Below the mobile breakpoint the cards are the hero: they grow to fill
-  // the viewport (fewer digits = bigger cards) while the fan keeps the exact
-  // desktop peeking character via a proportional offset. Desktop keeps the
-  // fixed 36px fan at text-6xl.
-  const mobileMetrics = useMemo(
-    () => (isMobile && typeof window !== 'undefined' ? getMobileCardMetrics(totalCards, window.innerWidth) : null),
-    [isMobile, totalCards]
-  )
-  const xOffset = useMemo(
-    () =>
-      mobileMetrics?.xOffset ??
-      getCardXOffset(totalCards, isMobile && typeof window !== 'undefined' ? window.innerWidth : Infinity),
-    [isMobile, mobileMetrics, totalCards]
-  )
   const useDraggableProps = useMemo(
     () => ({
-      // The fan is anchored on each card's CENTER, not its left edge (see
-      // the left:50% + translate(-50%) below): cards with different content
-      // widths ("100,000" vs "5") share the exact same anchor point.
-      // Without this, each card's static position depended on its own width
-      // and the cascade came out uneven and off-center — visibly ragged once
-      // zero cards were filtered out of the layout. Spreading initialX
-      // symmetrically around the anchor centers the whole fan.
-      initialX: (index - (totalCards - 1) / 2) * xOffset,
+      // The fan anchors on evenly spaced LEFT edges (index * xOffset), not
+      // on card centers: card widths vary with place value ("900,000" vs
+      // "4"), and center anchoring made the back cards' peeks far wider
+      // than one offset (a "40" double peek) and the visible fan lopsided.
+      // Even left edges keep every peek exactly one xOffset wide; the
+      // parent sizes the fan wrapper to the measured extent and centers it,
+      // so the visible fan is centered too.
+      initialX: index * xOffset,
       initialY: index * CARD_Y_OFFSET,
       // Stable Mix seed on the original fan formula (see useDraggable).
       scatterSeed: index * xOffset,
@@ -58,7 +56,7 @@ export function DraggableCard({
       randomizeTrigger,
       scatterArea,
     }),
-    [index, xOffset, totalCards, resetTrigger, randomizeTrigger, scatterArea]
+    [index, xOffset, resetTrigger, randomizeTrigger, scatterArea]
   )
 
   const cardColor = useCallback((placeValue: number) => CARD_COLORS[placeValue], [])
@@ -84,16 +82,18 @@ export function DraggableCard({
       className={`flex items-center justify-center gap-0 px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
       style={{
         position: 'absolute',
-        // Anchor every card on the workspace's horizontal center: left:50%
-        // puts each card's left edge at the center, and the -50% shift (of
-        // the card's own width) centers the card on that point regardless of
-        // its content width. position.x/y then place the card's CENTER, so
-        // the fan spacing stays perfectly even for any mix of card widths.
-        left: '50%',
-        transform: `translate(calc(-50% + ${position.x}px), ${position.y}px)`,
+        // Cards anchor on the fan wrapper's left edge: the parent spaces
+        // left edges evenly (index * xOffset) and centers the wrapper, so
+        // every peek is exactly one offset wide and the visible fan is
+        // centered regardless of per-card content widths.
+        left: 0,
+        transform: `translate(${position.x}px, ${position.y}px)`,
         userSelect: 'none',
         touchAction: 'none',
         zIndex: totalCards + index,
+        // Flush right edge (see fanWidth): assigned by the parent from the
+        // measured fan extent.
+        ...(fanWidth !== undefined ? { width: fanWidth } : {}),
         // Mobile hero sizing: font size, tracking, and padding scale with the
         // adaptive metrics; the Tailwind text-lg/tracking classes above apply
         // only when no metrics are present (desktop / SSR).

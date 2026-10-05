@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getCardXOffset, getMobileCardMetrics } from './cardLayout'
+import { getCardXOffset, getFanExtent, getMobileCardMetrics } from './cardLayout'
 import { CARD_X_OFFSET, CARD_X_OFFSET_MOBILE_MIN } from './constants'
 
 describe('getCardXOffset', () => {
@@ -76,5 +76,22 @@ describe('getMobileCardMetrics', () => {
     for (let i = 1; i < sizes.length; i++) {
       expect(sizes[i]).toBeLessThanOrEqual(sizes[i - 1])
     }
+  })
+})
+
+describe('getFanExtent', () => {
+  it('returns 0 for an empty fan', () => {
+    expect(getFanExtent([], CARD_X_OFFSET)).toBe(0)
+  })
+
+  it('returns the single card width for a one-card fan', () => {
+    expect(getFanExtent([70], CARD_X_OFFSET)).toBe(70)
+  })
+
+  it('takes the max of index * xOffset + width across cards', () => {
+    // 940,934 zero-hidden on desktop: the 900,000 back card decides.
+    expect(getFanExtent([379, 325, 179, 125, 70], 36)).toBe(379)
+    // A later card can win when it is wide relative to its index.
+    expect(getFanExtent([100, 200, 200], 36)).toBe(2 * 36 + 200)
   })
 })

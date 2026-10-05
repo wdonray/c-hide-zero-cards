@@ -145,12 +145,11 @@ test.describe('keyboard operability', () => {
 
     await firstCard.focus()
 
-    // Cards anchor on their center: translate(calc(-50% +/- <x>px), <y>px)
-    // (the browser serializes "calc(-50% + -44px)" as "calc(-50% - 44px)").
+    // Cards anchor on their left edge: translate(<x>px, <y>px).
     const parseX = (transform: string): number => {
-      const m = /translate\(calc\(-50% ([+-]) ([-\d.]+)px\),\s*([-\d.]+)px\)/.exec(transform)
+      const m = /translate\(\s*([-.\d]+)px,\s*([-.\d]+)px\s*\)/.exec(transform)
       if (!m) throw new Error(`unparseable transform: ${transform}`)
-      return parseFloat(m[2]) * (m[1] === '-' ? -1 : 1)
+      return parseFloat(m[1])
     }
     const before = parseX((await firstCard.getAttribute('style')) ?? '')
     await page.keyboard.press('ArrowRight')
