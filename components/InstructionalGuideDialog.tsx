@@ -26,8 +26,10 @@ export function InstructionalGuideDialog() {
   const isMobile = useIsMobile()
 
   // Mobile (<768px) shows every section as a stacked, vertically-scrolling
-  // block labeled by a real heading — no tab row, no horizontal scrolling.
-  // Desktop keeps the tabbed layout exactly as before.
+  // block — no tab row, no horizontal scrolling. Each section component
+  // already renders its own descriptive heading ("Quick Start (2 minutes)",
+  // ...), so no outer heading is rendered; the region keeps an accessible
+  // label via aria-label. Desktop keeps the tabbed layout exactly as before.
   const mobileSections = [
     { title: 'Quick Start', content: <QuickStartSection /> },
     { title: 'Toolbar Features', content: <ToolbarFeaturesSection /> },
@@ -63,17 +65,11 @@ export function InstructionalGuideDialog() {
 
         {isMobile ? (
           <div className="flex w-full min-w-0 flex-col gap-6">
-            {mobileSections.map((section) => {
-              const headingId = `guide-section-${section.title.toLowerCase().replace(/\s+/g, '-')}`
-              return (
-                <section key={section.title} aria-labelledby={headingId} className="w-full min-w-0">
-                  <h3 id={headingId} className="mb-2 text-base font-semibold">
-                    {section.title}
-                  </h3>
-                  {section.content}
-                </section>
-              )
-            })}
+            {mobileSections.map((section) => (
+              <section key={section.title} aria-label={section.title} className="w-full min-w-0">
+                {section.content}
+              </section>
+            ))}
           </div>
         ) : (
           <Tabs defaultValue={InstructionalGuideDialogTab.QUICK_START} className="w-full min-w-0">

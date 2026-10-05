@@ -38,19 +38,32 @@ test.describe('mobile stacked sections', () => {
     return dialog
   }
 
-  test('renders no tab row; all four sections as headed sections in order', async ({ page }) => {
+  test('renders no tab row and no doubled headings; sections labeled in order', async ({ page }) => {
     const dialog = await openGuide(page)
     await expect(dialog.getByRole('tablist')).toHaveCount(0)
     await expect(dialog.getByRole('tab')).toHaveCount(0)
 
+    // No redundant outer headings: each section component renders its own
+    // descriptive h3, and the section stays labeled in the a11y tree.
     for (const label of SECTION_LABELS) {
-      await expect(dialog.getByRole('heading', { name: label, exact: true })).toBeVisible()
+      await expect(dialog.getByRole('heading', { name: label, exact: true })).toHaveCount(0)
+      await expect(dialog.getByRole('region', { name: label })).toBeVisible()
+    }
+
+    const contentHeadings = [
+      'Quick Start (2 minutes)',
+      'Toolbar Features Guide',
+      'Interactive Learning Activities',
+      'Assessment & Learning Checks',
+    ]
+    for (const name of contentHeadings) {
+      await expect(dialog.getByRole('heading', { name })).toBeVisible()
     }
 
     const order = await dialog
       .getByRole('heading', { level: 3 })
       .evaluateAll((els) => els.map((el) => el.textContent?.trim() ?? ''))
-    const indices = SECTION_LABELS.map((label) => order.indexOf(label))
+    const indices = contentHeadings.map((name) => order.indexOf(name))
     expect(indices.every((i) => i >= 0)).toBe(true)
     expect([...indices].sort((a, b) => a - b)).toEqual(indices)
   })
@@ -65,9 +78,9 @@ test.describe('mobile stacked sections', () => {
 
   test('sections are reachable by vertical scroll with no horizontal overflow', async ({ page }) => {
     const dialog = await openGuide(page)
-    const lastHeading = dialog.getByRole('heading', { name: 'Assessment', exact: true })
-    await lastHeading.scrollIntoViewIfNeeded()
-    await expect(lastHeading).toBeVisible()
+    const lastSection = dialog.getByRole('region', { name: 'Assessment' })
+    await lastSection.scrollIntoViewIfNeeded()
+    await expect(dialog.getByRole('heading', { name: 'Assessment & Learning Checks' })).toBeVisible()
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth
