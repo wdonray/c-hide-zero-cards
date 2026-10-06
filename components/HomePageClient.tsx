@@ -10,7 +10,7 @@ import {
   FIRST_TIME_TOAST_STYLE,
   NumberFormsDialogTab,
 } from '@/lib/constants'
-import { getFanExtent, getFanPositions, getMobileCardMetrics } from '@/lib/cardLayout'
+import { getFanExtent, getFanPositions, getMobileCardMetrics, scaleFontSizeToFit } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
@@ -81,10 +81,31 @@ export function HomePageClient() {
   // to size the fan wrapper, and every card shares the same fan.
   // Below the mobile breakpoint the cards are the hero: they grow to fill
   // the viewport (fewer digits = bigger cards). Desktop keeps text-6xl.
-  const mobileMetrics = useMemo(
-    () => (isMobile && typeof window !== 'undefined' ? getMobileCardMetrics(displayTexts, window.innerWidth) : null),
+  //
+  // Fully dynamic sizing: the model gives a synchronous first guess (so the
+  // font size is correct on the very first paint after the number changes).
+  // After the fan is measured empirically, if it overflows the viewport the
+  // correction scales the font down proportionally (scaleFontSizeToFit) and
+  // the fan is re-measured. This guarantees fit on any device, regardless
+  // of how its fonts, letter-spacing, or padding render relative to the
+  // model. The correction is keyed by the inputs that produced it, so the
+  // layout effect never applies a stale correction.
+  const modelFontSize = useMemo(
+    () =>
+      isMobile && typeof window !== 'undefined' && displayTexts.length > 0
+        ? getMobileCardMetrics(displayTexts, window.innerWidth).fontSize
+        : null,
     [isMobile, displayTexts]
   )
+  const [sizingCorrection, setSizingCorrection] = useState<{ key: string; delta: number } | null>(null)
+  const sizingKey = `${isMobile}|${displayTexts.join(',')}`
+  const mobileMetrics = useMemo(() => {
+    if (modelFontSize === null) return null
+    const delta = sizingCorrection && sizingCorrection.key === sizingKey ? sizingCorrection.delta : 0
+    return { fontSize: Math.max(10, modelFontSize - delta) }
+  }, [modelFontSize, sizingCorrection, sizingKey])
+  // Available width for the fan on mobile (viewport minus page padding).
+  const mobileAvailableWidth = isMobile && typeof window !== 'undefined' ? window.innerWidth - 32 : 0
 
   // Fan layout: each item anchors on its cumulative offset (the sum of the
   // previous items' widths) inside a wrapper sized to the fan extent. The
@@ -184,6 +205,27 @@ export function HomePageClient() {
     const itemX = getFanPositions(itemWidths)
     const extent = getFanExtent(itemWidths, naturals[naturals.length - 1])
     const height = Math.max(...children.map((child) => child.offsetHeight))
+
+    // Fully dynamic mobile sizing: if the measured fan overflows the
+    // available width, increase the correction delta so the font scales down
+    // proportionally, then re-measure. The delta strictly increases (and the
+    // font is floored at 10px), so this terminates; the state update
+    // re-renders and re-runs this effect via the measureKey (which includes
+    // mobileMetrics.fontSize). The correction is keyed, so a stale delta
+    // from a previous number never applies.
+    if (isMobile && modelFontSize !== null && mobileAvailableWidth > 0 && displayTexts.length > 0) {
+      const currentFontSize = mobileMetrics?.fontSize ?? modelFontSize
+      const corrected = scaleFontSizeToFit(extent, currentFontSize, mobileAvailableWidth)
+      if (corrected !== null) {
+        const newDelta = modelFontSize - corrected
+        const prevDelta = sizingCorrection && sizingCorrection.key === sizingKey ? sizingCorrection.delta : 0
+        if (newDelta > prevDelta) {
+          setSizingCorrection({ key: sizingKey, delta: newDelta })
+          return
+        }
+      }
+    }
+
     setFanLayout((prev) =>
       prev?.key === measureKey &&
       prev.extent === extent &&
@@ -199,7 +241,18 @@ export function HomePageClient() {
         ? prev
         : { key: measureKey, extent, height, naturals, itemX, itemWidths, textClipWidths }
     )
-  }, [measureKey, cards.length, items, measureTick])
+  }, [
+    measureKey,
+    cards.length,
+    items,
+    measureTick,
+    sizingKey,
+    sizingCorrection,
+    modelFontSize,
+    isMobile,
+    mobileAvailableWidth,
+    displayTexts,
+  ])
 
   // Re-measure once web fonts arrive (card widths are text-driven) and on
   // resize/zoom (the mobile fan metrics depend on the viewport width).

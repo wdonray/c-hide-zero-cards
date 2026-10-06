@@ -60,15 +60,32 @@ export function singleDigitPeekWidth(fontSize: number): number {
 }
 
 /**
- * Adaptive card metrics for narrow viewports: the cards are the hero of the
- * app, so instead of the fixed small mobile size they grow to fill the
- * available width — fewer digits means bigger cards. The fan width model
- * sums the per-card single-digit peeks plus the thousands-separator commas
- * plus the last card's full width, then shrinks the font until the modeled
- * fan fits the viewport.
+ * Scale a font size so a measured fan extent fits an available width.
+ * Text scales linearly with font size, so the corrected size is
+ * currentFontSize * (availableWidth / measuredExtent), floored at
+ * minFontSize (10px) for readability. Returns null when the fan already
+ * fits or the inputs are invalid — the caller should not adjust.
  *
- * Pure function of (displayTexts, viewportWidth); unit-testable.
+ * This is the fully-dynamic correction: the model in
+ * getMobileCardMetrics is only a first guess, and real devices (fonts,
+ * letter-spacing, padding) can render wider than modeled. Measuring the
+ * actual extent and scaling empirically guarantees the fan fits.
+ *
+ * Pure function; unit-testable.
  */
+export function scaleFontSizeToFit(
+  measuredExtent: number,
+  currentFontSize: number,
+  availableWidth: number,
+  minFontSize = 10
+): number | null {
+  if (measuredExtent <= availableWidth || availableWidth <= 0 || currentFontSize <= 0) {
+    return null
+  }
+  const scaled = Math.floor((currentFontSize * availableWidth) / measuredExtent)
+  const clamped = Math.max(minFontSize, scaled)
+  return clamped < currentFontSize ? clamped : null
+}
 export function getMobileCardMetrics(displayTexts: string[], viewportWidth: number): MobileCardMetrics {
   // Page padding on mobile (px-4 = 16px per side).
   const available = viewportWidth - 32
