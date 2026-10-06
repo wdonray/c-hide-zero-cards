@@ -18,7 +18,6 @@ import { ZeroStateIndicator } from '@/components/ZeroStateIndicator'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
 import { toast } from 'sonner'
 import { FirstTimeToast } from '@/components/FirstTimeToast'
-import { ArrowFatUpIcon } from '@phosphor-icons/react'
 
 /** A fan item: a place-value card, or a thousands-separator comma. */
 type FanItem = { kind: 'card'; cardIndex: number } | { kind: 'comma' }
@@ -37,6 +36,21 @@ export function HomePageClient() {
     numberInputRef,
   } = useHeaderContext()
   const isMobile = useIsMobile()
+
+  // On first load, if no number is set, roll a randomized example so the
+  // page is never empty. The user sees cards immediately instead of
+  // instructions telling them what to do. Synchronous (no dice-roll delay)
+  // so the example is present on the first paint.
+  useEffect(() => {
+    if (inputNumber === null) {
+      const min = 1
+      const max = 9999
+      const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min
+      setInputNumber(randomNumber)
+    }
+    // Mount-only: the user clearing the input afterwards is intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [selectedTab, setSelectedTab] = useState<NumberFormsDialogTab>(NumberFormsDialogTab.WORD)
 
@@ -329,61 +343,49 @@ export function HomePageClient() {
           className={`w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} max-md:h-auto max-md:min-h-[280px] max-md:flex-1 transition-[height] duration-300 flex items-center justify-center relative`}
           aria-label="Place value cards workspace"
         >
-          {cards.length === 0 ? (
-            <div className="flex flex-col items-center gap-2" role="img" aria-label="Instructions to start">
-              <ArrowFatUpIcon className="h-12 w-12 animate-bounce text-muted-foreground" aria-hidden="true" />
-              <span className="text-2xl text-muted-foreground text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Type a number above to see your cards!
-              </span>
-              <span className="text-sm text-muted-foreground text-center">
-                Try numbers like 123, 1,000, or even 1,000,000!
-              </span>
-            </div>
-          ) : (
-            <div
-              ref={fanRef}
-              role="application"
-              aria-label="Draggable place value cards"
-              className="relative shrink-0"
-              style={layout ? { width: layout.extent, height: layout.height } : undefined}
-            >
-              {items.map((item, itemIdx) => {
-                if (item.kind === 'comma') {
-                  return (
-                    <span
-                      key={`comma-${itemIdx}`}
-                      data-testid="fan-comma"
-                      aria-hidden="true"
-                      className={commaClassName}
-                      style={commaStyle(layout ? layout.itemX[itemIdx] : 0)}
-                    >
-                      ,
-                    </span>
-                  )
-                }
-                const card = cards[item.cardIndex]
-                const fanX = layout ? layout.itemX[itemIdx] : 0
+          <div
+            ref={fanRef}
+            role="application"
+            aria-label="Draggable place value cards"
+            className="relative shrink-0"
+            style={layout ? { width: layout.extent, height: layout.height } : undefined}
+          >
+            {items.map((item, itemIdx) => {
+              if (item.kind === 'comma') {
                 return (
-                  <DraggableCard
-                    key={`${card.firstDigit}-${card.placeValue}-${item.cardIndex}`}
-                    firstDigit={card.firstDigit}
-                    placeValue={card.placeValue}
-                    index={item.cardIndex}
-                    totalCards={cards.length}
-                    fanX={fanX}
-                    mobileMetrics={mobileMetrics}
-                    fanWidth={layout ? layout.extent - fanX : undefined}
-                    naturalWidth={layout ? layout.naturals[item.cardIndex] : undefined}
-                    textClipWidth={layout ? layout.textClipWidths[item.cardIndex] : undefined}
-                    hiddenZero={card.firstDigit === 0 && !showZeroCards}
-                    resetTrigger={resetTrigger}
-                    randomizeTrigger={randomizeTrigger}
-                    scatterArea={scatterArea}
-                  />
+                  <span
+                    key={`comma-${itemIdx}`}
+                    data-testid="fan-comma"
+                    aria-hidden="true"
+                    className={commaClassName}
+                    style={commaStyle(layout ? layout.itemX[itemIdx] : 0)}
+                  >
+                    ,
+                  </span>
                 )
-              })}
-            </div>
-          )}
+              }
+              const card = cards[item.cardIndex]
+              const fanX = layout ? layout.itemX[itemIdx] : 0
+              return (
+                <DraggableCard
+                  key={`${card.firstDigit}-${card.placeValue}-${item.cardIndex}`}
+                  firstDigit={card.firstDigit}
+                  placeValue={card.placeValue}
+                  index={item.cardIndex}
+                  totalCards={cards.length}
+                  fanX={fanX}
+                  mobileMetrics={mobileMetrics}
+                  fanWidth={layout ? layout.extent - fanX : undefined}
+                  naturalWidth={layout ? layout.naturals[item.cardIndex] : undefined}
+                  textClipWidth={layout ? layout.textClipWidths[item.cardIndex] : undefined}
+                  hiddenZero={card.firstDigit === 0 && !showZeroCards}
+                  resetTrigger={resetTrigger}
+                  randomizeTrigger={randomizeTrigger}
+                  scatterArea={scatterArea}
+                />
+              )
+            })}
+          </div>
         </main>
       </section>
     </>

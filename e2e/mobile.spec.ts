@@ -169,7 +169,7 @@ test.describe('mobile core flows', () => {
     await page.getByTitle('Clear input number and reset cards', { exact: true }).click()
 
     await expect(page.getByPlaceholder('Type a number here!')).toHaveValue('')
-    await expect(page.getByText('Type a number above to see your cards!')).toBeVisible()
+    await expect(page.getByText('Type a number above to see your cards!')).toHaveCount(0)
   })
 
   test('opens number forms showing all forms as stacked sections', async ({ page }) => {

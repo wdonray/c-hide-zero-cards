@@ -37,8 +37,12 @@ test.describe('number input and cards', () => {
     await expect(cards.locator(':scope > div')).toHaveCount(4)
   })
 
-  test('shows the empty state before any number is entered', async ({ page }) => {
-    await expect(page.getByText('Type a number above to see your cards!')).toBeVisible()
+  test('auto-rolls a randomized example on load (no empty state)', async ({ page }) => {
+    // The page auto-rolls on mount so it is never empty; cards appear after
+    // the roll's short delay.
+    const cards = page.getByRole('application', { name: 'Draggable place value cards' })
+    await expect(cards.locator(':scope > div').first()).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Type a number above to see your cards!')).toHaveCount(0)
   })
 
   test('hides and shows zero cards', async ({ page }) => {
@@ -102,7 +106,12 @@ test.describe('toolbar actions', () => {
     await page.getByTitle('Clear input number and reset cards', { exact: true }).click()
 
     await expect(page.getByPlaceholder('Type a number here!')).toHaveValue('')
-    await expect(page.getByText('Type a number above to see your cards!')).toBeVisible()
+    // Clearing is intentional (not a fresh load), so no auto-roll: the
+    // workspace is empty and the old instructional empty state is gone.
+    await expect(page.getByText('Type a number above to see your cards!')).toHaveCount(0)
+    await expect(
+      page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
+    ).toHaveCount(0)
   })
 })
 
