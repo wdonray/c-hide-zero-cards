@@ -87,16 +87,16 @@ export function HomePageClient() {
   // is scaled down proportionally (scaleFontSizeToFit) and the fan is
   // re-measured. This guarantees fit on any device, regardless of how its
   // fonts, letter-spacing, or padding render relative to the model.
-  const [mobileFontSize, setMobileFontSize] = useState<number | null>(null)
-  useEffect(() => {
-    // Reset to the model guess when the inputs change.
-    if (isMobile && typeof window !== 'undefined' && displayTexts.length > 0) {
-      setMobileFontSize(getMobileCardMetrics(displayTexts, window.innerWidth).fontSize)
-    } else {
-      setMobileFontSize(null)
-    }
-  }, [isMobile, displayTexts])
-  const mobileMetrics = useMemo(() => (mobileFontSize !== null ? { fontSize: mobileFontSize } : null), [mobileFontSize])
+  //
+  // The sizing state is keyed by the inputs that produced it, so the layout
+  // effect never measures or corrects a stale font size (the model reset
+  // in useEffect would otherwise race the measurement in useLayoutEffect).
+  const [mobileSizing, setMobileSizing] = useState<{ key: string; fontSize: number } | null>(null)
+  const sizingKey = `${isMobile}|${displayTexts.join(',')}`
+  const mobileMetrics = useMemo(
+    () => (mobileSizing !== null ? { fontSize: mobileSizing.fontSize } : null),
+    [mobileSizing]
+  )
   // Available width for the fan on mobile (viewport minus page padding).
   const mobileAvailableWidth = isMobile && typeof window !== 'undefined' ? window.innerWidth - 32 : 0
 
@@ -199,15 +199,25 @@ export function HomePageClient() {
     const extent = getFanExtent(itemWidths, naturals[naturals.length - 1])
     const height = Math.max(...children.map((child) => child.offsetHeight))
 
-    // Fully dynamic mobile sizing: if the measured fan overflows the
-    // available width, scale the font down proportionally and re-measure.
-    // The font size strictly decreases (floored at 10px), so this
-    // terminates; the state update re-renders and re-runs this effect via
-    // the measureKey (which includes mobileMetrics.fontSize).
-    if (isMobile && mobileFontSize !== null && mobileAvailableWidth > 0) {
-      const corrected = scaleFontSizeToFit(extent, mobileFontSize, mobileAvailableWidth)
+    // Fully dynamic mobile sizing, all in this layout effect so there is no
+    // race with a separate reset effect: if the sizing state is stale (or
+    // absent) for the current inputs, initialize it from the model guess;
+    // otherwise, if the measured fan overflows the available width, scale
+    // the font down proportionally and re-measure. The font size strictly
+    // decreases (floored at 10px), so this terminates; the state update
+    // re-renders and re-runs this effect via the measureKey (which includes
+    // mobileMetrics.fontSize).
+    if (isMobile && mobileAvailableWidth > 0 && displayTexts.length > 0) {
+      if (!mobileSizing || mobileSizing.key !== sizingKey) {
+        setMobileSizing({
+          key: sizingKey,
+          fontSize: getMobileCardMetrics(displayTexts, window.innerWidth).fontSize,
+        })
+        return
+      }
+      const corrected = scaleFontSizeToFit(extent, mobileSizing.fontSize, mobileAvailableWidth)
       if (corrected !== null) {
-        setMobileFontSize(corrected)
+        setMobileSizing({ key: sizingKey, fontSize: corrected })
         return
       }
     }
@@ -227,7 +237,17 @@ export function HomePageClient() {
         ? prev
         : { key: measureKey, extent, height, naturals, itemX, itemWidths, textClipWidths }
     )
-  }, [measureKey, cards.length, items, measureTick])
+  }, [
+    measureKey,
+    cards.length,
+    items,
+    measureTick,
+    sizingKey,
+    mobileSizing,
+    isMobile,
+    mobileAvailableWidth,
+    displayTexts,
+  ])
 
   // Re-measure once web fonts arrive (card widths are text-driven) and on
   // resize/zoom (the mobile fan metrics depend on the viewport width).
