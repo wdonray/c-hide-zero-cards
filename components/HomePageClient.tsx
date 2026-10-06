@@ -10,7 +10,7 @@ import {
   FIRST_TIME_TOAST_STYLE,
   NumberFormsDialogTab,
 } from '@/lib/constants'
-import { getFanExtent, getFanPositions, getMobileCardMetrics } from '@/lib/cardLayout'
+import { getFanExtent, getFanPositions, getMobileCardMetrics, scaleFontSizeToFit } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
@@ -81,10 +81,24 @@ export function HomePageClient() {
   // to size the fan wrapper, and every card shares the same fan.
   // Below the mobile breakpoint the cards are the hero: they grow to fill
   // the viewport (fewer digits = bigger cards). Desktop keeps text-6xl.
-  const mobileMetrics = useMemo(
-    () => (isMobile && typeof window !== 'undefined' ? getMobileCardMetrics(displayTexts, window.innerWidth) : null),
-    [isMobile, displayTexts]
-  )
+  //
+  // Fully dynamic sizing: the model below is only a first guess. After the
+  // fan is measured empirically, if it overflows the viewport the font size
+  // is scaled down proportionally (scaleFontSizeToFit) and the fan is
+  // re-measured. This guarantees fit on any device, regardless of how its
+  // fonts, letter-spacing, or padding render relative to the model.
+  const [mobileFontSize, setMobileFontSize] = useState<number | null>(null)
+  useEffect(() => {
+    // Reset to the model guess when the inputs change.
+    if (isMobile && typeof window !== 'undefined' && displayTexts.length > 0) {
+      setMobileFontSize(getMobileCardMetrics(displayTexts, window.innerWidth).fontSize)
+    } else {
+      setMobileFontSize(null)
+    }
+  }, [isMobile, displayTexts])
+  const mobileMetrics = useMemo(() => (mobileFontSize !== null ? { fontSize: mobileFontSize } : null), [mobileFontSize])
+  // Available width for the fan on mobile (viewport minus page padding).
+  const mobileAvailableWidth = isMobile && typeof window !== 'undefined' ? window.innerWidth - 32 : 0
 
   // Fan layout: each item anchors on its cumulative offset (the sum of the
   // previous items' widths) inside a wrapper sized to the fan extent. The
@@ -184,6 +198,20 @@ export function HomePageClient() {
     const itemX = getFanPositions(itemWidths)
     const extent = getFanExtent(itemWidths, naturals[naturals.length - 1])
     const height = Math.max(...children.map((child) => child.offsetHeight))
+
+    // Fully dynamic mobile sizing: if the measured fan overflows the
+    // available width, scale the font down proportionally and re-measure.
+    // The font size strictly decreases (floored at 10px), so this
+    // terminates; the state update re-renders and re-runs this effect via
+    // the measureKey (which includes mobileMetrics.fontSize).
+    if (isMobile && mobileFontSize !== null && mobileAvailableWidth > 0) {
+      const corrected = scaleFontSizeToFit(extent, mobileFontSize, mobileAvailableWidth)
+      if (corrected !== null) {
+        setMobileFontSize(corrected)
+        return
+      }
+    }
+
     setFanLayout((prev) =>
       prev?.key === measureKey &&
       prev.extent === extent &&

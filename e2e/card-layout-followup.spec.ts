@@ -306,6 +306,21 @@ test.describe('card fan single-digit peeks and commas', () => {
         expect(Math.abs(diff.widthDiff)).toBeLessThanOrEqual(2)
         expect(diff.textClipped).toBe(false)
       })
+
+      // Fully dynamic sizing: the measured fan must fit the viewport width
+      // on mobile, no matter how the device renders fonts. The font size is
+      // scaled empirically until the real measured extent fits.
+      test('mobile fan never overflows the viewport', async ({ page }) => {
+        test.skip(!vp.mobile, 'dynamic sizing applies below the mobile breakpoint')
+        await page.getByPlaceholder('Type a number here!').fill('816048')
+        const fan = page.getByRole('application', { name: 'Draggable place value cards' })
+        const box = await fan.boundingBox()
+        expect(box).not.toBeNull()
+        const viewportWidth = page.viewportSize()?.width ?? 0
+        // 16px page padding per side; 1px tolerance for subpixel rounding.
+        expect(box!.x).toBeGreaterThanOrEqual(-1)
+        expect(box!.x + box!.width).toBeLessThanOrEqual(viewportWidth + 1)
+      })
     })
   }
 })

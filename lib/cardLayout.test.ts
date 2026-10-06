@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { getCommaCount, getFanExtent, getFanPositions, getMobileCardMetrics, singleDigitPeekWidth } from './cardLayout'
+import {
+  getCommaCount,
+  getFanExtent,
+  getFanPositions,
+  getMobileCardMetrics,
+  scaleFontSizeToFit,
+  singleDigitPeekWidth,
+} from './cardLayout'
 
 describe('getCommaCount', () => {
   it('places no comma for 3 or fewer cards', () => {
@@ -151,5 +158,31 @@ describe('getMobileCardMetrics', () => {
     const withComma = getMobileCardMetrics(['800,000', '0', '0', '500', '0', '2'], 375).fontSize
     const withoutComma = getMobileCardMetrics(['800', '50', '2'], 375).fontSize
     expect(withComma).toBeLessThanOrEqual(withoutComma)
+  })
+})
+
+describe('scaleFontSizeToFit', () => {
+  it('returns null when the fan already fits', () => {
+    expect(scaleFontSizeToFit(300, 47, 343)).toBeNull()
+    expect(scaleFontSizeToFit(343, 47, 343)).toBeNull()
+  })
+
+  it('scales proportionally to the overflow ratio', () => {
+    // 500px fan in 250px of space at 40px font -> 20px font.
+    expect(scaleFontSizeToFit(500, 40, 250)).toBe(20)
+  })
+
+  it('floors at 10px for readability', () => {
+    expect(scaleFontSizeToFit(2000, 60, 100)).toBe(10)
+  })
+
+  it('returns null for invalid inputs', () => {
+    expect(scaleFontSizeToFit(500, 40, 0)).toBeNull()
+    expect(scaleFontSizeToFit(500, 0, 250)).toBeNull()
+  })
+
+  it('returns null when scaling would not shrink', () => {
+    // Already at the floor: clamping keeps it at 10, which is not smaller.
+    expect(scaleFontSizeToFit(500, 10, 250)).toBeNull()
   })
 })
