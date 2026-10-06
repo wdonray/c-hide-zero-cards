@@ -23,6 +23,10 @@ import { DynamoDBDocumentClient, GetCommand, ScanCommand, UpdateCommand } from '
  */
 
 const TABLE_ENV = 'ANALYTICS_TABLE'
+// NOTE: these vars are injected by Amplify at build/deploy time from the
+// console's Environment variables (all branches). A "Redeploy this version"
+// reuses the original build's resolved env, so after adding or changing a
+// variable, trigger a fresh build from a new commit.
 const REGION_ENV = 'ANALYTICS_AWS_REGION'
 const KEY_ENV = 'ANALYTICS_AWS_ACCESS_KEY_ID'
 const SECRET_ENV = 'ANALYTICS_AWS_SECRET_ACCESS_KEY'
