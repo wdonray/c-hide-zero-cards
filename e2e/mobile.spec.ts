@@ -226,17 +226,21 @@ test.describe('mobile layout', () => {
     }))
     expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.innerWidth)
 
-    // Every card is fully inside the viewport.
-    const boxes = await cards.locator(':scope > div').evaluateAll((els) =>
-      els.map((el) => {
-        const r = el.getBoundingClientRect()
-        return { left: r.left, right: r.right }
+    // Every card is fully inside the viewport. Poll because mobile browsers
+    // can report transient viewport widths during chrome show/hide; the
+    // dynamic sizing settles once the viewport stabilizes.
+    await expect
+      .poll(async () => {
+        const boxes = await cards.locator(':scope > div').evaluateAll((els) =>
+          els.map((el) => {
+            const r = el.getBoundingClientRect()
+            return { left: r.left, right: r.right }
+          })
+        )
+        const vw = await page.evaluate(() => window.innerWidth)
+        return boxes.every((b) => b.left >= -1 && b.right <= vw + 1)
       })
-    )
-    for (const b of boxes) {
-      expect(b.left).toBeGreaterThanOrEqual(0)
-      expect(b.right).toBeLessThanOrEqual(overflow.innerWidth)
-    }
+      .toBe(true)
   })
 
   test('bottom bar buttons meet the 44px touch target on coarse pointers', async ({ page }) => {

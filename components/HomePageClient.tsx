@@ -82,21 +82,28 @@ export function HomePageClient() {
   // Below the mobile breakpoint the cards are the hero: they grow to fill
   // the viewport (fewer digits = bigger cards). Desktop keeps text-6xl.
   //
-  // Fully dynamic sizing: the model below is only a first guess. After the
-  // fan is measured empirically, if it overflows the viewport the font size
-  // is scaled down proportionally (scaleFontSizeToFit) and the fan is
-  // re-measured. This guarantees fit on any device, regardless of how its
-  // fonts, letter-spacing, or padding render relative to the model.
-  //
-  // The sizing state is keyed by the inputs that produced it, so the layout
-  // effect never measures or corrects a stale font size (the model reset
-  // in useEffect would otherwise race the measurement in useLayoutEffect).
-  const [mobileSizing, setMobileSizing] = useState<{ key: string; fontSize: number } | null>(null)
-  const sizingKey = `${isMobile}|${displayTexts.join(',')}`
-  const mobileMetrics = useMemo(
-    () => (mobileSizing !== null ? { fontSize: mobileSizing.fontSize } : null),
-    [mobileSizing]
+  // Fully dynamic sizing: the model gives a synchronous first guess (so the
+  // font size is correct on the very first paint after the number changes).
+  // After the fan is measured empirically, if it overflows the viewport the
+  // correction scales the font down proportionally (scaleFontSizeToFit) and
+  // the fan is re-measured. This guarantees fit on any device, regardless
+  // of how its fonts, letter-spacing, or padding render relative to the
+  // model. The correction is keyed by the inputs that produced it, so the
+  // layout effect never applies a stale correction.
+  const modelFontSize = useMemo(
+    () =>
+      isMobile && typeof window !== 'undefined' && displayTexts.length > 0
+        ? getMobileCardMetrics(displayTexts, window.innerWidth).fontSize
+        : null,
+    [isMobile, displayTexts]
   )
+  const [sizingCorrection, setSizingCorrection] = useState<{ key: string; delta: number } | null>(null)
+  const sizingKey = `${isMobile}|${displayTexts.join(',')}`
+  const mobileMetrics = useMemo(() => {
+    if (modelFontSize === null) return null
+    const delta = sizingCorrection && sizingCorrection.key === sizingKey ? sizingCorrection.delta : 0
+    return { fontSize: Math.max(10, modelFontSize - delta) }
+  }, [modelFontSize, sizingCorrection, sizingKey])
   // Available width for the fan on mobile (viewport minus page padding).
   const mobileAvailableWidth = isMobile && typeof window !== 'undefined' ? window.innerWidth - 32 : 0
 
@@ -199,26 +206,23 @@ export function HomePageClient() {
     const extent = getFanExtent(itemWidths, naturals[naturals.length - 1])
     const height = Math.max(...children.map((child) => child.offsetHeight))
 
-    // Fully dynamic mobile sizing, all in this layout effect so there is no
-    // race with a separate reset effect: if the sizing state is stale (or
-    // absent) for the current inputs, initialize it from the model guess;
-    // otherwise, if the measured fan overflows the available width, scale
-    // the font down proportionally and re-measure. The font size strictly
-    // decreases (floored at 10px), so this terminates; the state update
+    // Fully dynamic mobile sizing: if the measured fan overflows the
+    // available width, increase the correction delta so the font scales down
+    // proportionally, then re-measure. The delta strictly increases (and the
+    // font is floored at 10px), so this terminates; the state update
     // re-renders and re-runs this effect via the measureKey (which includes
-    // mobileMetrics.fontSize).
-    if (isMobile && mobileAvailableWidth > 0 && displayTexts.length > 0) {
-      if (!mobileSizing || mobileSizing.key !== sizingKey) {
-        setMobileSizing({
-          key: sizingKey,
-          fontSize: getMobileCardMetrics(displayTexts, window.innerWidth).fontSize,
-        })
-        return
-      }
-      const corrected = scaleFontSizeToFit(extent, mobileSizing.fontSize, mobileAvailableWidth)
+    // mobileMetrics.fontSize). The correction is keyed, so a stale delta
+    // from a previous number never applies.
+    if (isMobile && modelFontSize !== null && mobileAvailableWidth > 0 && displayTexts.length > 0) {
+      const currentFontSize = mobileMetrics?.fontSize ?? modelFontSize
+      const corrected = scaleFontSizeToFit(extent, currentFontSize, mobileAvailableWidth)
       if (corrected !== null) {
-        setMobileSizing({ key: sizingKey, fontSize: corrected })
-        return
+        const newDelta = modelFontSize - corrected
+        const prevDelta = sizingCorrection && sizingCorrection.key === sizingKey ? sizingCorrection.delta : 0
+        if (newDelta > prevDelta) {
+          setSizingCorrection({ key: sizingKey, delta: newDelta })
+          return
+        }
       }
     }
 
@@ -243,7 +247,8 @@ export function HomePageClient() {
     items,
     measureTick,
     sizingKey,
-    mobileSizing,
+    sizingCorrection,
+    modelFontSize,
     isMobile,
     mobileAvailableWidth,
     displayTexts,
