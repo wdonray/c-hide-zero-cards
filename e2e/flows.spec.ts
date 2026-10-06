@@ -37,8 +37,12 @@ test.describe('number input and cards', () => {
     await expect(cards.locator(':scope > div')).toHaveCount(4)
   })
 
-  test('shows the empty state before any number is entered', async ({ page }) => {
-    await expect(page.getByText('Type a number above to see your cards!')).toBeVisible()
+  test('auto-rolls a randomized example on load (no empty state)', async ({ page }) => {
+    // The page auto-rolls on mount so it is never empty; cards appear after
+    // the roll's short delay.
+    const cards = page.getByRole('application', { name: 'Draggable place value cards' })
+    await expect(cards.locator(':scope > div').first()).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Type a number above to see your cards!')).toHaveCount(0)
   })
 
   test('hides and shows zero cards', async ({ page }) => {
@@ -102,7 +106,12 @@ test.describe('toolbar actions', () => {
     await page.getByTitle('Clear input number and reset cards', { exact: true }).click()
 
     await expect(page.getByPlaceholder('Type a number here!')).toHaveValue('')
-    await expect(page.getByText('Type a number above to see your cards!')).toBeVisible()
+    // Clearing is intentional (not a fresh load), so no auto-roll: the
+    // workspace is empty and the old instructional empty state is gone.
+    await expect(page.getByText('Type a number above to see your cards!')).toHaveCount(0)
+    await expect(
+      page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
+    ).toHaveCount(0)
   })
 })
 
@@ -123,13 +132,16 @@ test.describe('roll and random range', () => {
 
   test('limits rolls to the selected range', async ({ page }) => {
     const input = page.getByPlaceholder('Type a number here!')
+    const rollButton = page.getByRole('button', { name: 'Roll' })
 
     await page.getByTitle('Set random number range', { exact: true }).click()
     await page.getByRole('button', { name: '100', exact: true }).click()
     await page.keyboard.press('Escape')
 
-    await page.getByRole('button', { name: 'Roll' }).click()
-    await expect(input).not.toHaveValue('')
+    await rollButton.click()
+    // Wait for the dice-roll animation (200ms delay) to finish: the button
+    // is disabled while rolling.
+    await expect(rollButton).toBeEnabled({ timeout: 5000 })
 
     const value = Number((await input.inputValue()).replace(/[^\d]/g, ''))
     expect(value).toBeGreaterThanOrEqual(1)
@@ -138,13 +150,14 @@ test.describe('roll and random range', () => {
 
   test('zero focus rolls keep producing numbers containing a zero', async ({ page }) => {
     const input = page.getByPlaceholder('Type a number here!')
+    const rollButton = page.getByRole('button', { name: 'Roll' })
 
     await page.getByTitle('Set random number range', { exact: true }).click()
     await page.getByLabel('Zero focus').click()
     await page.keyboard.press('Escape')
 
-    await page.getByRole('button', { name: 'Roll' }).click()
-    await expect(input).not.toHaveValue('')
+    await rollButton.click()
+    await expect(rollButton).toBeEnabled({ timeout: 5000 })
 
     expect(await input.inputValue()).toContain('0')
   })
