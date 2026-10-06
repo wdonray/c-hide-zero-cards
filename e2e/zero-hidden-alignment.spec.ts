@@ -2,22 +2,28 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
 
 /**
  * Zero-hidden fan alignment (owner redesign 2026-10-05, supersedes the
- * remove-cards approach): with "Zeros hidden" every card stays in the fan
- * at its measured position; zero cards render with their text blanked
- * (visibility:hidden), never removed. Place-value structure is preserved:
- * hidden 800,502 reads "8","","",",","5","","2", never "852". Commas stay
- * visible, right edges stay flush, and the fan stays centered.
+ * remove-cards approach; whole-card hiding per owner 2026-10-05,
+ * superseding PR #58's blank-number approach): with "Zeros hidden" every
+ * card stays in the fan at its measured position; the whole zero card goes
+ * visibility:hidden + aria-hidden with no tab stop (a blank colored card
+ * would give away which cards are zero). Each card's text is clipped to
+ * its own peek, so a hidden card never leaks the text of the cards beneath
+ * it. Place-value structure is preserved: hidden 800,502 reads
+ * "8",<gap>,<gap>,",","5",<gap>,"2", never "852". Commas stay visible,
+ * right edges stay flush, and the fan stays centered.
  */
 
 interface CardDatum {
   text: string
   left: number
   right: number
-  textVisibility: string
+  cardVisibility: string
+  ariaHidden: string | null
+  tabIndex: string | null
 }
 
 /** Number inputs and the card texts expected with zeros shown. Hiding
- * blanks the "0" cards in place; the texts below list the shown state. */
+ * hides the whole "0" cards in place; the texts below list the shown state. */
 const CASES: Array<{ input: string; shownTexts: string[] }> = [
   { input: '101325', shownTexts: ['100,000', '0', '1,000', '300', '20', '5'] },
   { input: '1001', shownTexts: ['1,000', '0', '0', '1'] },
@@ -42,16 +48,22 @@ function cards(page: Page): Locator {
 async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDatum[] }> {
   return page.evaluate(() => {
     const ws = document.querySelector('main[aria-label="Place value cards workspace"]')!.getBoundingClientRect()
-    const els = Array.from(document.querySelectorAll('[role="application"] [tabindex="0"]')) as HTMLElement[]
+    // All cards (direct div children), including hidden ones: hidden cards
+    // lose their tabindex, so they can no longer be found that way.
+    // textContent (not innerText): the real text stays in the DOM for
+    // measurement even when the card is visibility:hidden.
+    const els = Array.from(document.querySelectorAll('[role="application"] > div')) as HTMLElement[]
     return {
       wsCenterX: ws.x + ws.width / 2,
       cards: els.map((el) => {
         const r = el.getBoundingClientRect()
         return {
-          text: el.innerText,
+          text: (el.textContent ?? '').trim(),
           left: r.x,
           right: r.x + r.width,
-          textVisibility: getComputedStyle(el.firstElementChild as HTMLElement).visibility,
+          cardVisibility: getComputedStyle(el).visibility,
+          ariaHidden: el.getAttribute('aria-hidden'),
+          tabIndex: el.getAttribute('tabindex'),
         }
       }),
     }
@@ -87,15 +99,18 @@ test.describe('zero-hidden fan alignment', () => {
       })
 
       for (const { input, shownTexts } of CASES) {
-        test(`${input}: zeros blank in place, fan stays aligned`, async ({ page }) => {
+        test(`${input}: zeros hidden in place, fan stays aligned`, async ({ page }) => {
           await page.getByPlaceholder('Type a number here!').fill(input)
           const cardEls = cards(page)
           await expect(cardEls).toHaveCount(input.length)
 
-          // Zeros shown: every card visible with its full text.
+          // Zeros shown: every card visible with its full text, focusable,
+          // and announced.
           let data = await cardData(page)
           expect(data.cards.map((c) => c.text)).toEqual(shownTexts)
-          expect(data.cards.every((c) => c.textVisibility === 'visible')).toBe(true)
+          expect(data.cards.every((c) => c.cardVisibility === 'visible')).toBe(true)
+          expect(data.cards.every((c) => c.tabIndex === '0')).toBe(true)
+          expect(data.cards.every((c) => c.ariaHidden === null)).toBe(true)
           expectFanAligned(data.wsCenterX, data.cards)
           const shownLefts = data.cards.map((c) => c.left)
 
@@ -105,15 +120,24 @@ test.describe('zero-hidden fan alignment', () => {
           await expect(cardEls).toHaveCount(input.length)
           data = await cardData(page)
 
-          // Zero cards are blank (empty text, visibility:hidden); every
-          // other card keeps its text and visibility.
+          // Zero cards are fully hidden (the whole card, not just its
+          // number: a blank colored card would give away the zero cards).
+          // The real "0" text stays in the DOM (needed for measurement) but
+          // the card is invisible, removed from the a11y tree, and not
+          // focusable: visually it reads as a gap, and text clipping keeps
+          // it from leaking the text of the cards beneath. Every other card
+          // keeps its text, visibility, and tab stop.
           data.cards.forEach((card, i) => {
             if (shownTexts[i] === '0') {
-              expect(card.text).toBe('')
-              expect(card.textVisibility).toBe('hidden')
+              expect(card.text).toBe('0')
+              expect(card.cardVisibility).toBe('hidden')
+              expect(card.ariaHidden).toBe('true')
+              expect(card.tabIndex).toBeNull()
             } else {
               expect(card.text).toBe(shownTexts[i])
-              expect(card.textVisibility).toBe('visible')
+              expect(card.cardVisibility).toBe('visible')
+              expect(card.ariaHidden).toBeNull()
+              expect(card.tabIndex).toBe('0')
             }
           })
 
@@ -142,15 +166,17 @@ test.describe('zero-hidden fan alignment', () => {
         })
       }
 
-      test('800,502 hidden reads "8","","",",","5","","2", never "852"', async ({ page }) => {
+      test('800,502 hidden reads "8",<gap>,<gap>,",","5",<gap>,"2", never "852"', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
         await page.getByTitle('Hide zero cards', { exact: true }).click()
 
         // Six cards present (not three): the fan cannot collapse to "852".
+        // The zero cards keep their "0" text in the DOM (for measurement)
+        // but render fully transparent: visually, gaps.
         await expect(cards(page)).toHaveCount(6)
         const data = await cardData(page)
-        expect(data.cards.map((c) => c.text)).toEqual(['800,000', '', '', '500', '', '2'])
-        expect(data.cards.map((c) => c.textVisibility)).toEqual([
+        expect(data.cards.map((c) => c.text)).toEqual(['800,000', '0', '0', '500', '0', '2'])
+        expect(data.cards.map((c) => c.cardVisibility)).toEqual([
           'visible',
           'hidden',
           'hidden',
@@ -158,6 +184,10 @@ test.describe('zero-hidden fan alignment', () => {
           'hidden',
           'visible',
         ])
+        // Whole cards hidden (aria-hidden, no tab stop), not just blanked
+        // numbers: nothing gives away which cards are zero.
+        expect(data.cards.map((c) => c.ariaHidden)).toEqual([null, 'true', 'true', null, 'true', null])
+        expect(data.cards.map((c) => c.tabIndex)).toEqual(['0', null, null, '0', null, '0'])
         expectFanAligned(data.wsCenterX, data.cards)
 
         // The thousands comma is still there, visible, between the "0" and
@@ -166,6 +196,27 @@ test.describe('zero-hidden fan alignment', () => {
         await expect(comma).toHaveCount(1)
         await expect(comma).toBeVisible()
         await expect(comma).toHaveText(',')
+      })
+
+      test('hidden zero cards are skipped in tab order', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('800502')
+        await page.getByTitle('Hide zero cards', { exact: true }).click()
+        await expect(cards(page)).toHaveCount(6)
+
+        // Tab through the page: focus must never land on a hidden card.
+        await page.getByPlaceholder('Type a number here!').focus()
+        const focusedHidden: string[] = []
+        for (let i = 0; i < 40; i++) {
+          await page.keyboard.press('Tab')
+          const marker = await page.evaluate(() => {
+            const ae = document.activeElement as HTMLElement | null
+            if (!ae) return null
+            // A hidden card carries aria-hidden="true" and no tabindex.
+            return ae.getAttribute('aria-hidden') === 'true' ? (ae.textContent ?? '') : null
+          })
+          if (marker !== null) focusedHidden.push(marker)
+        }
+        expect(focusedHidden).toEqual([])
       })
 
       test('typing 0 keeps the empty state (input rejects 0)', async ({ page }) => {
