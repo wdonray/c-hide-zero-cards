@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Eye, Users } from 'lucide-react'
 import { getAnalyticsSummary } from '@/lib/analytics'
+import EnablePageScroll from '@/components/EnablePageScroll'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const dynamic = 'force-dynamic'
@@ -36,6 +37,7 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-16 space-y-8">
+      <EnablePageScroll />
       <div className="space-y-2">
         <div className="h-1 w-10 rounded-full bg-primary" aria-hidden="true" />
         <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>

@@ -28,6 +28,15 @@ test.describe('/analytics page', () => {
     await expect(link).toBeVisible()
     await expect(link).toHaveAttribute('href', '/analytics')
   })
+
+  test('page scroll is not locked (html has no overflow-hidden)', async ({ page }) => {
+    await page.goto('/analytics')
+
+    // The root layout locks document scrolling for the card workspace;
+    // content pages opt out via EnablePageScroll.
+    const overflowHidden = await page.evaluate(() => document.documentElement.classList.contains('overflow-hidden'))
+    expect(overflowHidden).toBe(false)
+  })
 })
 
 test.describe('/api/track', () => {
