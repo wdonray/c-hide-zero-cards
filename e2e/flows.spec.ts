@@ -132,13 +132,16 @@ test.describe('roll and random range', () => {
 
   test('limits rolls to the selected range', async ({ page }) => {
     const input = page.getByPlaceholder('Type a number here!')
+    const rollButton = page.getByRole('button', { name: 'Roll' })
 
     await page.getByTitle('Set random number range', { exact: true }).click()
     await page.getByRole('button', { name: '100', exact: true }).click()
     await page.keyboard.press('Escape')
 
-    await page.getByRole('button', { name: 'Roll' }).click()
-    await expect(input).not.toHaveValue('')
+    await rollButton.click()
+    // Wait for the dice-roll animation (200ms delay) to finish: the button
+    // is disabled while rolling.
+    await expect(rollButton).toBeEnabled({ timeout: 5000 })
 
     const value = Number((await input.inputValue()).replace(/[^\d]/g, ''))
     expect(value).toBeGreaterThanOrEqual(1)
@@ -147,13 +150,14 @@ test.describe('roll and random range', () => {
 
   test('zero focus rolls keep producing numbers containing a zero', async ({ page }) => {
     const input = page.getByPlaceholder('Type a number here!')
+    const rollButton = page.getByRole('button', { name: 'Roll' })
 
     await page.getByTitle('Set random number range', { exact: true }).click()
     await page.getByLabel('Zero focus').click()
     await page.keyboard.press('Escape')
 
-    await page.getByRole('button', { name: 'Roll' }).click()
-    await expect(input).not.toHaveValue('')
+    await rollButton.click()
+    await expect(rollButton).toBeEnabled({ timeout: 5000 })
 
     expect(await input.inputValue()).toContain('0')
   })
