@@ -53,6 +53,7 @@ export const NumberInput = forwardRef<NumberInputRef, NumberInputProps>(({ value
   return (
     <Input
       ref={inputRef}
+      id="number-input"
       type="text"
       inputMode="numeric"
       pattern="[0-9]*"

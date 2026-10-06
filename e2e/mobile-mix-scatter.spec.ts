@@ -2,10 +2,11 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
 
 /**
  * Mix scatters cards across the full visible strip between the sticky
- * header (app header + toolbar) and the footer (desktop) / bottom action
- * bar (mobile), full viewport width. Owner directive 2026-10-05: the old
- * dashed workspace box is gone, and Mix must use the entire screen area,
- * never hiding cards under the header, footer, or action bar.
+ * header (app header + toolbar + number input) and the footer (desktop) /
+ * bottom action bar (mobile), full viewport width. Owner directive
+ * 2026-10-05: the old dashed workspace box is gone, and Mix must use the
+ * entire screen area, never hiding cards under the header, input, footer,
+ * or action bar.
  */
 
 interface Box {
@@ -47,8 +48,8 @@ async function mix(page: Page) {
 
 /**
  * The expected scatter region, measured from the same sticky chrome the
- * app measures: lowest visible bottom of header/toolbar to highest visible
- * top of footer/action bar, full viewport width.
+ * app measures: lowest visible bottom of header/toolbar/input to highest
+ * visible top of footer/action bar, full viewport width.
  */
 async function scatterRegion(page: Page): Promise<Box> {
   return page.evaluate(() => {
@@ -58,7 +59,9 @@ async function scatterRegion(page: Page): Promise<Box> {
       const r = el.getBoundingClientRect()
       return r.width > 0 && r.height > 0 ? { x: r.x, y: r.y, width: r.width, height: r.height } : null
     }
-    const tops = [rectOf('app-header'), rectOf('app-toolbar')].filter((r): r is Box => r !== null)
+    const tops = [rectOf('app-header'), rectOf('app-toolbar'), rectOf('number-input')].filter(
+      (r): r is Box => r !== null
+    )
     const bottoms = [rectOf('app-footer'), rectOf('mobile-action-bar')].filter((r): r is Box => r !== null)
     const y = Math.max(...tops.map((r) => r.y + r.height))
     const bottom = Math.min(...bottoms.map((r) => r.y))
@@ -83,6 +86,7 @@ async function chromeBoxes(page: Page): Promise<{ label: string; box: Box }[]> {
   const out: { label: string; box: Box }[] = []
   const candidates: { label: string; locator: Locator }[] = [
     { label: 'header', locator: page.getByRole('banner') },
+    { label: 'number input', locator: page.getByPlaceholder('Type a number here!') },
     { label: 'action bar', locator: page.getByLabel('Quick actions') },
     { label: 'footer', locator: page.getByRole('contentinfo') },
   ]
