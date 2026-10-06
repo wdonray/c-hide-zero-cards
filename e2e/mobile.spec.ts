@@ -111,6 +111,7 @@ test.describe('mobile core flows', () => {
 
   test('sets the random range from the More menu', async ({ page }) => {
     const input = page.getByPlaceholder('Type a number here!')
+    const rollButton = page.getByRole('button', { name: 'Roll a random number' })
 
     // Range settings live in the More sheet on mobile now.
     await page.getByRole('button', { name: 'More actions' }).click()
@@ -125,8 +126,9 @@ test.describe('mobile core flows', () => {
     await sheet.getByRole('button', { name: 'Close' }).click()
     await expect(sheet).toBeHidden()
 
-    await page.getByRole('button', { name: 'Roll a random number' }).click()
-    await expect(input).not.toHaveValue('')
+    await rollButton.click()
+    // Wait for the dice-roll animation to finish.
+    await expect(rollButton).toBeEnabled({ timeout: 5000 })
 
     const value = Number((await input.inputValue()).replace(/[^\d]/g, ''))
     expect(value).toBeGreaterThanOrEqual(1)

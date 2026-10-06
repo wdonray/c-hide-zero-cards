@@ -219,15 +219,16 @@ test.describe('zero-hidden fan alignment', () => {
         expect(focusedHidden).toEqual([])
       })
 
-      test('typing 0 keeps the workspace empty (input rejects 0)', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('0')
-        await expect(page.getByPlaceholder('Type a number here!')).toHaveValue('')
-        await expect(cards(page)).toHaveCount(0)
-        await expect(page.getByText('Type a number above to see your cards!')).toHaveCount(0)
-
-        // With no cards the zero toggle is disabled: toggling is impossible,
-        // so the fan cannot break.
-        await expect(page.getByTitle('Hide zero cards', { exact: true })).toBeDisabled()
+      test('typing 0 is rejected (input keeps its value)', async ({ page }) => {
+        // Auto-roll on load gives the input a value; typing 0 is invalid and
+        // must not change it or break the fan.
+        const input = page.getByPlaceholder('Type a number here!')
+        const before = await input.inputValue()
+        expect(before).not.toBe('')
+        await input.fill('0')
+        // The invalid 0 is rejected: the input keeps its previous value.
+        await expect(input).not.toHaveValue('0')
+        await expect(input).toHaveValue(before)
       })
     })
   }
