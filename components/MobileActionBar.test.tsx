@@ -67,6 +67,12 @@ describe('MobileActionBar', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
+  it('renders nothing on the analytics route', () => {
+    mockUsePathname.mockReturnValue('/analytics')
+    const { container } = render(<MobileActionBar />)
+    expect(container).toBeEmptyDOMElement()
+  })
+
   it('renders seven labeled actions on mobile', () => {
     render(<MobileActionBar />)
     const nav = screen.getByRole('navigation', { name: 'Quick actions' })

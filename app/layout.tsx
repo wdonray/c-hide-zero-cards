@@ -11,6 +11,7 @@ import { FirstTimeVisitorProvider } from '@/lib/useFirstTimeVisitor'
 import { HydrationCheck } from '@/components/HydrationCheck'
 import { WelcomeDialog } from '@/components/WelcomeDialog'
 import { Toaster } from '@/components/ui/sonner'
+import AnalyticsTracker from '@/components/AnalyticsTracker'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -216,6 +217,7 @@ export default function RootLayout({
             </FirstTimeVisitorProvider>
           </HydrationCheck>
           <Toaster position="bottom-center" richColors />
+          <AnalyticsTracker />
         </ThemeProvider>
       </body>
     </html>

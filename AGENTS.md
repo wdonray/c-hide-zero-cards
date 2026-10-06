@@ -121,6 +121,7 @@ behavior on your own.
 
 ## Gotchas
 
+- **Analytics (DynamoDB).** `lib/analytics.ts` ports donray.dev's privacy-respecting design: one item per page (`PAGE#<path>`/TOTAL, `DAY#<yyyy-mm-dd>`, UNIQUES string-set) plus `SITE`/`UNIQUES` for deduped site-wide uniques. Visitor identity is a salted SHA-256 of IP + user agent (no raw IPs, no cookies, counted once ever). Env vars: `ANALYTICS_TABLE` (`hide-zero-cards-page-views`, us-east-1), `ANALYTICS_AWS_REGION`, `ANALYTICS_AWS_ACCESS_KEY_ID`, `ANALYTICS_AWS_SECRET_ACCESS_KEY`, `ANALYTICS_SALT` — set in Amplify, all branches. Unconfigured builds (local dev, CI) get a graceful not-configured state: `getConfig()` returns null, `/api/track` no-ops, `/analytics` shows an empty-state card. `POST /api/track` is rate-limited (60/min/IP) and bot-filtered; it never breaks the site. `AnalyticsTracker` fires one hit per page per browsing session (sessionStorage + sendBeacon) and is rendered once in the root layout. `/analytics` is a public dashboard (headline views/uniques, daily chart, per-page table, methodology disclosure) and unmounts the toolbar/mobile action bar like `/version`.
 - `useDraggable`'s `randomizeTrigger !== 0` check treats `undefined` as
   "randomize": always pass both triggers explicitly (production passes `0`).
 - The welcome dialog and the mobile alert can both be open at once on narrow
