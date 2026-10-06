@@ -91,6 +91,20 @@ export function MobileMoreMenu({
             </MenuRow>
             <DialogPrimitive.Close asChild>
               <Link
+                href="/analytics"
+                title="Public traffic statistics"
+                aria-label="Analytics, view public traffic statistics"
+                className="group flex min-h-14 items-center justify-between gap-4 py-2"
+              >
+                <span className="text-sm font-medium">Analytics</span>
+                <span className="flex items-center gap-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground group-active:text-foreground">
+                  Traffic stats
+                  <ChevronRight className="size-4" aria-hidden="true" />
+                </span>
+              </Link>
+            </DialogPrimitive.Close>
+            <DialogPrimitive.Close asChild>
+              <Link
                 href="/version"
                 title="App version and release history"
                 aria-label={`App version v${VERSION}, view release history`}

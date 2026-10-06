@@ -37,7 +37,7 @@ export function Toolbar() {
   // The /version page is informational; the card actions are meaningless
   // there, so the toolbar unmounts entirely (same pattern as the mobile
   // action bar).
-  if (pathname === '/version') return null
+  if (pathname === '/version' || pathname === '/analytics') return null
 
   // On mobile the top toolbar is superseded by the bottom action bar
   // (MobileActionBar), which carries the same actions with visible labels.

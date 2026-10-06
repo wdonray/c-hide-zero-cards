@@ -76,7 +76,7 @@ export function MobileActionBar() {
 
   // The /version page is informational; the card actions are meaningless
   // there, so the bar stays out of the way.
-  if (pathname === '/version') return null
+  if (pathname === '/version' || pathname === '/analytics') return null
 
   function handleClearInput() {
     setInputNumber(null)

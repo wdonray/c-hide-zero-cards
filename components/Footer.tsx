@@ -37,6 +37,14 @@ export function Footer() {
           <span>© {CURRENT_YEAR} Donray Williams</span>
           <span>•</span>
           <Link
+            href="/analytics"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            title="Public traffic statistics"
+          >
+            Analytics
+          </Link>
+          <span>•</span>
+          <Link
             href="/version"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             title="App version and release history"
