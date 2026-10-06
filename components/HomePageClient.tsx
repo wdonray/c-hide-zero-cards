@@ -42,8 +42,9 @@ export function HomePageClient() {
 
   // All cards are always rendered, highest place value first. Hiding zeros
   // never removes cards (that collapsed 800,502 to "852" and destroyed
-  // place-value structure); zero cards stay in the fan with their text
-  // blanked instead, so toggling never shifts the layout.
+  // place-value structure); the whole zero card goes transparent instead
+  // (a blank colored card would give away the zero cards), so toggling
+  // never shifts the layout.
   const cards = useMemo(() => {
     if (!inputNumber) return []
     const numberString = inputNumber.toString()
@@ -110,9 +111,10 @@ export function HomePageClient() {
   // Natural widths are derived from the text itself (inner.scrollWidth +
   // the card's horizontal padding), not the card's offsetWidth: the inner
   // div shrink-fits its text, so this is the content-driven width on every
-  // pass (first paint, font swap, resize) with no drift. visibility:hidden
-  // on a blanked zero card preserves layout, so measurement works
-  // identically whether zeros are shown or hidden. Measured in a layout
+  // pass (first paint, font swap, resize) with no drift. opacity:0 on a
+  // hidden zero card keeps it painting (so it still occludes the cards
+  // beneath it) while preserving layout, so measurement works identically
+  // whether zeros are shown or hidden. Measured in a layout
   // effect so the first paint already has the correct size (no flash).
   const fanRef = useRef<HTMLDivElement>(null)
   const [fanLayout, setFanLayout] = useState<{
@@ -121,6 +123,14 @@ export function HomePageClient() {
     height: number
     naturals: number[]
     itemX: number[]
+    /** Width contribution per fan item (single-digit peek for cards,
+     * measured width for commas). Cards clip their text to this width so
+     * peeks never depend on occlusion. */
+    itemWidths: number[]
+    /** Text clip width per card (the first character's rendered width, no
+     * padding). The inner text wrapper starts after the card's left
+     * padding, so this excludes padLeft. */
+    textClipWidths: number[]
   } | null>(null)
   const [measureTick, setMeasureTick] = useState(0)
   // Note: showZeroCards is intentionally absent: blanking a zero card does
@@ -134,6 +144,11 @@ export function HomePageClient() {
     if (children.length !== items.length) return
 
     const naturals: number[] = new Array(cards.length)
+    // Text clip width per card: the first character's rendered width
+    // (no padding). The inner text wrapper starts after the card's left
+    // padding, so the clip must not include padLeft, or a sliver of the
+    // next character would show.
+    const textClipWidths: number[] = new Array(cards.length)
     // Width contribution per fan item: single-digit peek for cards (except
     // the last, which shows its full natural width), measured width for
     // commas.
@@ -144,18 +159,26 @@ export function HomePageClient() {
       const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
       const natural = (child.firstElementChild?.scrollWidth ?? 0) + padX
       naturals[item.cardIndex] = natural
-      if (item.cardIndex === cards.length - 1) return natural
+      if (item.cardIndex === cards.length - 1) {
+        textClipWidths[item.cardIndex] = natural - padX
+        return natural
+      }
       // Single-digit peek: left padding plus the rendered width of the
       // first character, measured in place with a Range (exact font,
       // tracking, and letter-spacing).
       const padLeft = parseFloat(style.paddingLeft)
       const inner = child.firstElementChild as HTMLElement | null
       const textNode = inner?.firstChild as Text | null
-      if (!textNode || textNode.length === 0) return padLeft
+      if (!textNode || textNode.length === 0) {
+        textClipWidths[item.cardIndex] = 0
+        return padLeft
+      }
       const range = document.createRange()
       range.setStart(textNode, 0)
       range.setEnd(textNode, 1)
-      return padLeft + range.getBoundingClientRect().width
+      const charWidth = range.getBoundingClientRect().width
+      textClipWidths[item.cardIndex] = charWidth
+      return padLeft + charWidth
     })
 
     const itemX = getFanPositions(itemWidths)
@@ -168,9 +191,13 @@ export function HomePageClient() {
       prev.naturals.length === naturals.length &&
       prev.naturals.every((w, i) => w === naturals[i]) &&
       prev.itemX.length === itemX.length &&
-      prev.itemX.every((x, i) => x === itemX[i])
+      prev.itemX.every((x, i) => x === itemX[i]) &&
+      prev.itemWidths.length === itemWidths.length &&
+      prev.itemWidths.every((w, i) => w === itemWidths[i]) &&
+      prev.textClipWidths.length === textClipWidths.length &&
+      prev.textClipWidths.every((w, i) => w === textClipWidths[i])
         ? prev
-        : { key: measureKey, extent, height, naturals, itemX }
+        : { key: measureKey, extent, height, naturals, itemX, itemWidths, textClipWidths }
     )
   }, [measureKey, cards.length, items, measureTick])
 
@@ -294,6 +321,7 @@ export function HomePageClient() {
                     mobileMetrics={mobileMetrics}
                     fanWidth={layout ? layout.extent - fanX : undefined}
                     naturalWidth={layout ? layout.naturals[item.cardIndex] : undefined}
+                    textClipWidth={layout ? layout.textClipWidths[item.cardIndex] : undefined}
                     hiddenZero={card.firstDigit === 0 && !showZeroCards}
                     resetTrigger={resetTrigger}
                     randomizeTrigger={randomizeTrigger}

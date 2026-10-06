@@ -29,10 +29,22 @@ interface DraggableCardProps {
    */
   naturalWidth?: number
   /**
-   * A zero card whose text is hidden (the "hide zeros" toggle is on). The
-   * card keeps its color, position, size, and draggability; only its text
-   * is invisible, so the fan's place-value structure is preserved and
-   * toggling never shifts the layout.
+   * Width available for this card's text: the first character's rendered
+   * width (no padding). The inner text wrapper starts after the card's
+   * left padding, so this excludes padLeft. The text is clipped to this
+   * width so visible peeks never depend on the next card occluding them;
+   * that keeps hidden cards (which paint nothing) from leaking the text
+   * of the cards beneath. Undefined until the parent has measured the fan.
+   */
+  textClipWidth?: number
+  /**
+   * A zero card hidden by the "hide zeros" toggle. The whole card is
+   * invisible (visibility:hidden), so a hidden zero card reads as a gap
+   * in the fan: nothing gives away which cards are zero. The card keeps
+   * its position, size, and measurability, so the fan's place-value
+   * structure is preserved and toggling never shifts the layout. Text
+   * clipping (see textClipWidth) means hidden cards never leak the text
+   * of the cards beneath them.
    */
   hiddenZero: boolean
   resetTrigger?: number
@@ -49,6 +61,7 @@ export function DraggableCard({
   mobileMetrics,
   fanWidth,
   naturalWidth,
+  textClipWidth,
   hiddenZero,
   resetTrigger,
   randomizeTrigger,
@@ -104,12 +117,9 @@ export function DraggableCard({
   return (
     <div
       ref={setRefs}
-      tabIndex={0}
-      aria-label={
-        hiddenZero
-          ? 'Hidden zero place value card. Use arrow keys to move it.'
-          : `${displayValue} place value card. Use arrow keys to move it.`
-      }
+      tabIndex={hiddenZero ? undefined : 0}
+      aria-hidden={hiddenZero || undefined}
+      aria-label={`${displayValue} place value card. Use arrow keys to move it.`}
       className={`flex items-center justify-start gap-0 ${atFanHome ? 'overflow-hidden' : ''} px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
       style={{
         position: 'absolute',
@@ -125,6 +135,15 @@ export function DraggableCard({
         // parent from the measured fan extent. Displaced cards (and the
         // pre-measurement first paint) shrink-wrap their full text.
         ...(atFanHome ? { width: fanWidth } : {}),
+        // Hide zeros: the whole card is invisible (not just its number),
+        // so a hidden zero card reads as a gap in the fan and nothing
+        // gives away which cards are zero. visibility:hidden keeps the
+        // card in flow and measurable (scrollWidth and Range measurements
+        // are unaffected), so the fan's cumulative peek layout never
+        // shifts when toggling. The text is clipped to the peek (see the
+        // inner wrapper), so a hidden card never leaks the text of the
+        // cards beneath it.
+        ...(hiddenZero ? { visibility: 'hidden' as const } : {}),
         // Mobile hero sizing: font size, tracking, and padding scale with the
         // adaptive metrics; the Tailwind text-lg/tracking classes above apply
         // only when no metrics are present (desktop / SSR).
@@ -138,10 +157,21 @@ export function DraggableCard({
       }}
       {...handlers}
     >
-      {/* visibility:hidden keeps layout (and measurement) intact while
-          hiding the text: a hidden zero card keeps its position so the
-          fan never shifts when toggling. */}
-      <div style={hiddenZero ? { visibility: 'hidden' } : undefined}>{displayValue}</div>
+      {/* The text is clipped to the peek width at fan home, so a peek
+          never depends on the next card occluding it: hidden cards (which
+          paint nothing) cannot leak the text of the cards beneath them.
+          scrollWidth still reports the full text width, so the parent's
+          measurement is unaffected. Displaced cards show their full text
+          unclipped. */}
+      <div
+        style={
+          atFanHome && textClipWidth !== undefined
+            ? { width: textClipWidth, overflow: 'hidden', flexShrink: 0 }
+            : undefined
+        }
+      >
+        {displayValue}
+      </div>
     </div>
   )
 }

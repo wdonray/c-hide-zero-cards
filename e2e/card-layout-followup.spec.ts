@@ -1,17 +1,21 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * Card fan: single-digit peeks + separate comma elements + blanked (not
+ * Card fan: single-digit peeks + separate comma elements + hidden (not
  * removed) zero cards (owner reference 2026-10-05, supersedes PR #57's
- * wide-peek design):
+ * wide-peek design; whole-card hiding per owner 2026-10-05, superseding
+ * PR #58's blank-number approach):
  *
  * - Each card's peek fits exactly one digit (the leading digit), measured
  *   empirically in place with a Range so it is never clipped.
  * - Thousands separators are separate, non-interactive comma elements at
  *   every 3 digits from the right, participating in fan layout like cards.
- * - Hiding zeros never removes cards: zero cards stay in the fan with
- *   their text blanked (visibility:hidden), preserving place-value
- *   positions. Hidden 800,502 reads "8","","",",","5","","2", never "852".
+ * - Hiding zeros never removes cards: the whole zero card goes
+ *   visibility:hidden + aria-hidden (a blank colored card would give away
+ *   which cards are zero). Each card's text is clipped to its own peek, so
+ *   a hidden card never leaks the text of the cards beneath it.
+ *   Place-value positions are preserved: hidden 800,502 reads
+ *   "8",<gap>,<gap>,",","5",<gap>,"2", never "852".
  * - A zero card's value is 0 and it displays "0" (no fake zero numbers):
  *   701,323 reads "7","0","1",",","3","2","3", never "700,00,1,...".
  */
@@ -31,7 +35,9 @@ interface FanItem {
   right: number
 }
 
-/** All fan children in DOM order: cards and comma elements. */
+/** All fan children in DOM order: cards and comma elements. Uses
+ * textContent so hidden cards still report their real text (needed for
+ * measurement); visibility is asserted separately. */
 async function fanItems(page: Page): Promise<FanItem[]> {
   return page.evaluate(() => {
     const fan = document.querySelector('[role="application"]')!
@@ -40,7 +46,7 @@ async function fanItems(page: Page): Promise<FanItem[]> {
       const r = htmlEl.getBoundingClientRect()
       return {
         kind: (el.getAttribute('data-testid') === 'fan-comma' ? 'comma' : 'card') as 'card' | 'comma',
-        text: htmlEl.innerText,
+        text: (htmlEl.textContent ?? '').trim(),
         left: r.x,
         right: r.x + r.width,
       }
@@ -126,26 +132,62 @@ test.describe('card fan single-digit peeks and commas', () => {
         expectFanCentered(items, vp.width)
       })
 
-      test('800,502 hidden blanks zero cards in position, never "852"', async ({ page }) => {
+      test('800,502 hidden hides whole zero cards in position, never "852"', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
         const shown = await fanItems(page)
         await page.getByTitle('Hide zero cards', { exact: true }).click()
         const hidden = await fanItems(page)
 
-        // All cards still present (never removed); zero cards blank.
+        // All cards still present (never removed); zero cards fully
+        // transparent (their "0" text stays in the DOM for measurement).
         expect(hidden.map((i) => i.kind)).toEqual(['card', 'card', 'card', 'comma', 'card', 'card', 'card'])
-        expect(hidden.map((i) => i.text)).toEqual(['800,000', '', '', ',', '500', '', '2'])
+        expect(hidden.map((i) => i.text)).toEqual(['800,000', '0', '0', ',', '500', '0', '2'])
 
-        // The blanked cards keep their text element with visibility:hidden
-        // (layout and measurement intact), and the comma stays visible.
-        const blankedVisibility = await page.evaluate(() => {
+        // The whole zero card is visibility:hidden + aria-hidden with no
+        // tab stop (not just its number: a blank colored card would give
+        // away the zero cards). Each card's text is clipped to its own
+        // peek, so a hidden card never leaks the text of the cards beneath
+        // it. Layout and measurement stay intact, and the comma stays
+        // visible.
+        const cardStates = await page.evaluate(() => {
           const fan = document.querySelector('[role="application"]')!
           return Array.from(fan.children)
             .filter((el) => el.getAttribute('data-testid') !== 'fan-comma')
-            .map((el) => getComputedStyle((el as HTMLElement).firstElementChild as HTMLElement).visibility)
+            .map((el) => ({
+              visibility: getComputedStyle(el as HTMLElement).visibility,
+              ariaHidden: (el as HTMLElement).getAttribute('aria-hidden'),
+              tabIndex: (el as HTMLElement).getAttribute('tabindex'),
+            }))
         })
-        expect(blankedVisibility).toEqual(['visible', 'hidden', 'hidden', 'visible', 'hidden', 'visible'])
+        expect(cardStates.map((c) => c.visibility)).toEqual([
+          'visible',
+          'hidden',
+          'hidden',
+          'visible',
+          'hidden',
+          'visible',
+        ])
+        expect(cardStates.map((c) => c.ariaHidden)).toEqual([null, 'true', 'true', null, 'true', null])
+        expect(cardStates.map((c) => c.tabIndex)).toEqual(['0', null, null, '0', null, '0'])
         await expect(page.getByTestId('fan-comma')).toBeVisible()
+
+        // Text clipping: the first card's text ("800,000") is clipped to
+        // its own peek width, so the hidden cards cannot leak it. The
+        // inner text wrapper is narrower than the full text.
+        const clipState = await page.evaluate(() => {
+          const fan = document.querySelector('[role="application"]')!
+          const firstCard = Array.from(fan.children).find(
+            (el) => el.getAttribute('data-testid') !== 'fan-comma'
+          ) as HTMLElement
+          const inner = firstCard.firstElementChild as HTMLElement
+          return {
+            overflow: getComputedStyle(inner).overflow,
+            clientWidth: inner.clientWidth,
+            scrollWidth: inner.scrollWidth,
+          }
+        })
+        expect(clipState.overflow).toBe('hidden')
+        expect(clipState.scrollWidth).toBeGreaterThan(clipState.clientWidth)
 
         // No layout shift: every item sits exactly where it was.
         expect(hidden.length).toBe(shown.length)

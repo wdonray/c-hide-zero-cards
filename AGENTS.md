@@ -55,10 +55,15 @@ behavior on your own.
   - digit advance + letter-spacing) so the digit is never clipped. Thousands
     separators are separate, non-interactive comma elements (spans, aria-hidden)
     at every 3 digits from the right, participating in fan layout like cards.
-    Zero cards are never removed: hiding zeros blanks their text with
-    `visibility: hidden` (layout and measurement intact), so positions are
-    preserved and toggling never shifts the fan (2026-10-05 redesign per owner
-    reference image, superseding PR #57's wide significant-prefix peeks and the
+    Zero cards are never removed: hiding zeros makes the whole card
+    `visibility: hidden` + `aria-hidden` with no tab stop (a blank colored
+    card would give away which cards are zero, per owner 2026-10-05,
+    superseding PR #58's blank-number approach). Each card's text is clipped
+    to its own peek width in an inner wrapper (measured by the parent as the
+    first character's Range width, no padding), so a hidden card never leaks
+    the text of the cards beneath it. Positions are preserved and toggling
+    never shifts the fan (2026-10-05 redesign per owner reference image,
+    superseding PR #57's wide significant-prefix peeks and the
     single-digit-peek approach before it). A zero card's value is 0 and it
     displays "0" (FAKE_ZERO_NUMBERS was removed entirely). Card i sits at the
     cumulative sum of the previous items' widths; the last card shows its full
