@@ -49,23 +49,34 @@ behavior on your own.
 - **Mobile is responsive, portrait-first.** No mobile warning dialog, no
   rotation lock (iOS Safari cannot lock orientation, so a rotate nag would just
   replace one annoyance with another).
-- **Card fan is a strip of full-value cards (owner decision 2026-10-06,
-  superseding all peek designs).** Every place-value card always shows its
-  complete value ("100,000", "80,000", "0,000", "700", "30", "6"): no peeks,
-  no reveal-on-drag, no separate comma elements (commas live inside the
-  card text via `toLocaleString()`). A zero card shows the place value with
-  a leading zero (`formatCardValue()` in `lib/cardLayout.ts`), so it stays
-  parallel to its siblings instead of a bare "0". Zero cards are never
-  removed: hiding zeros makes the whole card `visibility: hidden` +
-  `aria-hidden` with no tab stop (a blank colored card would give away which
-  cards are zero, per owner 2026-10-05, superseding PR #58's blank-number
-  approach); displacing a hidden zero card (drag, Mix, keyboard) reveals it
-  immediately. Positions are preserved and toggling never shifts the strip.
-  Card i sits at the cumulative sum of the previous cards' measured widths
-  plus an 8px gap (`FAN_CARD_GAP`); each card shrink-wraps its full text,
-  measured via `offsetWidth` in a layout effect so the first paint already
-  has the correct size (no flash, and spawned numbers are centered from the
-  first frame). Never reflow into a grid.
+- **Card fan is narrow overlapping peek tiles (owner decision 2026-10-07,
+  superseding the 2026-10-06 full-values strip and all wide-slab peek
+  designs).** Every place-value card renders its FULL text at its natural
+  width ("100,000", "80,000", "0,000", "700", "30", "6"): no text is ever
+  faked or cut to make the peek. Cards overlap left-to-right (z-index
+  rises), each positioned at the cumulative peek width of the cards before
+  it, so only the peek shows and the fan reads as the number itself
+  ("3,743"): the visible "3," is really "3,000" with ",000" tucked behind
+  the next card, like physical arrow cards. Pulling a tile out (drag, Mix,
+  keyboard) uncovers the full value that was always rendered. Peek text is
+  the first digit plus the thousands separator for group-final cards
+  (`getPeekText()` in `lib/cardLayout.ts`: "3,", "0,"); peek widths are
+  measured empirically with a Range over the first 1-2 chars
+  (`peekCharCount()`). A zero card shows the place value with a leading
+  zero (`formatCardValue()`), so it stays parallel to its siblings instead
+  of a bare "0". Zero cards are never removed: hiding zeros makes the whole
+  card `visibility: hidden` + `aria-hidden` with no tab stop (a blank
+  colored card would give away which cards are zero, per owner 2026-10-05,
+  superseding PR #58's blank-number approach); displacing a hidden zero
+  card (drag, Mix, keyboard) reveals it immediately. The hidden card paints
+  nothing, so the previous card's text is clipped to its peek via
+  `clip-path` ONLY when the next card is hidden (a pure leak-prevention
+  backstop; `clip-path` does not shrink the card's box, so true overlap is
+  preserved everywhere else). Positions are preserved and toggling never
+  shifts the fan. Card i sits at the cumulative sum of the previous cards'
+  peek widths plus an 8px gap (`FAN_CARD_GAP`); tiles have rounded corners
+  and a subtle shadow so they read as separate pullable cards. Never reflow
+  into a grid.
 - **44px touch targets are coarse-pointer-gated.** Use
   `COARSE_POINTER_TOUCH_TARGET` (`pointer-coarse:min-h-11 min-w-11`) so the
   desktop mouse layout is untouched.
@@ -84,9 +95,9 @@ behavior on your own.
   focus trap + Escape come free). The bar is a flex-column sibling of the
   footer, never `position: fixed`, so no overlap math is needed.
 - **Hero card sizing.** `getMobileCardMetrics()` in `lib/cardLayout.ts`
-  scales the strip up on mobile (fewer digits = bigger cards, capped at the
-  desktop 60px) and chooses a font size so the modeled strip width fits the
-  viewport: every card at full width (both paddings + 0.92em per char:
+  scales the fan up on mobile (fewer digits = bigger cards, capped at the
+  desktop 60px) and chooses a font size so the modeled fan width fits the
+  viewport: every card contributes its peek (both paddings + 0.92em per char:
   0.62 digit advance + 0.3 letter-spacing) plus the inter-card gap
   (shrink-to-fit loop, 24px floor; below the floor the strip scrolls
   horizontally instead of shrinking further). The strip is vertically
