@@ -47,6 +47,38 @@ export function peekCharCount(placeValue: number): number {
 }
 
 /**
+ * Estimate the peek width in px WITHOUT measuring text.
+ *
+ * The old approach used a Range over the first 1-2 characters, but Range
+ * measurements are font-loading-timing-sensitive and vary across browsers
+ * (notably iOS Safari), causing cramped or gapped fans on load. This
+ * function computes the width arithmetically from stable inputs:
+ *
+ * - `chars`: 1 for "7", 2 for "7," (from peekCharCount)
+ * - `fontSizePx`: the card's font size (from mobileMetrics or default)
+ * - `padLeftPx`: the card's left padding (from computed style, stable)
+ * - `letterSpacingPx`: the card's letter-spacing (from computed style, stable)
+ *
+ * 1ch is the width of "0"; with tabular-nums all digits match. Geist's
+ * ch ratio is ~0.62 (empirical). The comma is ~0.35ch. These are stable
+ * estimates, not measurements, so they don't vary with font loading timing.
+ *
+ * Pure function; unit-testable.
+ */
+export function estimatePeekWidthPx(
+  chars: number,
+  fontSizePx: number,
+  padLeftPx: number,
+  letterSpacingPx: number
+): number {
+  const CH_RATIO = 0.62
+  const COMMA_CH = 0.35
+  const chPx = fontSizePx * CH_RATIO
+  const textCh = chars === 2 ? 1 + COMMA_CH : 1
+  return padLeftPx + textCh * chPx + letterSpacingPx * chars
+}
+
+/**
  * Peek text visible for a card at fan home: its first digit, plus the
  * thousands separator when the card ends a thousands group. The card's
  * full text is really rendered underneath; the next card overlaps and
