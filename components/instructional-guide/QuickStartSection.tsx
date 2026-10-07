@@ -20,7 +20,7 @@ export function QuickStartSection() {
               2
             </div>
             <div className="min-w-0">
-              <strong>Watch cards appear</strong> showing each digit
+              <strong>Watch cards appear</strong> showing each place value
             </div>
           </div>
           <div className="flex items-start gap-3">

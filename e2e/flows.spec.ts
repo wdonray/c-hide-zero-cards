@@ -31,7 +31,7 @@ test.describe('number input and cards', () => {
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     await expect(cards.getByText('1,000', { exact: true })).toBeVisible()
-    await expect(cards.getByText('0', { exact: true })).toBeVisible()
+    await expect(cards.getByText('000', { exact: true })).toBeVisible()
     await expect(cards.getByText('20', { exact: true })).toBeVisible()
     await expect(cards.getByText('3', { exact: true })).toBeVisible()
     await expect(cards.locator(':scope > div')).toHaveCount(4)
@@ -55,11 +55,11 @@ test.describe('number input and cards', () => {
     // Hiding blanks the zero card in place (visibility:hidden keeps its
     // position and size); the card is never removed, so the count stays 4.
     await page.getByTitle('Hide zero cards', { exact: true }).click()
-    await expect(cards.getByText('0', { exact: true })).toBeHidden()
+    await expect(cards.getByText('000', { exact: true })).toBeHidden()
     await expect(cards.locator(':scope > div')).toHaveCount(4)
 
     await page.getByTitle('Show zero cards', { exact: true }).click()
-    await expect(cards.getByText('0', { exact: true })).toBeVisible()
+    await expect(cards.getByText('000', { exact: true })).toBeVisible()
     await expect(cards.locator(':scope > div')).toHaveCount(4)
   })
 })

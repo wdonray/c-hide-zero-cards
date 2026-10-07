@@ -1,16 +1,14 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 
 /**
- * Zero-hidden fan alignment (owner redesign 2026-10-05, supersedes the
- * remove-cards approach; whole-card hiding per owner 2026-10-05,
- * superseding PR #58's blank-number approach): with "Zeros hidden" every
- * card stays in the fan at its measured position; the whole zero card goes
- * visibility:hidden + aria-hidden with no tab stop (a blank colored card
- * would give away which cards are zero). Each card's text is clipped to
- * its own peek, so a hidden card never leaks the text of the cards beneath
- * it. Place-value structure is preserved: hidden 800,502 reads
- * "8",<gap>,<gap>,",","5",<gap>,"2", never "852". Commas stay visible,
- * right edges stay flush, and the fan stays centered.
+ * Zero-hidden fan alignment (full-values redesign 2026-10-06): every card
+ * always shows its complete place value ("100,000", "80,000", "0,000",
+ * "700", "30", "6"); a zero card shows the place value with a leading
+ * zero. With "Zeros hidden" every card stays in the strip at its measured
+ * position; the whole zero card goes visibility:hidden + aria-hidden with
+ * no tab stop (a blank colored card would give away which cards are zero).
+ * Place-value structure is preserved: hidden 800,502 reads
+ * "800,000",<gap>,<gap>,"500",<gap>,"2", never "852".
  */
 
 interface CardDatum {
@@ -22,13 +20,18 @@ interface CardDatum {
   tabIndex: string | null
 }
 
+/** A card text is a zero card when it is all zeros (commas allowed). */
+function isZeroText(text: string): boolean {
+  return /^0[0,]*$/.test(text)
+}
+
 /** Number inputs and the card texts expected with zeros shown. Hiding
- * hides the whole "0" cards in place; the texts below list the shown state. */
+ * hides the whole zero cards in place; the texts below list the shown state. */
 const CASES: Array<{ input: string; shownTexts: string[] }> = [
-  { input: '101325', shownTexts: ['100,000', '0', '1,000', '300', '20', '5'] },
-  { input: '1001', shownTexts: ['1,000', '0', '0', '1'] },
+  { input: '101325', shownTexts: ['100,000', '00,000', '1,000', '300', '20', '5'] },
+  { input: '1001', shownTexts: ['1,000', '000', '00', '1'] },
   { input: '120', shownTexts: ['100', '20', '0'] },
-  { input: '1000000', shownTexts: ['1,000,000', '0', '0', '0', '0', '0', '0'] },
+  { input: '1000000', shownTexts: ['1,000,000', '000,000', '00,000', '0,000', '000', '00', '0'] },
   // No-zero control: hiding zeros must not change this fan at all.
   { input: '12345', shownTexts: ['10,000', '2,000', '300', '40', '5'] },
 ]
@@ -45,9 +48,15 @@ function cards(page: Page): Locator {
   return page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
 }
 
-async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDatum[] }> {
+async function cardData(page: Page): Promise<{
+  wsCenterX: number
+  fanBox: { x: number; width: number }
+  cards: CardDatum[]
+}> {
   return page.evaluate(() => {
     const ws = document.querySelector('main[aria-label="Place value cards workspace"]')!.getBoundingClientRect()
+    const fan = document.querySelector('[role="application"]') as HTMLElement
+    const fr = fan.getBoundingClientRect()
     // All cards (direct div children), including hidden ones: hidden cards
     // lose their tabindex, so they can no longer be found that way.
     // textContent (not innerText): the real text stays in the DOM for
@@ -55,6 +64,7 @@ async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDat
     const els = Array.from(document.querySelectorAll('[role="application"] > div')) as HTMLElement[]
     return {
       wsCenterX: ws.x + ws.width / 2,
+      fanBox: { x: fr.x, width: fr.width },
       cards: els.map((el) => {
         const r = el.getBoundingClientRect()
         return {
@@ -70,16 +80,18 @@ async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDat
   })
 }
 
-/** Flush right edges and a visibly centered fan. */
-function expectFanAligned(wsCenterX: number, data: CardDatum[]) {
-  expect(data.length).toBeGreaterThan(0)
-  if (data.length > 1) {
-    const rights = data.map((c) => c.right)
-    expect(Math.max(...rights) - Math.min(...rights)).toBeLessThanOrEqual(2)
+/** The strip container is visibly centered. Centering is asserted on the
+ * container, not the cards: when the strip scrolls, cards legitimately
+ * extend past the viewport. */
+function expectFanAligned(fanBox: { x: number; width: number }, wsCenterX: number) {
+  expect(Math.abs(fanBox.x + fanBox.width / 2 - wsCenterX)).toBeLessThanOrEqual(3)
+}
+
+/** Cards sit left-to-right in DOM order with a small gap, never overlapping. */
+function expectSequentialStrip(data: CardDatum[]) {
+  for (let i = 1; i < data.length; i++) {
+    expect(data[i].left).toBeGreaterThanOrEqual(data[i - 1].right - 1)
   }
-  const fanLeft = Math.min(...data.map((c) => c.left))
-  const fanRight = Math.max(...data.map((c) => c.right))
-  expect(Math.abs((fanLeft + fanRight) / 2 - wsCenterX)).toBeLessThanOrEqual(3)
 }
 
 test.describe('zero-hidden fan alignment', () => {
@@ -111,7 +123,8 @@ test.describe('zero-hidden fan alignment', () => {
           expect(data.cards.every((c) => c.cardVisibility === 'visible')).toBe(true)
           expect(data.cards.every((c) => c.tabIndex === '0')).toBe(true)
           expect(data.cards.every((c) => c.ariaHidden === null)).toBe(true)
-          expectFanAligned(data.wsCenterX, data.cards)
+          expectFanAligned(data.fanBox, data.wsCenterX)
+          expectSequentialStrip(data.cards)
           const shownLefts = data.cards.map((c) => c.left)
 
           await page.getByTitle('Hide zero cards', { exact: true }).click()
@@ -122,14 +135,13 @@ test.describe('zero-hidden fan alignment', () => {
 
           // Zero cards are fully hidden (the whole card, not just its
           // number: a blank colored card would give away the zero cards).
-          // The real "0" text stays in the DOM (needed for measurement) but
+          // The real text stays in the DOM (needed for measurement) but
           // the card is invisible, removed from the a11y tree, and not
-          // focusable: visually it reads as a gap, and text clipping keeps
-          // it from leaking the text of the cards beneath. Every other card
-          // keeps its text, visibility, and tab stop.
+          // focusable: visually it reads as a gap. Every other card keeps
+          // its text, visibility, and tab stop.
           data.cards.forEach((card, i) => {
-            if (shownTexts[i] === '0') {
-              expect(card.text).toBe('0')
+            if (isZeroText(shownTexts[i])) {
+              expect(card.text).toBe(shownTexts[i])
               expect(card.cardVisibility).toBe('hidden')
               expect(card.ariaHidden).toBe('true')
               expect(card.tabIndex).toBeNull()
@@ -145,14 +157,7 @@ test.describe('zero-hidden fan alignment', () => {
           data.cards.forEach((card, i) => {
             expect(Math.abs(card.left - shownLefts[i])).toBeLessThanOrEqual(1)
           })
-          expectFanAligned(data.wsCenterX, data.cards)
-
-          // Commas stay visible while zeros are hidden.
-          const commaCount = await page.getByTestId('fan-comma').count()
-          expect(commaCount).toBe(Math.floor((input.length - 1) / 3))
-          for (let i = 0; i < commaCount; i++) {
-            await expect(page.getByTestId('fan-comma').nth(i)).toBeVisible()
-          }
+          expectFanAligned(data.fanBox, data.wsCenterX)
 
           // Toggling back restores every text at the same positions.
           await page.getByTitle('Show zero cards', { exact: true }).click()
@@ -162,20 +167,21 @@ test.describe('zero-hidden fan alignment', () => {
           data.cards.forEach((card, i) => {
             expect(Math.abs(card.left - shownLefts[i])).toBeLessThanOrEqual(1)
           })
-          expectFanAligned(data.wsCenterX, data.cards)
+          expectFanAligned(data.fanBox, data.wsCenterX)
         })
       }
 
-      test('800,502 hidden reads "8",<gap>,<gap>,",","5",<gap>,"2", never "852"', async ({ page }) => {
+      test('800,502 hidden reads "800,000",<gap>,<gap>,"500",<gap>,"2", never "852"', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
         await page.getByTitle('Hide zero cards', { exact: true }).click()
 
         // Six cards present (not three): the fan cannot collapse to "852".
-        // The zero cards keep their "0" text in the DOM (for measurement)
-        // but render fully transparent: visually, gaps.
+        // The zero cards keep their full "00,000"/"0,000"/"00" text in the
+        // DOM (for measurement) but render fully transparent: visually,
+        // gaps.
         await expect(cards(page)).toHaveCount(6)
         const data = await cardData(page)
-        expect(data.cards.map((c) => c.text)).toEqual(['800,000', '0', '0', '500', '0', '2'])
+        expect(data.cards.map((c) => c.text)).toEqual(['800,000', '00,000', '0,000', '500', '00', '2'])
         expect(data.cards.map((c) => c.cardVisibility)).toEqual([
           'visible',
           'hidden',
@@ -188,14 +194,8 @@ test.describe('zero-hidden fan alignment', () => {
         // numbers: nothing gives away which cards are zero.
         expect(data.cards.map((c) => c.ariaHidden)).toEqual([null, 'true', 'true', null, 'true', null])
         expect(data.cards.map((c) => c.tabIndex)).toEqual(['0', null, null, '0', null, '0'])
-        expectFanAligned(data.wsCenterX, data.cards)
-
-        // The thousands comma is still there, visible, between the "0" and
-        // "500" cards.
-        const comma = page.getByTestId('fan-comma')
-        await expect(comma).toHaveCount(1)
-        await expect(comma).toBeVisible()
-        await expect(comma).toHaveText(',')
+        expectFanAligned(data.fanBox, data.wsCenterX)
+        expectSequentialStrip(data.cards)
       })
 
       test('hidden zero cards are skipped in tab order', async ({ page }) => {
@@ -233,16 +233,17 @@ test.describe('zero-hidden fan alignment', () => {
 
       test('Mix reveals hidden zero cards (displaced cards are never hidden)', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('85055')
-        // Hide zeros: the hundreds 0 card goes invisible in the fan.
+        // Hide zeros: the hundreds zero card goes invisible in the fan.
         await page.getByTitle('Hide zero cards', { exact: true }).click()
-        const zeroCard = cards(page).filter({ hasText: /^0$/ })
+        const zeroCard = cards(page).filter({ hasText: /^0+$/ })
         await expect(zeroCard).toHaveCount(1)
         await expect(zeroCard).toBeHidden()
 
         // Mix scatters all cards: the displaced zero card must become visible
-        // immediately.
+        // immediately, showing its full "000" text.
         await page.getByTitle('Randomize card position', { exact: true }).click()
         await expect(zeroCard).toBeVisible()
+        await expect(zeroCard).toHaveText('000')
       })
     })
   }
