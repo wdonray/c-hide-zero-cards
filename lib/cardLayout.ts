@@ -13,7 +13,7 @@ export const FAN_CARD_GAP = 8
  * guarantee coverage against subpixel rounding. Validated by
  * e2e/no-overlap-slivers.spec.ts.
  */
-export const OVERLAP_FUDGE_PX = 4
+export const OVERLAP_FUDGE_PX = 12
 
 /**
  * Display text for a place-value card: the full place value, always.
