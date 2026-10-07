@@ -28,7 +28,7 @@ function isZeroText(text: string): boolean {
 /** Number inputs and the card texts expected with zeros shown. Hiding
  * hides the whole zero cards in place; the texts below list the shown state. */
 const CASES: Array<{ input: string; shownTexts: string[] }> = [
-  { input: '101325', shownTexts: ['100,000', '0,000', '1,000', '300', '20', '5'] },
+  { input: '101325', shownTexts: ['100,000', '00,000', '1,000', '300', '20', '5'] },
   { input: '1001', shownTexts: ['1,000', '000', '00', '1'] },
   { input: '120', shownTexts: ['100', '20', '0'] },
   { input: '1000000', shownTexts: ['1,000,000', '000,000', '00,000', '0,000', '000', '00', '0'] },
