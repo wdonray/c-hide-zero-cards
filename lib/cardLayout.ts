@@ -71,8 +71,8 @@ export function estimatePeekWidthPx(
   padLeftPx: number,
   letterSpacingPx: number
 ): number {
-  const CH_RATIO = 0.62
-  const COMMA_CH = 0.35
+  const CH_RATIO = 0.55
+  const COMMA_CH = 0.3
   const chPx = fontSizePx * CH_RATIO
   const textCh = chars === 2 ? 1 + COMMA_CH : 1
   return padLeftPx + textCh * chPx + letterSpacingPx * chars
