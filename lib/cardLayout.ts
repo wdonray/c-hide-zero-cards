@@ -9,12 +9,14 @@ export const FAN_CARD_GAP = 8
 /**
  * Extra px each covering card overlaps beyond the measured peek width.
  * The peek width is measured with a Range over the first 1-2 characters,
- * which can under-measure by a pixel or two (subpixel rounding, trailing
- * letter-spacing); without a fudge, slivers of the covered card's text
- * peek through beside the covering card. The fudge eats into the trailing
- * letter-spacing after the peek digit, never into the digit itself.
+ * which OVER-measures vs. where the next glyph visually starts by ~20px at
+ * 60px font (empirical 2026-10-07: caret hit-testing shows the covered glyph
+ * ~20px left of the Range's right edge; letter-spacing and font metrics
+ * interact). Without sufficient overlap, slivers of covered text show.
+ * The 28px fudge compensates with margin, eating into trailing spacing,
+ * never the peek digit itself. Validated by e2e/no-overlap-slivers.spec.ts.
  */
-export const OVERLAP_FUDGE_PX = 4
+export const OVERLAP_FUDGE_PX = 28
 
 /**
  * Display text for a place-value card: the full place value, always.
@@ -130,11 +132,11 @@ export function getMobileCardMetrics(peekTexts: string[], viewportWidth: number,
   // Fan width model at font size fs. Each card contributes its peek (first
   // digit, plus comma for group-final cards): both horizontal paddings
   // plus 0.92em per character (0.62 digit advance + 0.3 letter-spacing,
-  // tabular-nums), plus the inter-card gap. The last card is fully visible
+  // tabular-nums), minus the overlap fudge. The last card is fully visible
   // but the ones place is a single digit, so the peek model covers it.
   const fanWidthAt = (fs: number) => {
     const pad = Math.round(fs * 0.15)
-    return peekTexts.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fs, 0) + (n - 1) * FAN_CARD_GAP
+    return peekTexts.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fs, 0) - (n - 1) * OVERLAP_FUDGE_PX
   }
 
   // Shrink-to-fit: start at the desktop 60px and decrement until the modeled
