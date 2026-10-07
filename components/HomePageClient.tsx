@@ -295,7 +295,7 @@ export function HomePageClient() {
   }, [cards])
 
   const commaClassName =
-    'flex items-center select-none tabular-nums font-bold text-white text-lg md:text-6xl tracking-[10px] md:tracking-[20px] py-4 md:py-10'
+    'flex items-center select-none tabular-nums font-bold text-white text-lg md:text-6xl tracking-[10px] md:tracking-[20px] py-4 md:py-10 pointer-events-none'
   const commaStyle = (x: number): React.CSSProperties => ({
     position: 'absolute',
     left: 0,
