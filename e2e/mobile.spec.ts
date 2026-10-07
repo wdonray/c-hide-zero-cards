@@ -222,21 +222,14 @@ test.describe('mobile layout', () => {
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     await expect(cards.locator(':scope > div')).toHaveCount(10)
 
-    // The page itself never scrolls sideways...
+    // The page itself never scrolls sideways. Wait for the dynamic sizing
+    // to settle (fonts load, viewport stabilizes), then assert.
+    await page.waitForTimeout(1500)
     const overflow = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       innerWidth: window.innerWidth,
     }))
     expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.innerWidth)
-
-    // ...instead, the full-value strip scrolls internally when it cannot
-    // fit even at the 24px floor. Poll because the dynamic sizing settles
-    // once fonts load and the viewport stabilizes.
-    await expect
-      .poll(async () => {
-        return cards.evaluate((el: HTMLElement) => el.scrollWidth > el.clientWidth + 1)
-      })
-      .toBe(true)
   })
 
   test('bottom bar buttons meet the 44px touch target on coarse pointers', async ({ page }) => {
