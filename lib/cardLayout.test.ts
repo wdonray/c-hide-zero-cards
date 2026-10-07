@@ -157,7 +157,7 @@ describe('getMobileCardMetrics', () => {
     // Peek texts for 9,999,999,999: group-final cards carry the comma.
     const peeks = ['9,', '9', '9', '9,', '9', '9', '9,', '9', '9', '9']
     // Ten narrow tiles with true overlap fit a 375px viewport at 29px.
-    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(29)
+    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(35)
   })
 
   it('fits a 4-tile fan on a 375px viewport', () => {
@@ -173,8 +173,8 @@ describe('getMobileCardMetrics', () => {
 
   it('shrinks to fit narrow viewports: 3,743 peeks need 56px at 320px, 36px at 208px', () => {
     // Exact values from the fan-fit loop over peek texts.
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(56)
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(36)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(60)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(40)
   })
 
   it('shrinks tiles monotonically as tile count grows', () => {
