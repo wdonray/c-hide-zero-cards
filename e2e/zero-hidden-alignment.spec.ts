@@ -1,10 +1,12 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 
 /**
- * Zero-hidden fan alignment (full-values redesign 2026-10-06): every card
- * always shows its complete place value ("100,000", "80,000", "0,000",
- * "700", "30", "6"); a zero card shows the place value with a leading
- * zero. With "Zeros hidden" every card stays in the strip at its measured
+ * Zero-hidden fan alignment (overlapping tiles, owner decision 2026-10-07):
+ * every card renders its FULL place value ("100,000", "80,000", "0,000",
+ * "700", "30", "6") at its natural width; cards overlap left-to-right so
+ * only each card's peek shows, and the fan reads as the number itself
+ * ("180,736"). A zero card shows the place value with a leading zero.
+ * With "Zeros hidden" every card stays in the fan at its measured
  * position; the whole zero card goes visibility:hidden + aria-hidden with
  * no tab stop (a blank colored card would give away which cards are zero).
  * Place-value structure is preserved: hidden 800,502 reads
@@ -87,10 +89,13 @@ function expectFanAligned(fanBox: { x: number; width: number }, wsCenterX: numbe
   expect(Math.abs(fanBox.x + fanBox.width / 2 - wsCenterX)).toBeLessThanOrEqual(3)
 }
 
-/** Cards sit left-to-right in DOM order with a small gap, never overlapping. */
-function expectSequentialStrip(data: CardDatum[]) {
+/** Overlapping fan: each card starts inside the previous card's box (true
+ * overlap: the next card covers everything past the peek) and strictly
+ * after the previous card's left edge (DOM order preserved). */
+function expectOverlappingFan(data: CardDatum[]) {
   for (let i = 1; i < data.length; i++) {
-    expect(data[i].left).toBeGreaterThanOrEqual(data[i - 1].right - 1)
+    expect(data[i].left).toBeGreaterThan(data[i - 1].left)
+    expect(data[i].left).toBeLessThan(data[i - 1].right - 1)
   }
 }
 
@@ -124,7 +129,7 @@ test.describe('zero-hidden fan alignment', () => {
           expect(data.cards.every((c) => c.tabIndex === '0')).toBe(true)
           expect(data.cards.every((c) => c.ariaHidden === null)).toBe(true)
           expectFanAligned(data.fanBox, data.wsCenterX)
-          expectSequentialStrip(data.cards)
+          expectOverlappingFan(data.cards)
           const shownLefts = data.cards.map((c) => c.left)
 
           await page.getByTitle('Hide zero cards', { exact: true }).click()
@@ -195,7 +200,7 @@ test.describe('zero-hidden fan alignment', () => {
         expect(data.cards.map((c) => c.ariaHidden)).toEqual([null, 'true', 'true', null, 'true', null])
         expect(data.cards.map((c) => c.tabIndex)).toEqual(['0', null, null, '0', null, '0'])
         expectFanAligned(data.fanBox, data.wsCenterX)
-        expectSequentialStrip(data.cards)
+        expectOverlappingFan(data.cards)
       })
 
       test('hidden zero cards are skipped in tab order', async ({ page }) => {

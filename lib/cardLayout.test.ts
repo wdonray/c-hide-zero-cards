@@ -5,6 +5,8 @@ import {
   getFanExtent,
   getFanPositions,
   getMobileCardMetrics,
+  getPeekText,
+  peekCharCount,
   scaleFontSizeToFit,
 } from './cardLayout'
 
@@ -31,6 +33,57 @@ describe('formatCardValue', () => {
   })
 })
 
+describe('peekCharCount', () => {
+  it('measures 2 chars for group-final cards (digit + comma)', () => {
+    expect(peekCharCount(1000)).toBe(2)
+    expect(peekCharCount(1000000)).toBe(2)
+    expect(peekCharCount(1000000000)).toBe(2)
+  })
+
+  it('measures 1 char for all other cards', () => {
+    expect(peekCharCount(1)).toBe(1)
+    expect(peekCharCount(10)).toBe(1)
+    expect(peekCharCount(100)).toBe(1)
+    expect(peekCharCount(10000)).toBe(1)
+    expect(peekCharCount(100000)).toBe(1)
+  })
+})
+
+describe('getPeekText', () => {
+  it('shows the first digit for ordinary cards', () => {
+    expect(getPeekText(7, 100)).toBe('7')
+    expect(getPeekText(4, 10)).toBe('4')
+    expect(getPeekText(3, 1)).toBe('3')
+    expect(getPeekText(8, 10000)).toBe('8')
+  })
+
+  it('includes the thousands separator for group-final cards', () => {
+    expect(getPeekText(3, 1000)).toBe('3,')
+    expect(getPeekText(1, 1000000)).toBe('1,')
+    expect(getPeekText(2, 1000000000)).toBe('2,')
+  })
+
+  it('shows "0" (or "0,") for zero cards', () => {
+    expect(getPeekText(0, 1000)).toBe('0,')
+    expect(getPeekText(0, 100)).toBe('0')
+    expect(getPeekText(0, 1)).toBe('0')
+  })
+
+  it('reads like the formatted number for 3,743 and 180,736', () => {
+    const fan3743 = [getPeekText(3, 1000), getPeekText(7, 100), getPeekText(4, 10), getPeekText(3, 1)]
+    expect(fan3743.join('')).toBe('3,743')
+    const fan180736 = [
+      getPeekText(1, 100000),
+      getPeekText(8, 10000),
+      getPeekText(0, 1000),
+      getPeekText(7, 100),
+      getPeekText(3, 10),
+      getPeekText(6, 1),
+    ]
+    expect(fan180736.join('')).toBe('180,736')
+  })
+})
+
 describe('getFanPositions', () => {
   it('starts the first card at 0 and stacks each card on the previous width', () => {
     expect(getFanPositions([])).toEqual([0])
@@ -50,14 +103,13 @@ describe('getFanExtent', () => {
   })
 
   it('sums the card widths plus the last card natural width', () => {
-    // 800,502 on desktop: full card widths plus gaps, last card with no
-    // trailing gap.
+    // 800,502: peek widths plus gaps, last card with no trailing gap.
     expect(getFanExtent([146, 146, 146, 146, 146], 71)).toBe(146 * 5 + 71)
   })
 
   it('drives the extent from measured widths, never a wide back card', () => {
-    // The "700,000" back card is wide, but the extent is the measured
-    // widths, so no card is ever stretched.
+    // The "700" back card is wide, but the extent uses the peek widths,
+    // so no card is ever stretched.
     expect(getFanExtent([379, 146, 146, 146, 146], 71)).toBe(379 + 146 * 4 + 71)
   })
 })
@@ -67,8 +119,8 @@ describe('getMobileCardMetrics', () => {
     expect(getMobileCardMetrics([], 375)).toEqual({ fontSize: 60 })
   })
 
-  it('grows cards for few digits: a 3-digit fan is much larger than the old fixed mobile size', () => {
-    const { fontSize } = getMobileCardMetrics(['100', '20', '5'], 375)
+  it('grows cards for few digits: a 3-tile fan is much larger than the old fixed mobile size', () => {
+    const { fontSize } = getMobileCardMetrics(['1', '2', '5'], 375)
     // Exact value comes from the fan-fit loop; what matters is that it is
     // far larger than the old fixed mobile text-lg (18px).
     expect(fontSize).toBeGreaterThan(40)
@@ -77,60 +129,49 @@ describe('getMobileCardMetrics', () => {
 
   it('never exceeds the desktop font size', () => {
     expect(getMobileCardMetrics(['5'], 375).fontSize).toBe(60)
-    expect(getMobileCardMetrics(['10', '5'], 1024).fontSize).toBe(60)
+    expect(getMobileCardMetrics(['1', '5'], 1024).fontSize).toBe(60)
   })
 
-  it('floors at 24px and lets the strip scroll when the 10-card fan cannot fit', () => {
-    const texts = [
-      '9,000,000,000',
-      '900,000,000',
-      '90,000,000',
-      '9,000,000',
-      '900,000',
-      '90,000',
-      '9,000',
-      '900',
-      '90',
-      '9',
-    ]
-    // Ten full-value cards cannot fit a 375px viewport at a readable size:
-    // the model stops at the 24px floor and the strip scrolls horizontally.
-    expect(getMobileCardMetrics(texts, 375).fontSize).toBe(24)
+  it('floors at 24px and lets the fan scroll when the 10-tile fan cannot fit', () => {
+    // Peek texts for 9,999,999,999: group-final cards carry the comma.
+    const peeks = ['9,', '9', '9', '9,', '9', '9', '9,', '9', '9', '9']
+    // Ten narrow tiles cannot fit a 375px viewport at a readable size:
+    // the model stops at the 24px floor and the fan scrolls horizontally.
+    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(24)
   })
 
-  it('fits a 4-card fan on a 375px viewport', () => {
-    const texts = ['1,000', '200', '30', '4']
-    const { fontSize } = getMobileCardMetrics(texts, 375)
-    const n = texts.length
+  it('fits a 4-tile fan on a 375px viewport', () => {
+    // Peek texts for 3,743.
+    const peeks = ['3,', '7', '4', '3']
+    const { fontSize } = getMobileCardMetrics(peeks, 375)
+    const n = peeks.length
     const pad = Math.round(fontSize * 0.15)
-    const fanWidth = texts.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fontSize, 0) + (n - 1) * FAN_CARD_GAP
+    const fanWidth = peeks.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fontSize, 0) + (n - 1) * FAN_CARD_GAP
     expect(fanWidth).toBeLessThanOrEqual(375 - 32)
   })
 
-  it('floors at 24px on narrow viewports instead of shrinking forever', () => {
-    // 320px and 208px viewports, 4 cards: the 60px starting guess
-    // overshoots, the fit loop decrements to the 24px floor, and the strip
-    // scrolls instead of shrinking further.
-    expect(getMobileCardMetrics(['1,000', '200', '30', '4'], 320).fontSize).toBe(24)
-    expect(getMobileCardMetrics(['1,000', '200', '30', '4'], 208).fontSize).toBe(24)
+  it('shrinks to fit narrow viewports: 3,743 peeks need 45px at 320px, 26px at 208px', () => {
+    // Exact values from the fan-fit loop over peek texts.
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(45)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(26)
   })
 
-  it('shrinks cards monotonically as digit count grows', () => {
+  it('shrinks tiles monotonically as tile count grows', () => {
     const sizes = [
-      getMobileCardMetrics(['10', '5'], 375).fontSize,
-      getMobileCardMetrics(['1,000', '200', '30', '5'], 375).fontSize,
-      getMobileCardMetrics(['100,000', '20,000', '3,000', '400', '50', '6'], 375).fontSize,
+      getMobileCardMetrics(['1', '5'], 375).fontSize,
+      getMobileCardMetrics(['3,', '7', '4', '5'], 375).fontSize,
+      getMobileCardMetrics(['1', '8', '0,', '7', '3', '6'], 375).fontSize,
     ]
     for (let i = 1; i < sizes.length; i++) {
       expect(sizes[i]).toBeLessThanOrEqual(sizes[i - 1])
     }
   })
 
-  it('accounts for full card widths: more digits need a smaller font', () => {
-    // 800,502 (6 cards) needs more room than a 3-card fan.
-    const sixCards = getMobileCardMetrics(['800,000', '00,000', '0,000', '500', '00', '2'], 375).fontSize
-    const threeCards = getMobileCardMetrics(['800', '50', '2'], 375).fontSize
-    expect(sixCards).toBeLessThanOrEqual(threeCards)
+  it('accounts for peek widths: the comma tile needs more room', () => {
+    // Same tile count, but one fan has a 2-char "0," peek.
+    const withComma = getMobileCardMetrics(['1', '8', '0,', '7', '3', '6'], 375).fontSize
+    const withoutComma = getMobileCardMetrics(['1', '8', '0', '7', '3', '6'], 375).fontSize
+    expect(withComma).toBeLessThanOrEqual(withoutComma)
   })
 })
 

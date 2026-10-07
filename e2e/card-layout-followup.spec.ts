@@ -1,15 +1,18 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * Card fan: full values always, no peeks (owner decision 2026-10-06,
- * superseding the single-digit-peek design). Every place-value card always
- * shows its complete value ("100,000", "80,000", "0,000", "700", "30",
- * "6"); a zero card shows the place value with a leading zero, parallel
- * to its siblings. The fan is a sequential strip of full-width cards.
- * Hiding zeros never removes cards: the whole zero card goes
- * visibility:hidden + aria-hidden (a blank colored card would give away
- * which cards are zero). Place-value positions are preserved: hidden
- * 800,502 reads "800,000",<gap>,<gap>,"500",<gap>,"2", never "852".
+ * Card fan: narrow overlapping peek tiles (owner decision 2026-10-07,
+ * superseding the 2026-10-06 full-values strip). Every place-value card
+ * renders its FULL text ("100,000", "80,000", "0,000", "700", "30", "6")
+ * at its natural width; cards overlap left-to-right (z-index rises) so
+ * only each card's peek shows and the fan reads as the number itself
+ * ("3,743"). Pulling a tile out (drag, Mix, keyboard) uncovers the full
+ * value that was always rendered underneath. A zero card shows the place
+ * value with a leading zero, parallel to its siblings. Hiding zeros never
+ * removes cards: the whole zero card goes visibility:hidden + aria-hidden
+ * (a blank colored card would give away which cards are zero). Place-value
+ * positions are preserved: hidden 800,502 reads
+ * "800,000",<gap>,<gap>,"500",<gap>,"2", never "852".
  */
 
 async function seed(page: Page) {
@@ -54,11 +57,13 @@ function expectFanCentered(fanBox: { x: number; width: number }, viewportWidth: 
   expect(Math.abs(fanBox.x + fanBox.width / 2 - viewportWidth / 2)).toBeLessThanOrEqual(3)
 }
 
-/** Sequential strip: each card starts where the previous card ends (plus
- * a small gap), never overlapping. */
-function expectSequentialStrip(cards: FanCard[]) {
+/** Overlapping fan: each card starts inside the previous card's box (the
+ * next card covers everything past the peek) and strictly after the
+ * previous card's left edge. */
+function expectOverlappingFan(cards: FanCard[]) {
   for (let i = 1; i < cards.length; i++) {
-    expect(cards[i].left).toBeGreaterThanOrEqual(cards[i - 1].right - 1)
+    expect(cards[i].left).toBeGreaterThan(cards[i - 1].left)
+    expect(cards[i].left).toBeLessThan(cards[i - 1].right - 1)
   }
 }
 
@@ -78,16 +83,36 @@ test.describe('card fan full values', () => {
         await seed(page)
       })
 
-      test('800,502 shown reads full values: 800,000 / 00,000 / 0,000 / 500 / 00 / 2', async ({ page }) => {
+      test('3,743 reads as overlapping peek tiles: 3, / 7 / 4 / 3', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('3743')
+        const { cards, fanBox } = await fanCards(page)
+
+        // Four cards, each rendering its full place value in the DOM.
+        expect(cards.map((i) => i.text)).toEqual(['3,000', '700', '40', '3'])
+
+        // True overlap: each card starts inside the previous card's box,
+        // so only the peek shows and the fan reads "3,743".
+        expectOverlappingFan(cards)
+        expectFanCentered(fanBox, vp.width)
+
+        // The visible peek of the thousands tile is "3,": the next card
+        // starts one peek-width in.
+        const exposed = cards[1].left - cards[0].left
+        expect(exposed).toBeGreaterThan(0)
+        expect(exposed).toBeLessThan(cards[0].right - cards[0].left)
+      })
+
+      test('800,502 overlaps: 800,000 / 00,000 / 0,000 / 500 / 00 / 2', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
         const { cards, fanBox } = await fanCards(page)
 
-        // Six cards, each showing its full place value. Zero cards show
-        // the place value with a leading zero, parallel to siblings.
+        // Six cards, each rendering its full place value in the DOM. Zero
+        // cards show the place value with a leading zero, parallel to
+        // siblings.
         expect(cards.map((i) => i.text)).toEqual(['800,000', '00,000', '0,000', '500', '00', '2'])
 
-        // Sequential strip, centered.
-        expectSequentialStrip(cards)
+        // Overlapping fan, centered.
+        expectOverlappingFan(cards)
         expectFanCentered(fanBox, vp.width)
       })
 
@@ -123,8 +148,9 @@ test.describe('card fan full values', () => {
         expect(cardStates.map((c) => c.ariaHidden)).toEqual([null, 'true', 'true', null, 'true', null])
         expect(cardStates.map((c) => c.tabIndex)).toEqual(['0', null, null, '0', null, '0'])
 
-        // Every card shows its full text unclipped: the card shrink-wraps
-        // its content, so scrollWidth never exceeds the card width.
+        // Every card renders its full text unclipped in the DOM (the peek
+        // is real overlap, not CSS clipping): scrollWidth never exceeds
+        // the card width.
         const clipState = await page.evaluate(() => {
           const fan = document.querySelector('[role="application"]')!
           return Array.from(fan.children).map((el) => {
@@ -143,7 +169,7 @@ test.describe('card fan full values', () => {
         }
       })
 
-      test('701,323 shown reads full values with a "00,000" zero card', async ({ page }) => {
+      test('701,323 overlaps with a "00,000" zero card', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('701323')
         const { cards, fanBox } = await fanCards(page)
 
@@ -151,7 +177,7 @@ test.describe('card fan full values', () => {
         // zero, parallel to "700,000".
         expect(cards.map((i) => i.text)).toEqual(['700,000', '00,000', '1,000', '300', '20', '3'])
 
-        expectSequentialStrip(cards)
+        expectOverlappingFan(cards)
         expectFanCentered(fanBox, vp.width)
       })
 
@@ -175,14 +201,14 @@ test.describe('card fan full values', () => {
         }
       })
 
-      test('1,234,567 shows seven full-value cards, no separate commas', async ({ page }) => {
+      test('1,234,567 shows seven overlapping cards, no separate commas', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('1234567')
-        const { cards, fanBox } = await fanCards(page)
+        const { cards } = await fanCards(page)
         // Commas live inside the card text now; there are no separate
         // comma elements.
         expect(cards.map((i) => i.text)).toEqual(['1,000,000', '200,000', '30,000', '4,000', '500', '60', '7'])
         await expect(page.getByTestId('fan-comma')).toHaveCount(0)
-        expectSequentialStrip(cards)
+        expectOverlappingFan(cards)
       })
 
       test('spawned fan is centered from the first frame', async ({ page }) => {
@@ -213,13 +239,77 @@ test.describe('card fan full values', () => {
           .getByRole('application', { name: 'Draggable place value cards' })
           .locator(':scope > div')
           .first()
-        // Keyboard-displace the card: with full values always, the text is
-        // identical at fan home and displaced.
+        // The full text is always in the DOM; displacing only uncovers it.
         await expect(first).toHaveText('700,000')
         await first.focus()
         await page.keyboard.press('ArrowRight')
         await page.keyboard.press('ArrowRight')
         await expect(first).toHaveText('700,000')
+      })
+
+      test('pulling the thousands tile uncovers "3,000"', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('3743')
+        const tiles = page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
+        const thousands = tiles.nth(0)
+        await expect(thousands).toHaveText('3,000')
+
+        // Drag the thousands tile down out of the fan.
+        const box = await thousands.boundingBox()
+        await page.mouse.move(box!.x + 15, box!.y + box!.height / 2)
+        await page.mouse.down()
+        await page.mouse.move(box!.x + 15, box!.y + 250, { steps: 10 })
+        await page.mouse.up()
+
+        // The tile is displaced and fully uncovered: its full box is
+        // visible and no other card overlaps it.
+        const state = await page.evaluate(() => {
+          const fan = document.querySelector('[role="application"]')!
+          const rects = Array.from(fan.children).map((el) => (el as HTMLElement).getBoundingClientRect())
+          const r0 = rects[0]
+          const overlaps = rects
+            .slice(1)
+            .some(
+              (r) => r0.x < r.x + r.width && r.x < r0.x + r0.width && r0.y < r.y + r.height && r.y < r0.y + r0.height
+            )
+          return { text: (fan.children[0] as HTMLElement).textContent, overlaps }
+        })
+        expect(state.text).toBe('3,000')
+        expect(state.overlaps).toBe(false)
+      })
+
+      test('dragging the covering card away uncovers the full text beneath', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('3743')
+        const tiles = page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
+
+        // Drag the "700" tile (index 1) away: the "3,000" tile beneath was
+        // really rendered at full width (true overlap), so it is uncovered
+        // intact, not clipped to its peek.
+        const cover = tiles.nth(1)
+        const box = await cover.boundingBox()
+        await page.mouse.move(box!.x + 15, box!.y + box!.height / 2)
+        await page.mouse.down()
+        await page.mouse.move(box!.x + 15, box!.y + 300, { steps: 10 })
+        await page.mouse.up()
+
+        const uncovered = await page.evaluate(() => {
+          const fan = document.querySelector('[role="application"]')!
+          const el = fan.children[0] as HTMLElement
+          const r = el.getBoundingClientRect()
+          const inner = el.firstElementChild as HTMLElement
+          return {
+            text: el.textContent,
+            // No clip-path backstop: the next card is visible, so the peek
+            // is pure overlap.
+            clipPath: inner.style.clipPath || 'none',
+            // The tile's box is its full natural width (not shrunk to the
+            // peek): the zeros were really behind the cover.
+            boxWidth: r.width,
+            textWidth: inner.scrollWidth,
+          }
+        })
+        expect(uncovered.text).toBe('3,000')
+        expect(uncovered.clipPath).toBe('none')
+        expect(uncovered.boxWidth).toBeGreaterThanOrEqual(uncovered.textWidth - 1)
       })
 
       // Fully dynamic sizing: on mobile the strip shrinks to the 24px floor
