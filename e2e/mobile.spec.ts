@@ -54,7 +54,7 @@ test.describe('mobile core flows', () => {
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     await expect(cards.getByText('1,000', { exact: true })).toBeVisible()
-    await expect(cards.getByText('0', { exact: true })).toBeVisible()
+    await expect(cards.getByText('000', { exact: true })).toBeVisible()
     await expect(cards.getByText('20', { exact: true })).toBeVisible()
     await expect(cards.getByText('3', { exact: true })).toBeVisible()
     await expect(cards.locator(':scope > div')).toHaveCount(4)
@@ -64,8 +64,8 @@ test.describe('mobile core flows', () => {
     await page.getByPlaceholder('Type a number here!').fill('1234')
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
-    // The last card sits on top of the fan: its center is never covered by
-    // the cascading overlap, so the touch reliably hits it.
+    // Cards sit side by side in a strip, so the last card's center is
+    // never covered and the touch reliably hits it.
     const lastCard = cards.locator(':scope > div').last()
     await expect(lastCard).toBeVisible()
 
@@ -92,11 +92,11 @@ test.describe('mobile core flows', () => {
     // Hiding blanks the zero card in place (visibility:hidden keeps its
     // position and size); the card is never removed, so the count stays 4.
     await page.getByTitle('Hide zero cards', { exact: true }).click()
-    await expect(cards.getByText('0', { exact: true })).toBeHidden()
+    await expect(cards.getByText('000', { exact: true })).toBeHidden()
     await expect(cards.locator(':scope > div')).toHaveCount(4)
 
     await page.getByTitle('Show zero cards', { exact: true }).click()
-    await expect(cards.getByText('0', { exact: true })).toBeVisible()
+    await expect(cards.getByText('000', { exact: true })).toBeVisible()
     await expect(cards.locator(':scope > div')).toHaveCount(4)
   })
 
