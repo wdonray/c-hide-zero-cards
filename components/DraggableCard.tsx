@@ -21,23 +21,6 @@ interface DraggableCardProps {
    */
   naturalWidth?: number
   /**
-   * Width of the peek text (first digit, plus comma for group-final cards),
-   * measured by the parent with a Range over the rendered text. The parent
-   * passes this ONLY when the next card is hidden: at fan home the inner
-   * text is then clipped to the peek width via clip-path (which, unlike a
-   * width+overflow clip, does not shrink the card's box, so the card keeps
-   * its full natural width and true overlap is preserved).
-   *
-   * The peek itself is NEVER faked: it is real overlap (the next card
-   * covers the rest). This is purely a backstop so a card never leaks text
-   * through a hidden card's gap: a visibility:hidden zero card paints
-   * nothing, so without it the previous card's trailing "0,000" would show
-   * through. In every other case the full text paints and the next card
-   * covers it, so pulling a covering card away uncovers the full value.
-   * Undefined until the parent has measured the fan, or when unneeded.
-   */
-  textClipWidth?: number
-  /**
    * A zero card hidden by the "hide zeros" toggle. The whole card is
    * invisible (visibility:hidden), so a hidden zero card reads as a gap
    * in the fan: nothing gives away which cards are zero. The card keeps
@@ -58,7 +41,6 @@ export function DraggableCard({
   fanX,
   mobileMetrics,
   naturalWidth,
-  textClipWidth,
   hiddenZero,
   resetTrigger,
   randomizeTrigger,
@@ -156,24 +138,7 @@ export function DraggableCard({
       }}
       {...handlers}
     >
-      {/* At fan home the text is clipped to the peek width ONLY when the
-          next card is hidden (see textClipWidth): a visibility:hidden card
-          paints nothing, so without the clip the previous card's trailing
-          text would leak through its gap. clip-path does not affect layout,
-          so the card keeps its full natural width and the peek stays real
-          overlap. scrollWidth still reports the full text width, so the
-          parent's measurement is unaffected. Displaced cards show their
-          full text unclipped, and uncovering a card (dragging the cover
-          away) reveals its full text. */}
-      <div
-        style={
-          atFanHome && textClipWidth !== undefined
-            ? { clipPath: `inset(0 calc(100% - ${textClipWidth}px) 0 0)` }
-            : undefined
-        }
-      >
-        {displayValue}
-      </div>
+      {displayValue}
     </div>
   )
 }

@@ -68,15 +68,16 @@ behavior on your own.
   card `visibility: hidden` + `aria-hidden` with no tab stop (a blank
   colored card would give away which cards are zero, per owner 2026-10-05,
   superseding PR #58's blank-number approach); displacing a hidden zero
-  card (drag, Mix, keyboard) reveals it immediately. The hidden card paints
-  nothing, so the previous card's text is clipped to its peek via
-  `clip-path` ONLY when the next card is hidden (a pure leak-prevention
-  backstop; `clip-path` does not shrink the card's box, so true overlap is
-  preserved everywhere else). Positions are preserved and toggling never
-  shifts the fan. Card i sits at the cumulative sum of the previous cards'
-  peek widths plus an 8px gap (`FAN_CARD_GAP`); tiles have rounded corners
-  and a subtle shadow so they read as separate pullable cards. Never reflow
-  into a grid.
+  card (drag, Mix, keyboard) reveals it immediately. When the covering card
+  is hidden, nothing covers the previous card, so its full text shows
+  naturally (e.g. hiding the tens zero in 2,609 reveals the "600" card's
+  full "600"): the "leak" is correct physical behavior, not a bug (owner
+  2026-10-07). Positions are preserved and toggling never shifts the fan.
+  Card i sits at the cumulative sum of the previous cards' peek widths
+  minus a 4px overlap fudge (`OVERLAP_FUDGE_PX`, guaranteeing the cover is
+  complete with no slivers) plus an 8px gap (`FAN_CARD_GAP`); tiles have
+  rounded corners and a subtle shadow so they read as separate pullable
+  cards. Never reflow into a grid.
 - **44px touch targets are coarse-pointer-gated.** Use
   `COARSE_POINTER_TOUCH_TARGET` (`pointer-coarse:min-h-11 min-w-11`) so the
   desktop mouse layout is untouched.

@@ -7,6 +7,16 @@ export interface MobileCardMetrics {
 export const FAN_CARD_GAP = 8
 
 /**
+ * Extra px each covering card overlaps beyond the measured peek width.
+ * The peek width is measured with a Range over the first 1-2 characters,
+ * which can under-measure by a pixel or two (subpixel rounding, trailing
+ * letter-spacing); without a fudge, slivers of the covered card's text
+ * peek through beside the covering card. The fudge eats into the trailing
+ * letter-spacing after the peek digit, never into the digit itself.
+ */
+export const OVERLAP_FUDGE_PX = 4
+
+/**
  * Display text for a place-value card: the full place value, always.
  * A zero card shows the place value with a leading zero ("0,000" for
  * thousands, "000" for hundreds, "00" for tens, "0" for ones) so it stays
