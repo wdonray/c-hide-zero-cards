@@ -236,9 +236,10 @@ export function useDraggable({
   }))
   if (resetTrigger !== prevResetDeps.trigger || initialX !== prevResetDeps.x || initialY !== prevResetDeps.y) {
     setPrevResetDeps({ trigger: resetTrigger, x: initialX, y: initialY })
-    if (resetTrigger !== undefined) {
-      setPosition({ x: initialX, y: initialY })
-    }
+    // Always re-seat when the fan home position changes (e.g., mobileMetrics
+    // becoming available on first render). Otherwise position drifts from
+    // fanX, isDisplaced goes true, and hidden zero cards incorrectly appear.
+    setPosition({ x: initialX, y: initialY })
   }
 
   const [prevRandomizeDeps, setPrevRandomizeDeps] = useState(() => ({

@@ -206,16 +206,17 @@ describe('useDraggable', () => {
     expect(result.current.isDragging).toBe(true)
   })
 
-  it('does not re-seat when resetTrigger is undefined and only the initial position changes', () => {
+  it('re-seats when the initial position changes, even if resetTrigger is undefined', () => {
     const { result, rerender } = renderHook(
       ({ initialX }) =>
         useDraggable({ initialX, initialY: 20, scatterSeed: 0, resetTrigger: undefined, randomizeTrigger: 0 }),
       { wrapper: HeaderProvider, initialProps: { initialX: 10 } }
     )
     rerender({ initialX: 50 })
-    // The reset branch is skipped for an undefined trigger: position keeps
-    // its state value rather than jumping to the new initial.
-    expect(result.current.position).toEqual({ x: 10, y: 20 })
+    // Fan home position changes (e.g., mobileMetrics arriving) must re-seat
+    // the card; otherwise position drifts from fanX and hidden zero cards
+    // incorrectly appear displaced.
+    expect(result.current.position).toEqual({ x: 50, y: 20 })
   })
 
   it('moves the card with ArrowLeft and ArrowUp', () => {
