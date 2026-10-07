@@ -283,7 +283,7 @@ test.describe('card fan full values', () => {
 
         // Drag the "700" tile (index 1) away: the "3,000" tile beneath was
         // really rendered at full width (true overlap), so it is uncovered
-        // intact, not clipped to its peek.
+        // intact.
         const cover = tiles.nth(1)
         const box = await cover.boundingBox()
         await page.mouse.move(box!.x + 15, box!.y + box!.height / 2)
@@ -295,20 +295,15 @@ test.describe('card fan full values', () => {
           const fan = document.querySelector('[role="application"]')!
           const el = fan.children[0] as HTMLElement
           const r = el.getBoundingClientRect()
-          const inner = el.firstElementChild as HTMLElement
           return {
             text: el.textContent,
-            // No clip-path backstop: the next card is visible, so the peek
-            // is pure overlap.
-            clipPath: inner.style.clipPath || 'none',
             // The tile's box is its full natural width (not shrunk to the
             // peek): the zeros were really behind the cover.
             boxWidth: r.width,
-            textWidth: inner.scrollWidth,
+            textWidth: el.scrollWidth,
           }
         })
         expect(uncovered.text).toBe('3,000')
-        expect(uncovered.clipPath).toBe('none')
         expect(uncovered.boxWidth).toBeGreaterThanOrEqual(uncovered.textWidth - 1)
       })
 

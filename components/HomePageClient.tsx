@@ -12,6 +12,7 @@ import {
 } from '@/lib/constants'
 import {
   FAN_CARD_GAP,
+  OVERLAP_FUDGE_PX,
   getFanExtent,
   getFanPositions,
   getMobileCardMetrics,
@@ -148,10 +149,6 @@ export function HomePageClient() {
     height: number
     naturals: number[]
     itemX: number[]
-    /** Text clip width per card (peek text rendered width, no padding).
-     * Backstop so text never leaks through a hidden card's gap; the peek
-     * itself is real overlap. Undefined for the last card (fully visible). */
-    textClipWidths: (number | undefined)[]
   } | null>(null)
   const [measureTick, setMeasureTick] = useState(0)
   // Note: showZeroCards is intentionally absent: hiding a zero card does
@@ -165,45 +162,40 @@ export function HomePageClient() {
     if (children.length !== cards.length) return
 
     const naturals: number[] = new Array(cards.length)
-    // Text clip width per card: the peek text's rendered width (no
-    // padding), measured in place with a Range over the first 1-2
-    // characters of the text node (exact font, tracking, and
-    // letter-spacing). The inner text wrapper starts after the card's left
-    // padding, so the clip excludes padLeft. The peek itself is real
-    // overlap; the clip only stops text leaking through a hidden card.
-    const textClipWidths: (number | undefined)[] = new Array(cards.length)
-    // Peek width per card: left padding + rendered width of the peek text.
-    // The last card is fully visible (the ones place is a single digit),
-    // so it contributes its natural width.
+    // Peek width per card: left padding + rendered width of the peek text
+    // (first digit, plus comma for group-final cards), measured in place
+    // with a Range over the first 1-2 characters of the text node (exact
+    // font, tracking, and letter-spacing). The last card is fully visible
+    // (the ones place is a single digit), so it contributes its natural
+    // width.
     const peekWidths = children.map((child, i) => {
       const style = getComputedStyle(child)
-      const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
-      const inner = child.firstElementChild as HTMLElement | null
-      // Natural width from the text itself (inner.scrollWidth is unaffected
-      // by the clip), not offsetWidth: the clipped inner div would shrink
-      // the card's shrink-wrapped box.
-      naturals[i] = (inner?.scrollWidth ?? 0) + padX
+      // Natural width: the absolutely-positioned card shrink-wraps its full
+      // text, so scrollWidth is the content-driven width.
+      naturals[i] = child.scrollWidth
       if (i === children.length - 1) {
-        textClipWidths[i] = undefined
         return naturals[i]
       }
       const padLeft = parseFloat(style.paddingLeft)
-      const textNode = (inner ? Array.from(inner.childNodes) : Array.from(child.childNodes)).find(
+      const textNode = Array.from(child.childNodes).find(
         (n): n is Text => n.nodeType === Node.TEXT_NODE && !!n.textContent?.trim()
       )
       const chars = peekCharCount(cards[i].placeValue)
       if (!textNode || textNode.length === 0) {
-        textClipWidths[i] = 0
         return padLeft
       }
       const range = document.createRange()
       range.setStart(textNode, 0)
       range.setEnd(textNode, Math.min(chars, textNode.length))
       const charWidth = range.getBoundingClientRect().width
-      textClipWidths[i] = charWidth
       return padLeft + charWidth
     })
-    const cardWidths = peekWidths.map((w, i) => (i < naturals.length - 1 ? w + FAN_CARD_GAP : w))
+    // Each card (except the last) positions the next card at its peek
+    // width plus the inter-card gap, minus the overlap fudge: the fudge
+    // guarantees the covering card fully hides the covered text (Range
+    // measurement can under-measure by a pixel or two, leaving slivers).
+    // The fudge eats into trailing letter-spacing, never the peek digit.
+    const cardWidths = peekWidths.map((w, i) => (i < naturals.length - 1 ? w - OVERLAP_FUDGE_PX + FAN_CARD_GAP : w))
 
     const itemX = getFanPositions(cardWidths)
     const extent = getFanExtent(cardWidths.slice(0, -1), naturals[naturals.length - 1])
@@ -240,11 +232,9 @@ export function HomePageClient() {
       prev.naturals.length === naturals.length &&
       prev.naturals.every((w, i) => w === naturals[i]) &&
       prev.itemX.length === itemX.length &&
-      prev.itemX.every((x, i) => x === itemX[i]) &&
-      prev.textClipWidths.length === textClipWidths.length &&
-      prev.textClipWidths.every((w, i) => w === textClipWidths[i])
+      prev.itemX.every((x, i) => x === itemX[i])
         ? prev
-        : { key: measureKey, extent, height, naturals, itemX, textClipWidths }
+        : { key: measureKey, extent, height, naturals, itemX }
     )
   }, [
     measureKey,
@@ -272,11 +262,6 @@ export function HomePageClient() {
   }, [])
 
   const layout = fanLayout?.key === measureKey ? fanLayout : null
-
-  // A card's text is clipped to its peek only when the next card is
-  // hidden: the hidden card paints nothing, so the clip stops the text
-  // leaking through its gap. Otherwise the peek is pure overlap.
-  const isZeroHidden = (card: { firstDigit: number }) => card.firstDigit === 0 && !showZeroCards
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -348,9 +333,6 @@ export function HomePageClient() {
                 fanX={layout ? layout.itemX[i] : 0}
                 mobileMetrics={mobileMetrics}
                 naturalWidth={layout ? layout.naturals[i] : undefined}
-                textClipWidth={
-                  layout && i < cards.length - 1 && isZeroHidden(cards[i + 1]) ? layout.textClipWidths[i] : undefined
-                }
                 hiddenZero={card.firstDigit === 0 && !showZeroCards}
                 resetTrigger={resetTrigger}
                 randomizeTrigger={randomizeTrigger}

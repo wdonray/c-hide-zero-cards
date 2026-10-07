@@ -203,6 +203,37 @@ test.describe('zero-hidden fan alignment', () => {
         expectOverlappingFan(data.cards)
       })
 
+      test('hidden covering card uncovers the previous card: 2,609 hidden reads "2,", "600", "9"', async ({ page }) => {
+        // 2,609 = 2,000 + 600 + 00 (tens zero) + 9. Hiding zeros hides the
+        // tens card; nothing covers the "600" card anymore, so its full
+        // text shows (physical arrow cards: remove the cover, see the
+        // zeros). No clip-path backstop.
+        await page.getByPlaceholder('Type a number here!').fill('2609')
+        await page.getByTitle('Hide zero cards', { exact: true }).click()
+
+        const data = await cardData(page)
+        expect(data.cards.map((c) => c.text)).toEqual(['2,000', '600', '00', '9'])
+        expect(data.cards.map((c) => c.cardVisibility)).toEqual(['visible', 'visible', 'hidden', 'visible'])
+
+        // The "600" card is NOT clipped to its peek: its full text is
+        // visible because the covering tens card is hidden.
+        const sixHundred = await page.evaluate(() => {
+          const fan = document.querySelector('[role="application"]')!
+          const el = fan.children[1] as HTMLElement
+          const r = el.getBoundingClientRect()
+          return {
+            text: el.textContent,
+            // Full natural width: the "00" is really there, uncovered.
+            boxWidth: r.width,
+            textWidth: el.scrollWidth,
+            clipPath: (el as HTMLElement).style.clipPath || 'none',
+          }
+        })
+        expect(sixHundred.text).toBe('600')
+        expect(sixHundred.clipPath).toBe('none')
+        expect(sixHundred.boxWidth).toBeGreaterThanOrEqual(sixHundred.textWidth - 1)
+      })
+
       test('hidden zero cards are skipped in tab order', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
         await page.getByTitle('Hide zero cards', { exact: true }).click()
