@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  FAN_CARD_GAP,
+  OVERLAP_FUDGE_PX,
   formatCardValue,
   getFanExtent,
   getFanPositions,
@@ -132,12 +132,12 @@ describe('getMobileCardMetrics', () => {
     expect(getMobileCardMetrics(['1', '5'], 1024).fontSize).toBe(60)
   })
 
-  it('floors at 24px and lets the fan scroll when the 10-tile fan cannot fit', () => {
+  it('fits the 10-tile fan at 39px on a 375px viewport (narrower after overlap)', () => {
     // Peek texts for 9,999,999,999: group-final cards carry the comma.
     const peeks = ['9,', '9', '9', '9,', '9', '9', '9,', '9', '9', '9']
-    // Ten narrow tiles cannot fit a 375px viewport at a readable size:
-    // the model stops at the 24px floor and the fan scrolls horizontally.
-    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(24)
+    // Ten narrow tiles with true overlap fit a 375px viewport at 39px.
+    // (Before the overlap fix, the wider model floored at 24px.)
+    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(39)
   })
 
   it('fits a 4-tile fan on a 375px viewport', () => {
@@ -146,14 +146,14 @@ describe('getMobileCardMetrics', () => {
     const { fontSize } = getMobileCardMetrics(peeks, 375)
     const n = peeks.length
     const pad = Math.round(fontSize * 0.15)
-    const fanWidth = peeks.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fontSize, 0) + (n - 1) * FAN_CARD_GAP
+    const fanWidth = peeks.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fontSize, 0) - (n - 1) * OVERLAP_FUDGE_PX
     expect(fanWidth).toBeLessThanOrEqual(375 - 32)
   })
 
-  it('shrinks to fit narrow viewports: 3,743 peeks need 45px at 320px, 26px at 208px', () => {
+  it('shrinks to fit narrow viewports: 3,743 peeks need 60px at 320px, 44px at 208px', () => {
     // Exact values from the fan-fit loop over peek texts.
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(45)
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(26)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(60)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(44)
   })
 
   it('shrinks tiles monotonically as tile count grows', () => {

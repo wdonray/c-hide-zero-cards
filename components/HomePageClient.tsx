@@ -11,7 +11,6 @@ import {
   NumberFormsDialogTab,
 } from '@/lib/constants'
 import {
-  FAN_CARD_GAP,
   OVERLAP_FUDGE_PX,
   getFanExtent,
   getFanPositions,
@@ -190,12 +189,15 @@ export function HomePageClient() {
       const charWidth = range.getBoundingClientRect().width
       return padLeft + charWidth
     })
-    // Each card (except the last) positions the next card at its peek
-    // width plus the inter-card gap, minus the overlap fudge: the fudge
-    // guarantees the covering card fully hides the covered text (Range
-    // measurement can under-measure by a pixel or two, leaving slivers).
-    // The fudge eats into trailing letter-spacing, never the peek digit.
-    const cardWidths = peekWidths.map((w, i) => (i < naturals.length - 1 ? w - OVERLAP_FUDGE_PX + FAN_CARD_GAP : w))
+    // True overlap: the covering card starts OVERLAP_FUDGE_PX before the
+    // measured peek boundary, guaranteeing the covered text is fully hidden
+    // with no slivers. Empirical finding (2026-10-07): the Range measurement
+    // over the peek chars over-measures vs. where the next glyph visually
+    // starts by ~20px at 60px font (letter-spacing and font metrics interact;
+    // caret hit-testing shows the glyph ~20px left of the Range right edge).
+    // The 28px fudge compensates with margin. Validated by
+    // e2e/no-overlap-slivers.spec.ts, not by eye.
+    const cardWidths = peekWidths.map((w, i) => (i < naturals.length - 1 ? w - OVERLAP_FUDGE_PX : w))
 
     const itemX = getFanPositions(cardWidths)
     const extent = getFanExtent(cardWidths.slice(0, -1), naturals[naturals.length - 1])
