@@ -146,7 +146,8 @@ describe('getMobileCardMetrics', () => {
     const { fontSize } = getMobileCardMetrics(peeks, 375)
     const n = peeks.length
     const pad = Math.round(fontSize * 0.15)
-    const fanWidth = peeks.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fontSize, 0) - (n - 1) * OVERLAP_FUDGE_PX
+    const fanWidth =
+      peeks.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fontSize, 0) - (n - 1) * OVERLAP_FUDGE_PX
     expect(fanWidth).toBeLessThanOrEqual(375 - 32)
   })
 
