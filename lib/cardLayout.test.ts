@@ -7,6 +7,7 @@ import {
   getMobileCardMetrics,
   getPeekText,
   peekCharCount,
+  estimatePeekWidthPx,
   scaleFontSizeToFit,
 } from './cardLayout'
 
@@ -46,6 +47,26 @@ describe('peekCharCount', () => {
     expect(peekCharCount(100)).toBe(1)
     expect(peekCharCount(10000)).toBe(1)
     expect(peekCharCount(100000)).toBe(1)
+  })
+})
+
+describe('estimatePeekWidthPx', () => {
+  it('estimates wider for 2-char peeks than 1-char peeks', () => {
+    const oneChar = estimatePeekWidthPx(1, 60, 8, 10)
+    const twoChar = estimatePeekWidthPx(2, 60, 8, 10)
+    expect(twoChar).toBeGreaterThan(oneChar)
+  })
+
+  it('scales with font size', () => {
+    const small = estimatePeekWidthPx(1, 30, 8, 5)
+    const large = estimatePeekWidthPx(1, 60, 8, 10)
+    expect(large).toBeGreaterThan(small)
+  })
+
+  it('is deterministic (no DOM measurement)', () => {
+    const a = estimatePeekWidthPx(2, 60, 8, 10)
+    const b = estimatePeekWidthPx(2, 60, 8, 10)
+    expect(a).toBe(b)
   })
 })
 

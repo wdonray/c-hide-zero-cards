@@ -17,6 +17,7 @@ import {
   getMobileCardMetrics,
   getPeekText,
   peekCharCount,
+  estimatePeekWidthPx,
   scaleFontSizeToFit,
 } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
@@ -162,9 +163,10 @@ export function HomePageClient() {
 
     const naturals: number[] = new Array(cards.length)
     // Peek width per card: left padding + rendered width of the peek text
-    // (first digit, plus comma for group-final cards), measured in place
-    // with a Range over the first 1-2 characters of the text node (exact
-    // font, tracking, and letter-spacing). The last card is fully visible
+    // (first digit, plus comma for group-final cards), estimated
+    // arithmetically via estimatePeekWidthPx (stable across font loading;
+    // the old Range measurement was timing-sensitive and caused
+    // cramped/gapped fans on iOS Safari). The last card is fully visible
     // (the ones place is a single digit), so it contributes its natural
     // width.
     const peekWidths = children.map((child, i) => {
@@ -176,18 +178,10 @@ export function HomePageClient() {
         return naturals[i]
       }
       const padLeft = parseFloat(style.paddingLeft)
-      const textNode = Array.from(child.childNodes).find(
-        (n): n is Text => n.nodeType === Node.TEXT_NODE && !!n.textContent?.trim()
-      )
+      const fontSize = parseFloat(style.fontSize)
+      const letterSpacing = parseFloat(style.letterSpacing)
       const chars = peekCharCount(cards[i].placeValue)
-      if (!textNode || textNode.length === 0) {
-        return padLeft
-      }
-      const range = document.createRange()
-      range.setStart(textNode, 0)
-      range.setEnd(textNode, Math.min(chars, textNode.length))
-      const charWidth = range.getBoundingClientRect().width
-      return padLeft + charWidth
+      return estimatePeekWidthPx(chars, fontSize, padLeft, isNaN(letterSpacing) ? 0 : letterSpacing)
     })
     // True overlap: the covering card starts OVERLAP_FUDGE_PX before the
     // measured peek boundary, guaranteeing the covered text is fully hidden
