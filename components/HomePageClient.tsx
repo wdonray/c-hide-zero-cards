@@ -252,13 +252,33 @@ export function HomePageClient() {
 
   // Re-measure once web fonts arrive (card widths are text-driven) and on
   // resize/zoom (the fan metrics depend on the viewport width).
+  // The fonts.ready callback is wrapped in requestAnimationFrame: when fonts
+  // load, the browser must re-layout text with the new metrics BEFORE we
+  // re-measure. Without the rAF, the measurement layout effect can run
+  // against stale fallback-font layout (the font is loaded but not yet
+  // applied), producing cramped positions that persist until the next
+  // unrelated re-render (e.g., a drag). The rAF guarantees layout is fresh.
   useEffect(() => {
     const bump = () => setMeasureTick((t) => t + 1)
+    let rafId = 0
+    let cancelled = false
     if (document.fonts) {
-      document.fonts.ready.then(bump).catch(() => {})
+      document.fonts.ready
+        .then(() => {
+          if (!cancelled) {
+            rafId = requestAnimationFrame(() => {
+              if (!cancelled) bump()
+            })
+          }
+        })
+        .catch(() => {})
     }
     window.addEventListener('resize', bump)
-    return () => window.removeEventListener('resize', bump)
+    return () => {
+      cancelled = true
+      if (rafId) cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', bump)
+    }
   }, [])
 
   const layout = fanLayout?.key === measureKey ? fanLayout : null
