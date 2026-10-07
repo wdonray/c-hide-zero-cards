@@ -114,11 +114,18 @@ export function DraggableCard({
   const isDisplaced = position.x !== fanX || position.y !== index * CARD_Y_OFFSET
   const atFanHome = fanWidth !== undefined && !isDisplaced
 
+  // A zero card is hidden only at fan home. Once displaced (dragged, Mix-
+  // scattered, keyboard-moved), it is revealed immediately: the user moved
+  // it to inspect it, so it must show its value. Only cards whose first
+  // digit is zero are ever hidden; a card like "50" (first digit 5) is
+  // never hidden.
+  const isHidden = hiddenZero && atFanHome
+
   return (
     <div
       ref={setRefs}
-      tabIndex={hiddenZero ? undefined : 0}
-      aria-hidden={hiddenZero || undefined}
+      tabIndex={isHidden ? undefined : 0}
+      aria-hidden={isHidden || undefined}
       aria-label={`${displayValue} place value card. Use arrow keys to move it.`}
       className={`flex items-center justify-start gap-0 ${atFanHome ? 'overflow-hidden' : ''} px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white ${cardColor(placeValue)}`}
       style={{
@@ -142,8 +149,9 @@ export function DraggableCard({
         // are unaffected), so the fan's cumulative peek layout never
         // shifts when toggling. The text is clipped to the peek (see the
         // inner wrapper), so a hidden card never leaks the text of the
-        // cards beneath it.
-        ...(hiddenZero ? { visibility: 'hidden' as const } : {}),
+        // cards beneath it. Displaced cards are never hidden: moving a
+        // card reveals it immediately.
+        ...(isHidden ? { visibility: 'hidden' as const } : {}),
         // Mobile hero sizing: font size, tracking, and padding scale with the
         // adaptive metrics; the Tailwind text-lg/tracking classes above apply
         // only when no metrics are present (desktop / SSR).

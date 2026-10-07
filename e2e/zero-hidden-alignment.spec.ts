@@ -230,6 +230,20 @@ test.describe('zero-hidden fan alignment', () => {
         await expect(input).not.toHaveValue('0')
         await expect(input).toHaveValue(before)
       })
+
+      test('Mix reveals hidden zero cards (displaced cards are never hidden)', async ({ page }) => {
+        await page.getByPlaceholder('Type a number here!').fill('85055')
+        // Hide zeros: the hundreds 0 card goes invisible in the fan.
+        await page.getByTitle('Hide zero cards', { exact: true }).click()
+        const zeroCard = cards(page).filter({ hasText: /^0$/ })
+        await expect(zeroCard).toHaveCount(1)
+        await expect(zeroCard).toBeHidden()
+
+        // Mix scatters all cards: the displaced zero card must become visible
+        // immediately.
+        await page.getByTitle('Randomize card position', { exact: true }).click()
+        await expect(zeroCard).toBeVisible()
+      })
     })
   }
 })
