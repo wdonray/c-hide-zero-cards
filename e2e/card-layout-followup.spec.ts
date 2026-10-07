@@ -26,28 +26,32 @@ interface FanCard {
   right: number
 }
 
-/** All fan cards in DOM order. Uses textContent so hidden cards still
- * report their real text (needed for measurement); visibility is asserted
- * separately. */
-async function fanCards(page: Page): Promise<FanCard[]> {
+/** All fan cards in DOM order, plus the strip container's box. Uses
+ * textContent so hidden cards still report their real text (needed for
+ * measurement); visibility is asserted separately. Centering is asserted
+ * on the container: when the strip scrolls, cards legitimately extend
+ * past the viewport. */
+async function fanCards(page: Page): Promise<{ cards: FanCard[]; fanBox: { x: number; width: number } }> {
   return page.evaluate(() => {
-    const fan = document.querySelector('[role="application"]')!
-    return Array.from(fan.children).map((el) => {
-      const htmlEl = el as HTMLElement
-      const r = htmlEl.getBoundingClientRect()
-      return {
-        text: (htmlEl.textContent ?? '').trim(),
-        left: r.x,
-        right: r.x + r.width,
-      }
-    })
+    const fan = document.querySelector('[role="application"]') as HTMLElement
+    const fr = fan.getBoundingClientRect()
+    return {
+      fanBox: { x: fr.x, width: fr.width },
+      cards: Array.from(fan.children).map((el) => {
+        const htmlEl = el as HTMLElement
+        const r = htmlEl.getBoundingClientRect()
+        return {
+          text: (htmlEl.textContent ?? '').trim(),
+          left: r.x,
+          right: r.x + r.width,
+        }
+      }),
+    }
   })
 }
 
-function expectFanCentered(cards: FanCard[], viewportWidth: number) {
-  const fanLeft = Math.min(...cards.map((i) => i.left))
-  const fanRight = Math.max(...cards.map((i) => i.right))
-  expect(Math.abs((fanLeft + fanRight) / 2 - viewportWidth / 2)).toBeLessThanOrEqual(3)
+function expectFanCentered(fanBox: { x: number; width: number }, viewportWidth: number) {
+  expect(Math.abs(fanBox.x + fanBox.width / 2 - viewportWidth / 2)).toBeLessThanOrEqual(3)
 }
 
 /** Sequential strip: each card starts where the previous card ends (plus
@@ -76,7 +80,7 @@ test.describe('card fan full values', () => {
 
       test('800,502 shown reads full values: 800,000 / 00,000 / 0,000 / 500 / 00 / 2', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
-        const cards = await fanCards(page)
+        const { cards, fanBox } = await fanCards(page)
 
         // Six cards, each showing its full place value. Zero cards show
         // the place value with a leading zero, parallel to siblings.
@@ -84,14 +88,14 @@ test.describe('card fan full values', () => {
 
         // Sequential strip, centered.
         expectSequentialStrip(cards)
-        expectFanCentered(cards, vp.width)
+        expectFanCentered(fanBox, vp.width)
       })
 
       test('800,502 hidden hides whole zero cards in position, never "852"', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('800502')
-        const shown = await fanCards(page)
+        const { cards: shown } = await fanCards(page)
         await page.getByTitle('Hide zero cards', { exact: true }).click()
-        const hidden = await fanCards(page)
+        const { cards: hidden } = await fanCards(page)
 
         // All cards still present (never removed); zero cards fully
         // transparent (their full text stays in the DOM for measurement).
@@ -141,22 +145,22 @@ test.describe('card fan full values', () => {
 
       test('701,323 shown reads full values with a "00,000" zero card', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('701323')
-        const cards = await fanCards(page)
+        const { cards, fanBox } = await fanCards(page)
 
         // The zero card displays "00,000": the place value with a leading
         // zero, parallel to "700,000".
         expect(cards.map((i) => i.text)).toEqual(['700,000', '00,000', '1,000', '300', '20', '3'])
 
         expectSequentialStrip(cards)
-        expectFanCentered(cards, vp.width)
+        expectFanCentered(fanBox, vp.width)
       })
 
       test('toggling zero visibility never shifts the fan', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('940934')
-        const shown = await fanCards(page)
+        const { cards: shown } = await fanCards(page)
 
         await page.getByTitle('Hide zero cards', { exact: true }).click()
-        const hidden = await fanCards(page)
+        const { cards: hidden } = await fanCards(page)
         expect(hidden.length).toBe(shown.length)
         for (let i = 0; i < shown.length; i++) {
           expect(Math.abs(hidden[i].left - shown[i].left)).toBeLessThanOrEqual(1)
@@ -164,7 +168,7 @@ test.describe('card fan full values', () => {
 
         // Toggling back restores the texts at the same positions.
         await page.getByTitle('Show zero cards', { exact: true }).click()
-        const restored = await fanCards(page)
+        const { cards: restored } = await fanCards(page)
         expect(restored.map((i) => i.text)).toEqual(shown.map((i) => i.text))
         for (let i = 0; i < shown.length; i++) {
           expect(Math.abs(restored[i].left - shown[i].left)).toBeLessThanOrEqual(1)
@@ -173,7 +177,7 @@ test.describe('card fan full values', () => {
 
       test('1,234,567 shows seven full-value cards, no separate commas', async ({ page }) => {
         await page.getByPlaceholder('Type a number here!').fill('1234567')
-        const cards = await fanCards(page)
+        const { cards, fanBox } = await fanCards(page)
         // Commas live inside the card text now; there are no separate
         // comma elements.
         expect(cards.map((i) => i.text)).toEqual(['1,000,000', '200,000', '30,000', '4,000', '500', '60', '7'])

@@ -222,25 +222,19 @@ test.describe('mobile layout', () => {
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     await expect(cards.locator(':scope > div')).toHaveCount(10)
 
+    // The page itself never scrolls sideways...
     const overflow = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       innerWidth: window.innerWidth,
     }))
     expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.innerWidth)
 
-    // Every card is fully inside the viewport. Poll because mobile browsers
-    // can report transient viewport widths during chrome show/hide; the
-    // dynamic sizing settles once the viewport stabilizes.
+    // ...instead, the full-value strip scrolls internally when it cannot
+    // fit even at the 24px floor. Poll because the dynamic sizing settles
+    // once fonts load and the viewport stabilizes.
     await expect
       .poll(async () => {
-        const boxes = await cards.locator(':scope > div').evaluateAll((els) =>
-          els.map((el) => {
-            const r = el.getBoundingClientRect()
-            return { left: r.left, right: r.right }
-          })
-        )
-        const vw = await page.evaluate(() => window.innerWidth)
-        return boxes.every((b) => b.left >= -1 && b.right <= vw + 1)
+        return cards.evaluate((el: HTMLElement) => el.scrollWidth > el.clientWidth + 1)
       })
       .toBe(true)
   })

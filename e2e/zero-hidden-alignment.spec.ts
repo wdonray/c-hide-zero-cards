@@ -48,9 +48,15 @@ function cards(page: Page): Locator {
   return page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
 }
 
-async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDatum[] }> {
+async function cardData(page: Page): Promise<{
+  wsCenterX: number
+  fanBox: { x: number; width: number }
+  cards: CardDatum[]
+}> {
   return page.evaluate(() => {
     const ws = document.querySelector('main[aria-label="Place value cards workspace"]')!.getBoundingClientRect()
+    const fan = document.querySelector('[role="application"]') as HTMLElement
+    const fr = fan.getBoundingClientRect()
     // All cards (direct div children), including hidden ones: hidden cards
     // lose their tabindex, so they can no longer be found that way.
     // textContent (not innerText): the real text stays in the DOM for
@@ -58,6 +64,7 @@ async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDat
     const els = Array.from(document.querySelectorAll('[role="application"] > div')) as HTMLElement[]
     return {
       wsCenterX: ws.x + ws.width / 2,
+      fanBox: { x: fr.x, width: fr.width },
       cards: els.map((el) => {
         const r = el.getBoundingClientRect()
         return {
@@ -73,12 +80,11 @@ async function cardData(page: Page): Promise<{ wsCenterX: number; cards: CardDat
   })
 }
 
-/** The strip is a visibly centered sequential row of full-value cards. */
-function expectFanAligned(wsCenterX: number, data: CardDatum[]) {
-  expect(data.length).toBeGreaterThan(0)
-  const fanLeft = Math.min(...data.map((c) => c.left))
-  const fanRight = Math.max(...data.map((c) => c.right))
-  expect(Math.abs((fanLeft + fanRight) / 2 - wsCenterX)).toBeLessThanOrEqual(3)
+/** The strip container is visibly centered. Centering is asserted on the
+ * container, not the cards: when the strip scrolls, cards legitimately
+ * extend past the viewport. */
+function expectFanAligned(fanBox: { x: number; width: number }, wsCenterX: number) {
+  expect(Math.abs(fanBox.x + fanBox.width / 2 - wsCenterX)).toBeLessThanOrEqual(3)
 }
 
 /** Cards sit left-to-right in DOM order with a small gap, never overlapping. */
@@ -117,7 +123,7 @@ test.describe('zero-hidden fan alignment', () => {
           expect(data.cards.every((c) => c.cardVisibility === 'visible')).toBe(true)
           expect(data.cards.every((c) => c.tabIndex === '0')).toBe(true)
           expect(data.cards.every((c) => c.ariaHidden === null)).toBe(true)
-          expectFanAligned(data.wsCenterX, data.cards)
+          expectFanAligned(data.fanBox, data.wsCenterX)
           expectSequentialStrip(data.cards)
           const shownLefts = data.cards.map((c) => c.left)
 
@@ -151,7 +157,7 @@ test.describe('zero-hidden fan alignment', () => {
           data.cards.forEach((card, i) => {
             expect(Math.abs(card.left - shownLefts[i])).toBeLessThanOrEqual(1)
           })
-          expectFanAligned(data.wsCenterX, data.cards)
+          expectFanAligned(data.fanBox, data.wsCenterX)
 
           // Toggling back restores every text at the same positions.
           await page.getByTitle('Show zero cards', { exact: true }).click()
@@ -161,7 +167,7 @@ test.describe('zero-hidden fan alignment', () => {
           data.cards.forEach((card, i) => {
             expect(Math.abs(card.left - shownLefts[i])).toBeLessThanOrEqual(1)
           })
-          expectFanAligned(data.wsCenterX, data.cards)
+          expectFanAligned(data.fanBox, data.wsCenterX)
         })
       }
 
@@ -188,7 +194,7 @@ test.describe('zero-hidden fan alignment', () => {
         // numbers: nothing gives away which cards are zero.
         expect(data.cards.map((c) => c.ariaHidden)).toEqual([null, 'true', 'true', null, 'true', null])
         expect(data.cards.map((c) => c.tabIndex)).toEqual(['0', null, null, '0', null, '0'])
-        expectFanAligned(data.wsCenterX, data.cards)
+        expectFanAligned(data.fanBox, data.wsCenterX)
         expectSequentialStrip(data.cards)
       })
 
