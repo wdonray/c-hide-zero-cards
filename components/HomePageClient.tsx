@@ -170,27 +170,28 @@ export function HomePageClient() {
     // (the ones place is a single digit), so it contributes its natural
     // width.
     const peekWidths = children.map((child, i) => {
-      const style = getComputedStyle(child)
       // Natural width: the absolutely-positioned card shrink-wraps its full
       // text, so scrollWidth is the content-driven width.
       naturals[i] = child.scrollWidth
       if (i === children.length - 1) {
         return naturals[i]
       }
-      const padLeft = parseFloat(style.paddingLeft)
-      const fontSize = parseFloat(style.fontSize)
-      const letterSpacing = parseFloat(style.letterSpacing)
+      // Derive typography from React state, NOT getComputedStyle: computed
+      // style reads are timing-sensitive (Tailwind classes may not be
+      // applied on initial render, returning "normal" for letter-spacing).
+      // mobileMetrics (when present) sets inline styles that override the
+      // Tailwind classes; otherwise the md: variants apply (desktop).
+      const fontSize = mobileMetrics?.fontSize ?? 60
+      const letterSpacing = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.3) : 20
+      const padLeft = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.15) : 8
       const chars = peekCharCount(cards[i].placeValue)
-      return estimatePeekWidthPx(chars, fontSize, padLeft, isNaN(letterSpacing) ? 0 : letterSpacing)
+      return estimatePeekWidthPx(chars, fontSize, padLeft, letterSpacing)
     })
     // True overlap: the covering card starts OVERLAP_FUDGE_PX before the
-    // measured peek boundary, guaranteeing the covered text is fully hidden
-    // with no slivers. Empirical finding (2026-10-07): the Range measurement
-    // over the peek chars over-measures vs. where the next glyph visually
-    // starts by ~20px at 60px font (letter-spacing and font metrics interact;
-    // caret hit-testing shows the glyph ~20px left of the Range right edge).
-    // The 28px fudge compensates with margin. Validated by
-    // e2e/no-overlap-slivers.spec.ts, not by eye.
+    // estimated peek boundary, guaranteeing the covered text is fully hidden
+    // with no slivers. The peek widths are estimated arithmetically (no DOM
+    // measurement), so positions are stable across font loading and devices.
+    // Validated by e2e/no-overlap-slivers.spec.ts.
     const cardWidths = peekWidths.map((w, i) => (i < naturals.length - 1 ? w - OVERLAP_FUDGE_PX : w))
 
     const itemX = getFanPositions(cardWidths)

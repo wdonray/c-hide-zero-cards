@@ -7,16 +7,13 @@ export interface MobileCardMetrics {
 export const FAN_CARD_GAP = 8
 
 /**
- * Extra px each covering card overlaps beyond the measured peek width.
- * The peek width is measured with a Range over the first 1-2 characters,
- * which OVER-measures vs. where the next glyph visually starts by ~20px at
- * 60px font (empirical 2026-10-07: caret hit-testing shows the covered glyph
- * ~20px left of the Range's right edge; letter-spacing and font metrics
- * interact). Without sufficient overlap, slivers of covered text show.
- * The 28px fudge compensates with margin, eating into trailing spacing,
- * never the peek digit itself. Validated by e2e/no-overlap-slivers.spec.ts.
+ * Extra px each covering card overlaps beyond the estimated peek width.
+ * The peek width is estimated arithmetically via estimatePeekWidthPx
+ * (stable, no DOM measurement), so only a small overlap is needed to
+ * guarantee coverage against subpixel rounding. Validated by
+ * e2e/no-overlap-slivers.spec.ts.
  */
-export const OVERLAP_FUDGE_PX = 28
+export const OVERLAP_FUDGE_PX = 4
 
 /**
  * Display text for a place-value card: the full place value, always.

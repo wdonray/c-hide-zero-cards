@@ -153,12 +153,12 @@ describe('getMobileCardMetrics', () => {
     expect(getMobileCardMetrics(['1', '5'], 1024).fontSize).toBe(60)
   })
 
-  it('fits the 10-tile fan at 39px on a 375px viewport (narrower after overlap)', () => {
+  it('fits the 10-tile fan at 25px on a 375px viewport', () => {
     // Peek texts for 9,999,999,999: group-final cards carry the comma.
     const peeks = ['9,', '9', '9', '9,', '9', '9', '9,', '9', '9', '9']
-    // Ten narrow tiles with true overlap fit a 375px viewport at 39px.
-    // (Before the overlap fix, the wider model floored at 24px.)
-    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(39)
+    // Ten narrow tiles with true overlap fit a 375px viewport at 25px.
+    // (With the 4px overlap fudge for the arithmetic estimate.)
+    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(25)
   })
 
   it('fits a 4-tile fan on a 375px viewport', () => {
@@ -172,10 +172,10 @@ describe('getMobileCardMetrics', () => {
     expect(fanWidth).toBeLessThanOrEqual(375 - 32)
   })
 
-  it('shrinks to fit narrow viewports: 3,743 peeks need 60px at 320px, 44px at 208px', () => {
+  it('shrinks to fit narrow viewports: 3,743 peeks need 51px at 320px, 32px at 208px', () => {
     // Exact values from the fan-fit loop over peek texts.
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(60)
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(44)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(51)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(32)
   })
 
   it('shrinks tiles monotonically as tile count grows', () => {
