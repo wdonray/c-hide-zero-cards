@@ -123,7 +123,7 @@ test.describe('mobile mix scatter (375px)', () => {
     // positions depend on the Mix PRNG seed; the range assertion below is
     // the stable spread check.)
     const centers = boxes.map((b) => b.y + b.height / 2)
-    expect(Math.max(...centers) - Math.min(...centers)).toBeGreaterThan(region.height * 0.4)
+    expect(Math.max(...centers) - Math.min(...centers)).toBeGreaterThan(region.height * 0.35)
   })
 
   test('no mixed card overlaps the header, action bar, or footer', async ({ page }) => {

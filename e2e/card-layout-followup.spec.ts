@@ -307,21 +307,20 @@ test.describe('card fan full values', () => {
         expect(uncovered.boxWidth).toBeGreaterThanOrEqual(uncovered.textWidth - 1)
       })
 
-      // Fully dynamic sizing: on mobile the strip shrinks to the 24px floor
-      // and then scrolls horizontally instead of overflowing the page.
-      test('mobile strip scrolls instead of overflowing the page', async ({ page }) => {
-        test.skip(!vp.mobile, 'dynamic sizing applies below the mobile breakpoint')
+      // Owner 2026-10-08: no scrolling in the card container. The fan
+      // renders at its natural size always; the strip does not scroll
+      // internally and does not shrink to fit.
+      test('mobile strip does not scroll; fan renders at natural size', async ({ page }) => {
+        test.skip(!vp.mobile, 'applies below the mobile breakpoint')
         await page.getByPlaceholder('Type a number here!').fill('1000000000')
         const fan = page.getByRole('application', { name: 'Draggable place value cards' })
         const state = await fan.evaluate((el: HTMLElement) => ({
+          overflowX: getComputedStyle(el).overflowX,
           scrollWidth: el.scrollWidth,
           clientWidth: el.clientWidth,
-          pageScrollsX: document.documentElement.scrollWidth > window.innerWidth + 1,
         }))
-        // The strip is wider than the viewport and scrolls internally;
-        // the page itself never scrolls sideways.
-        expect(state.scrollWidth).toBeGreaterThan(state.clientWidth)
-        expect(state.pageScrollsX).toBe(false)
+        // No internal scrolling: overflow-x is visible.
+        expect(state.overflowX).toBe('visible')
       })
     })
   }

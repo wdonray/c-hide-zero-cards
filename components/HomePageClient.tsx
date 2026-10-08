@@ -10,11 +10,7 @@ import {
   FIRST_TIME_TOAST_STYLE,
   NumberFormsDialogTab,
 } from '@/lib/constants'
-import {
-  getMobileCardMetrics,
-  getPeekText,
-  getRightAlignedFanPositions,
-} from '@/lib/cardLayout'
+import { getMobileCardMetrics, getPeekText, getRightAlignedFanPositions } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
@@ -189,16 +185,7 @@ export function HomePageClient() {
         ? prev
         : { key: measureKey, extent, height, naturals, itemX }
     )
-  }, [
-    measureKey,
-    cards,
-    cards.length,
-    measureTick,
-    baseFontSize,
-    isMobile,
-    peekTexts,
-    mobileMetrics,
-  ])
+  }, [measureKey, cards, cards.length, measureTick, baseFontSize, isMobile, peekTexts, mobileMetrics])
 
   // Re-measure once web fonts arrive (card widths are text-driven) and on
   // resize/zoom (the fan metrics depend on the viewport width).
