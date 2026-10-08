@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  OVERLAP_FUDGE_PX,
   formatCardValue,
   getFanExtent,
   getFanPositions,
@@ -9,6 +8,7 @@ import {
   peekCharCount,
   estimatePeekWidthPx,
   scaleFontSizeToFit,
+  getRightAlignedFanPositions,
 } from './cardLayout'
 
 describe('formatCardValue', () => {
@@ -118,6 +118,52 @@ describe('getFanPositions', () => {
   })
 })
 
+describe('getRightAlignedFanPositions', () => {
+  it('returns empty for no cards', () => {
+    expect(getRightAlignedFanPositions([])).toEqual([])
+  })
+
+  it('places a single card at 0', () => {
+    expect(getRightAlignedFanPositions([70])).toEqual([0])
+  })
+
+  it('aligns all right edges: no back card peeks on the right', () => {
+    // Natural widths for 8,631: 8,000 / 600 / 30 / 1.
+    const widths = [262, 175, 123, 70]
+    const pos = getRightAlignedFanPositions(widths)
+    // Leftmost card at 0.
+    expect(pos[0]).toBe(0)
+    // Every card's right edge aligns: pos[i] + widths[i] is constant.
+    const rightEdges = pos.map((p, i) => p + widths[i])
+    for (const edge of rightEdges) {
+      expect(edge).toBe(rightEdges[0])
+    }
+  })
+
+  it('produces peeks as width differences', () => {
+    const widths = [262, 175, 123, 70]
+    const pos = getRightAlignedFanPositions(widths)
+    // Peek for card i = pos[i+1] - pos[i] = widths[i] - widths[i+1].
+    expect(pos[1] - pos[0]).toBe(87) // 262 - 175
+    expect(pos[2] - pos[1]).toBe(52) // 175 - 123
+    expect(pos[3] - pos[2]).toBe(53) // 123 - 70
+  })
+
+  it('caps peeks at desired widths to prevent slivers', () => {
+    const widths = [262, 175, 123, 70]
+    // Desired peeks smaller than natural differences.
+    const pos = getRightAlignedFanPositions(widths, [75, 40, 40])
+    expect(pos[1] - pos[0]).toBe(75)
+    expect(pos[2] - pos[1]).toBe(40)
+    expect(pos[3] - pos[2]).toBe(40)
+  })
+
+  it('handles equal widths (no peek)', () => {
+    const pos = getRightAlignedFanPositions([100, 100, 100])
+    expect(pos).toEqual([0, 0, 0])
+  })
+})
+
 describe('getFanExtent', () => {
   it('returns the last card width for a one-card fan', () => {
     expect(getFanExtent([], 70)).toBe(70)
@@ -140,60 +186,16 @@ describe('getMobileCardMetrics', () => {
     expect(getMobileCardMetrics([], 375)).toEqual({ fontSize: 60 })
   })
 
-  it('grows cards for few digits: a 3-tile fan is much larger than the old fixed mobile size', () => {
-    const { fontSize } = getMobileCardMetrics(['1', '2', '5'], 375)
-    // Exact value comes from the fan-fit loop; what matters is that it is
-    // far larger than the old fixed mobile text-lg (18px).
-    expect(fontSize).toBeGreaterThan(40)
-    expect(fontSize).toBeLessThanOrEqual(60)
-  })
-
-  it('never exceeds the desktop font size', () => {
+  it('always returns 60px: no shrink-to-fit (owner 2026-10-08)', () => {
+    // Compacting the fan to fit the viewport caused cards to reveal their
+    // real size on drag. Cards render at natural size always.
+    expect(getMobileCardMetrics(['1', '2', '5'], 375)).toEqual({ fontSize: 60 })
     expect(getMobileCardMetrics(['5'], 375).fontSize).toBe(60)
     expect(getMobileCardMetrics(['1', '5'], 1024).fontSize).toBe(60)
-  })
-
-  it('fits the 10-tile fan at 39px on a 375px viewport (narrower after overlap)', () => {
-    // Peek texts for 9,999,999,999: group-final cards carry the comma.
     const peeks = ['9,', '9', '9', '9,', '9', '9', '9,', '9', '9', '9']
-    // Ten narrow tiles with true overlap fit a 375px viewport at 39px.
-    // (Before the overlap fix, the wider model floored at 24px.)
-    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(39)
-  })
-
-  it('fits a 4-tile fan on a 375px viewport', () => {
-    // Peek texts for 3,743.
-    const peeks = ['3,', '7', '4', '3']
-    const { fontSize } = getMobileCardMetrics(peeks, 375)
-    const n = peeks.length
-    const pad = Math.round(fontSize * 0.15)
-    const fanWidth =
-      peeks.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fontSize, 0) - (n - 1) * OVERLAP_FUDGE_PX
-    expect(fanWidth).toBeLessThanOrEqual(375 - 32)
-  })
-
-  it('shrinks to fit narrow viewports: 3,743 peeks need 60px at 320px, 44px at 208px', () => {
-    // Exact values from the fan-fit loop over peek texts.
+    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(60)
     expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(60)
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(44)
-  })
-
-  it('shrinks tiles monotonically as tile count grows', () => {
-    const sizes = [
-      getMobileCardMetrics(['1', '5'], 375).fontSize,
-      getMobileCardMetrics(['3,', '7', '4', '5'], 375).fontSize,
-      getMobileCardMetrics(['1', '8', '0,', '7', '3', '6'], 375).fontSize,
-    ]
-    for (let i = 1; i < sizes.length; i++) {
-      expect(sizes[i]).toBeLessThanOrEqual(sizes[i - 1])
-    }
-  })
-
-  it('accounts for peek widths: the comma tile needs more room', () => {
-    // Same tile count, but one fan has a 2-char "0," peek.
-    const withComma = getMobileCardMetrics(['1', '8', '0,', '7', '3', '6'], 375).fontSize
-    const withoutComma = getMobileCardMetrics(['1', '8', '0', '7', '3', '6'], 375).fontSize
-    expect(withComma).toBeLessThanOrEqual(withoutComma)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(60)
   })
 })
 

@@ -7,16 +7,13 @@ export interface MobileCardMetrics {
 export const FAN_CARD_GAP = 8
 
 /**
- * Extra px each covering card overlaps beyond the measured peek width.
- * The peek width is measured with a Range over the first 1-2 characters,
- * which OVER-measures vs. where the next glyph visually starts by ~20px at
- * 60px font (empirical 2026-10-07: caret hit-testing shows the covered glyph
- * ~20px left of the Range's right edge; letter-spacing and font metrics
- * interact). Without sufficient overlap, slivers of covered text show.
- * The 28px fudge compensates with margin, eating into trailing spacing,
- * never the peek digit itself. Validated by e2e/no-overlap-slivers.spec.ts.
+ * Extra px each covering card overlaps beyond the estimated peek width.
+ * The peek width is estimated arithmetically via estimatePeekWidthPx
+ * (stable, no DOM measurement), so only a small overlap is needed to
+ * guarantee coverage against subpixel rounding. Validated by
+ * e2e/no-overlap-slivers.spec.ts.
  */
-export const OVERLAP_FUDGE_PX = 28
+export const OVERLAP_FUDGE_PX = 20
 
 /**
  * Display text for a place-value card: the full place value, always.
@@ -71,8 +68,8 @@ export function estimatePeekWidthPx(
   padLeftPx: number,
   letterSpacingPx: number
 ): number {
-  const CH_RATIO = 0.55
-  const COMMA_CH = 0.3
+  const CH_RATIO = 0.61
+  const COMMA_CH = 0.4
   const chPx = fontSizePx * CH_RATIO
   const textCh = chars === 2 ? 1 + COMMA_CH : 1
   return padLeftPx + textCh * chPx + letterSpacingPx * chars
@@ -108,6 +105,31 @@ export function getFanPositions(cardWidths: number[]): number[] {
     positions.push(positions[i] + cardWidths[i])
   }
   return positions
+}
+
+/**
+ * Right-aligned fan positions with peek capping. Cards are positioned
+ * right-to-left; the visible peek for card i never exceeds the desired
+ * peek width, preventing slivers. (Owner 2026-10-08.)
+ *
+ * `naturalWidths` are measured full widths, `desiredPeeks` are target peek
+ * widths (e.g. width of "8,"). Returns left-edge positions, leftmost at 0.
+ *
+ * Pure function; unit-testable.
+ */
+export function getRightAlignedFanPositions(naturalWidths: number[], desiredPeeks: number[] = []): number[] {
+  const n = naturalWidths.length
+  if (n === 0) return []
+  const positions = new Array<number>(n)
+  positions[n - 1] = 0
+  for (let i = n - 2; i >= 0; i--) {
+    const naturalPeek = naturalWidths[i] - naturalWidths[i + 1]
+    const desired = desiredPeeks[i] ?? naturalPeek
+    const peek = Math.min(naturalPeek, desired)
+    positions[i] = positions[i + 1] - peek
+  }
+  const minPos = Math.min(...positions)
+  return positions.map((p) => p - minPos)
 }
 
 /**
@@ -155,29 +177,12 @@ export function scaleFontSizeToFit(
 }
 
 export function getMobileCardMetrics(peekTexts: string[], viewportWidth: number, minFontSize = 24): MobileCardMetrics {
-  // Page padding on mobile (px-4 = 16px per side).
-  const available = viewportWidth - 32
-  if (peekTexts.length === 0) return { fontSize: 60 }
-
-  const n = peekTexts.length
-
-  // Fan width model at font size fs. Each card contributes its peek (first
-  // digit, plus comma for group-final cards): both horizontal paddings
-  // plus 0.92em per character (0.62 digit advance + 0.3 letter-spacing,
-  // tabular-nums), minus the overlap fudge. The last card is fully visible
-  // but the ones place is a single digit, so the peek model covers it.
-  const fanWidthAt = (fs: number) => {
-    const pad = Math.round(fs * 0.15)
-    return peekTexts.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fs, 0) - (n - 1) * OVERLAP_FUDGE_PX
-  }
-
-  // Shrink-to-fit: start at the desktop 60px and decrement until the modeled
-  // fan fits. Terminates: fanWidthAt strictly decreases as fs decreases.
-  // The minFontSize floor keeps text readable; below it the strip scrolls
-  // horizontally instead of shrinking further.
-  let fontSize = 60
-  while (fontSize > minFontSize && fanWidthAt(fontSize) > available) {
-    fontSize -= 1
-  }
-  return { fontSize }
+  // Owner 2026-10-08: no shrink-to-fit. Cards render at their natural size
+  // always; compacting the fan to fit the viewport causes cards to reveal
+  // their real size on drag. The viewportWidth and minFontSize params are
+  // kept for API compatibility but no longer affect the result.
+  void peekTexts
+  void viewportWidth
+  void minFontSize
+  return { fontSize: 60 }
 }

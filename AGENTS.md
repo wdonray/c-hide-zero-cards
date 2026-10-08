@@ -96,27 +96,20 @@ behavior on your own.
   focus trap + Escape come free). The bar is a flex-column sibling of the
   footer, never `position: fixed`, so no overlap math is needed.
 - **Hero card sizing.** `getMobileCardMetrics()` in `lib/cardLayout.ts`
-  scales the fan up on mobile (fewer digits = bigger cards, capped at the
-  desktop 60px) and chooses a font size so the modeled fan width fits the
-  viewport: every card contributes its peek (both paddings + 0.92em per char:
-  0.62 digit advance + 0.3 letter-spacing) plus the inter-card gap
-  (shrink-to-fit loop, 24px floor; below the floor the strip scrolls
-  horizontally instead of shrinking further). The strip is vertically
-  centered via a mobile-only flex-column chain (body > main > section >
-  workspace). The cards anchor on cumulative measured widths inside a
+  returns a fixed 60px font size on mobile (same as desktop). Owner
+  2026-10-08: no shrink-to-fit, no horizontal scrolling in the card
+  container. Compacting cards to fit the viewport (or allowing the strip
+  to scroll) caused cards to reveal their real size on drag. The fan
+  renders at its natural size always; `overflow-x` is `visible`, no
+  `max-width` cap. The cards anchor on cumulative measured widths inside a
   wrapper sized to the strip extent (`getFanExtent(cardWidths,
 naturalWidth)` in `lib/cardLayout.ts`) that the flex workspace centers
   via `justify-content`, so the visible strip is centered even though card
   widths vary with place value. The extent is the cumulative card widths
-  plus the last card's natural width, never a max over all cards. The
-  wrapper allows horizontal scroll while every card is at fan home
-  (`overflow-x: auto`, capped at 100% width); once a card is moved the
-  overflow is lifted so displaced cards are never clipped. Widths are
-  measured in a layout effect, so the first paint already has the correct
-  size (no flash, and spawned numbers are centered from the first frame).
-  The same empirical measure-and-correct loop
-  (`scaleFontSizeToFit`, 24px floor) runs on desktop, so very large numbers
-  shrink sanely instead of overflowing.
+  plus the last card's natural width, never a max over all cards.
+  Widths are measured in a layout effect, so the first paint already has
+  the correct size (no flash, and spawned numbers are centered from the
+  first frame).
 
 - **No em dashes in user-facing copy.** Use commas, colons, or split the
   sentence instead.

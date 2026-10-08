@@ -292,7 +292,7 @@ test.describe('mobile layout', () => {
     await expect(page.getByTitle('Hide zero cards', { exact: true })).toHaveCount(1)
   })
 
-  test('cards are the hero: bigger for fewer digits, vertically centered in the workspace', async ({ page }) => {
+  test('cards are the hero: fixed 60px font on mobile, vertically centered in the workspace', async ({ page }) => {
     const input = page.getByPlaceholder('Type a number here!')
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
 
@@ -308,10 +308,9 @@ test.describe('mobile layout', () => {
       .first()
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
 
-    // Adaptive sizing: fewer digits means bigger cards, far above the old
-    // fixed 18px mobile size.
-    expect(fewDigitFont).toBeGreaterThan(manyDigitFont)
-    expect(fewDigitFont).toBeGreaterThan(30)
+    // Owner 2026-10-08: no shrink-to-fit. Font is always 60px.
+    expect(fewDigitFont).toBe(60)
+    expect(manyDigitFont).toBe(60)
 
     // The fan sits in the vertical middle of the workspace, not the top.
     await input.fill('1234')

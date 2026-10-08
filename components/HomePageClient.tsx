@@ -11,14 +11,11 @@ import {
   NumberFormsDialogTab,
 } from '@/lib/constants'
 import {
-  OVERLAP_FUDGE_PX,
-  getFanExtent,
-  getFanPositions,
   getMobileCardMetrics,
   getPeekText,
+  getRightAlignedFanPositions,
   peekCharCount,
   estimatePeekWidthPx,
-  scaleFontSizeToFit,
 } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
@@ -40,7 +37,6 @@ export function HomePageClient() {
     setShowNumberFormsDialog,
     isHeaderCollapsed,
     numberInputRef,
-    cardsMoved,
   } = useHeaderContext()
   const isMobile = useIsMobile()
 
@@ -105,20 +101,15 @@ export function HomePageClient() {
         : null,
     [isMobile, peekTexts]
   )
-  const [sizingCorrection, setSizingCorrection] = useState<{ key: string; delta: number } | null>(null)
-  const sizingKey = `${isMobile}|${peekTexts.join(',')}`
+  // Owner 2026-10-08: no shrink-to-fit correction. mobileMetrics is just
+  // the base font size (always 60); the sizingCorrection state and the
+  // scaleFontSizeToFit empirical loop were removed.
   const mobileMetrics = useMemo(() => {
     if (baseFontSize === null) return null
-    const delta = sizingCorrection && sizingCorrection.key === sizingKey ? sizingCorrection.delta : 0
-    const fontSize = Math.max(24, baseFontSize - delta)
-    // On desktop, keep the Tailwind text-6xl rendering untouched unless the
-    // empirical correction actually shrank the font.
-    if (!isMobile && fontSize >= baseFontSize) return null
-    return { fontSize }
-  }, [baseFontSize, sizingCorrection, sizingKey, isMobile])
-  // Available width for the strip on mobile (viewport minus page padding).
-  // Desktop measures the workspace element directly in the layout effect.
-  const mobileAvailableWidth = isMobile && typeof window !== 'undefined' ? window.innerWidth - 32 : 0
+    // On desktop, keep the Tailwind text-6xl rendering untouched.
+    if (!isMobile) return null
+    return { fontSize: baseFontSize }
+  }, [baseFontSize, isMobile])
 
   // Fan layout: true overlapping tiles, like physical arrow cards. Every
   // card renders its FULL text at its natural width; each card is
@@ -169,57 +160,33 @@ export function HomePageClient() {
     // cramped/gapped fans on iOS Safari). The last card is fully visible
     // (the ones place is a single digit), so it contributes its natural
     // width.
-    const peekWidths = children.map((child, i) => {
-      const style = getComputedStyle(child)
+    // Owner 2026-10-08: right-aligned fan. Every card's right edge aligns
+    // with the card behind it, so no back card ever peeks out on the
+    // right side. Positions are derived from the measured natural widths
+    // via getRightAlignedFanPositions, capped by the desired peek widths
+    // to prevent slivers.
+    const desiredPeeks: number[] = []
+    children.forEach((child, i) => {
       // Natural width: the absolutely-positioned card shrink-wraps its full
       // text, so scrollWidth is the content-driven width.
       naturals[i] = child.scrollWidth
-      if (i === children.length - 1) {
-        return naturals[i]
+      if (i < children.length - 1) {
+        const fontSize = mobileMetrics?.fontSize ?? 60
+        const letterSpacing = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.3) : 20
+        const padLeft = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.15) : 8
+        const chars = peekCharCount(cards[i].placeValue)
+        desiredPeeks[i] = estimatePeekWidthPx(chars, fontSize, padLeft, letterSpacing)
       }
-      const padLeft = parseFloat(style.paddingLeft)
-      const fontSize = parseFloat(style.fontSize)
-      const letterSpacing = parseFloat(style.letterSpacing)
-      const chars = peekCharCount(cards[i].placeValue)
-      return estimatePeekWidthPx(chars, fontSize, padLeft, isNaN(letterSpacing) ? 0 : letterSpacing)
     })
-    // True overlap: the covering card starts OVERLAP_FUDGE_PX before the
-    // measured peek boundary, guaranteeing the covered text is fully hidden
-    // with no slivers. Empirical finding (2026-10-07): the Range measurement
-    // over the peek chars over-measures vs. where the next glyph visually
-    // starts by ~20px at 60px font (letter-spacing and font metrics interact;
-    // caret hit-testing shows the glyph ~20px left of the Range right edge).
-    // The 28px fudge compensates with margin. Validated by
-    // e2e/no-overlap-slivers.spec.ts, not by eye.
-    const cardWidths = peekWidths.map((w, i) => (i < naturals.length - 1 ? w - OVERLAP_FUDGE_PX : w))
 
-    const itemX = getFanPositions(cardWidths)
-    const extent = getFanExtent(cardWidths.slice(0, -1), naturals[naturals.length - 1])
+    const itemX = getRightAlignedFanPositions(naturals, desiredPeeks)
+    const extent = Math.max(...naturals)
     const height = Math.max(...children.map((child) => child.offsetHeight))
 
-    // Fully dynamic sizing: if the measured strip overflows the available
-    // width, increase the correction delta so the font scales down
-    // proportionally, then re-measure. The delta strictly increases (and
-    // the font is floored at 24px), so this terminates; the state update
-    // re-renders and re-runs this effect via the measureKey (which includes
-    // the font size). Below the 24px floor the strip keeps its size and
-    // scrolls horizontally instead of shrinking further. The correction is
-    // keyed, so a stale delta from a previous number never applies.
-    const workspaceEl = fanEl.parentElement as HTMLElement | null
-    const availableWidth = isMobile ? mobileAvailableWidth : (workspaceEl?.clientWidth ?? 0)
-    const base = baseFontSize ?? 60
-    if (availableWidth > 0 && peekTexts.length > 0) {
-      const currentFontSize = mobileMetrics?.fontSize ?? base
-      const corrected = scaleFontSizeToFit(extent, currentFontSize, availableWidth)
-      if (corrected !== null) {
-        const newDelta = base - corrected
-        const prevDelta = sizingCorrection && sizingCorrection.key === sizingKey ? sizingCorrection.delta : 0
-        if (newDelta > prevDelta) {
-          setSizingCorrection({ key: sizingKey, delta: newDelta })
-          return
-        }
-      }
-    }
+    // Owner 2026-10-08: no empirical shrink-to-fit. The fan renders at its
+    // natural size always; the scaleFontSizeToFit correction (and the
+    // sizingCorrection state) caused cards to reveal their real size on
+    // drag. Removed.
 
     setFanLayout((prev) =>
       prev?.key === measureKey &&
@@ -232,19 +199,7 @@ export function HomePageClient() {
         ? prev
         : { key: measureKey, extent, height, naturals, itemX }
     )
-  }, [
-    measureKey,
-    cards,
-    cards.length,
-    measureTick,
-    sizingKey,
-    sizingCorrection,
-    baseFontSize,
-    isMobile,
-    mobileAvailableWidth,
-    peekTexts,
-    mobileMetrics,
-  ])
+  }, [measureKey, cards, cards.length, measureTick, baseFontSize, isMobile, peekTexts, mobileMetrics])
 
   // Re-measure once web fonts arrive (card widths are text-driven) and on
   // resize/zoom (the fan metrics depend on the viewport width).
@@ -329,12 +284,12 @@ export function HomePageClient() {
                 ? {
                     width: layout.extent,
                     height: layout.height,
-                    maxWidth: '100%',
-                    // While every card is at fan home the strip may scroll
-                    // horizontally if it overflows; once a card is moved
-                    // (dragged, Mix-scattered, keyboard-moved) the overflow
-                    // is lifted so displaced cards are never clipped.
-                    overflowX: cardsMoved ? 'visible' : 'auto',
+                    // No scrolling, no max-width: the fan renders at its
+                    // natural size always. Compacting cards to fit the
+                    // viewport (or allowing the strip to scroll) causes
+                    // cards to reveal their real size on drag. (Owner
+                    // 2026-10-08: scrolling in the card container is wrong.)
+                    overflowX: 'visible',
                   }
                 : undefined
             }
