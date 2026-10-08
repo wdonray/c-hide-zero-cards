@@ -11,13 +11,11 @@ import {
   NumberFormsDialogTab,
 } from '@/lib/constants'
 import {
-  OVERLAP_FUDGE_PX,
-  getFanExtent,
-  getFanPositions,
   getMobileCardMetrics,
   getPeekText,
   peekCharCount,
   estimatePeekWidthPx,
+  getRightAlignedFanPositions,
 } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
@@ -162,6 +160,15 @@ export function HomePageClient() {
     // cramped/gapped fans on iOS Safari). The last card is fully visible
     // (the ones place is a single digit), so it contributes its natural
     // width.
+    // Owner 2026-10-08: right-aligned fan. Every card's right edge aligns
+    // with the card behind it, so no back card ever peeks out on the
+    // right side. Positions are derived from the measured natural widths
+    // via getRightAlignedFanPositions. The peek for card i is
+    // naturals[i] - naturals[i+1].
+    //
+    // The peekWidths below are still estimated for the measureKey (to
+    // trigger re-measurement when the estimate inputs change), but the
+    // actual positions use natural widths only.
     const peekWidths = children.map((child, i) => {
       // Natural width: the absolutely-positioned card shrink-wraps its full
       // text, so scrollWidth is the content-driven width.
@@ -169,26 +176,15 @@ export function HomePageClient() {
       if (i === children.length - 1) {
         return naturals[i]
       }
-      // Derive typography from React state, NOT getComputedStyle: computed
-      // style reads are timing-sensitive (Tailwind classes may not be
-      // applied on initial render, returning "normal" for letter-spacing).
-      // mobileMetrics (when present) sets inline styles that override the
-      // Tailwind classes; otherwise the md: variants apply (desktop).
       const fontSize = mobileMetrics?.fontSize ?? 60
       const letterSpacing = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.3) : 20
       const padLeft = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.15) : 8
       const chars = peekCharCount(cards[i].placeValue)
       return estimatePeekWidthPx(chars, fontSize, padLeft, letterSpacing)
     })
-    // True overlap: the covering card starts OVERLAP_FUDGE_PX before the
-    // estimated peek boundary, guaranteeing the covered text is fully hidden
-    // with no slivers. The peek widths are estimated arithmetically (no DOM
-    // measurement), so positions are stable across font loading and devices.
-    // Validated by e2e/no-overlap-slivers.spec.ts.
-    const cardWidths = peekWidths.map((w, i) => (i < naturals.length - 1 ? w - OVERLAP_FUDGE_PX : w))
 
-    const itemX = getFanPositions(cardWidths)
-    const extent = getFanExtent(cardWidths.slice(0, -1), naturals[naturals.length - 1])
+    const itemX = getRightAlignedFanPositions(naturals)
+    const extent = Math.max(...naturals)
     const height = Math.max(...children.map((child) => child.offsetHeight))
 
     // Owner 2026-10-08: no empirical shrink-to-fit. The fan renders at its

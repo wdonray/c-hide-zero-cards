@@ -9,6 +9,7 @@ import {
   peekCharCount,
   estimatePeekWidthPx,
   scaleFontSizeToFit,
+  getRightAlignedFanPositions,
 } from './cardLayout'
 
 describe('formatCardValue', () => {
@@ -115,6 +116,43 @@ describe('getFanPositions', () => {
   it('handles uneven card widths', () => {
     const positions = getFanPositions([146, 146, 120, 146])
     expect(positions).toEqual([0, 146, 292, 412, 558])
+  })
+})
+
+describe('getRightAlignedFanPositions', () => {
+  it('returns empty for no cards', () => {
+    expect(getRightAlignedFanPositions([])).toEqual([])
+  })
+
+  it('places a single card at 0', () => {
+    expect(getRightAlignedFanPositions([70])).toEqual([0])
+  })
+
+  it('aligns all right edges: no back card peeks on the right', () => {
+    // Natural widths for 8,631: 8,000 / 600 / 30 / 1.
+    const widths = [262, 175, 123, 70]
+    const pos = getRightAlignedFanPositions(widths)
+    // Leftmost card at 0.
+    expect(pos[0]).toBe(0)
+    // Every card's right edge aligns: pos[i] + widths[i] is constant.
+    const rightEdges = pos.map((p, i) => p + widths[i])
+    for (const edge of rightEdges) {
+      expect(edge).toBe(rightEdges[0])
+    }
+  })
+
+  it('produces peeks as width differences', () => {
+    const widths = [262, 175, 123, 70]
+    const pos = getRightAlignedFanPositions(widths)
+    // Peek for card i = pos[i+1] - pos[i] = widths[i] - widths[i+1].
+    expect(pos[1] - pos[0]).toBe(87) // 262 - 175
+    expect(pos[2] - pos[1]).toBe(52) // 175 - 123
+    expect(pos[3] - pos[2]).toBe(53) // 123 - 70
+  })
+
+  it('handles equal widths (no peek)', () => {
+    const pos = getRightAlignedFanPositions([100, 100, 100])
+    expect(pos).toEqual([0, 0, 0])
   })
 })
 

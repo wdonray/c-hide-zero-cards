@@ -108,6 +108,38 @@ export function getFanPositions(cardWidths: number[]): number[] {
 }
 
 /**
+ * Right-aligned fan positions: every card's right edge aligns with the
+ * rightmost card's right edge, so no back card ever peeks out on the
+ * right side. (Owner 2026-10-08.)
+ *
+ * `naturalWidths` are the measured full widths of each card, left to
+ * right (index 0 is the leftmost/back card). Returns the left-edge x
+ * position for each card, with the leftmost card at 0.
+ *
+ * The visible peek for card i (except the last) is
+ * naturalWidths[i] - naturalWidths[i+1]: the part not covered by the
+ * card in front. For the peek to show exactly the desired text (e.g.
+ * "8,"), the width difference must match; the caller adjusts
+ * letter-spacing/padding dynamically if it does not (see Donray's
+ * 2026-10-08 spec).
+ *
+ * Pure function; unit-testable.
+ */
+export function getRightAlignedFanPositions(naturalWidths: number[]): number[] {
+  const n = naturalWidths.length
+  if (n === 0) return []
+  // Work right to left, aligning right edges.
+  const positions = new Array<number>(n)
+  positions[n - 1] = 0
+  for (let i = n - 2; i >= 0; i--) {
+    positions[i] = positions[i + 1] + naturalWidths[i + 1] - naturalWidths[i]
+  }
+  // Shift so the leftmost card sits at 0.
+  const minPos = Math.min(...positions)
+  return positions.map((p) => p - minPos)
+}
+
+/**
  * Visible horizontal extent of the fan: the cumulative card widths plus
  * the last card's full natural width. The last card is fully visible (the
  * ones place is a single digit, so its peek is its full width). `cardWidths`
