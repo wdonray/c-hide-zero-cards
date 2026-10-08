@@ -6,7 +6,7 @@ import type { ScatterArea } from '@/lib/useHeaderContext'
 import { useDraggable } from '@/lib/useDraggable'
 import { APP_HEADER_ID, APP_TOOLBAR_ID, APP_FOOTER_ID } from '@/lib/scatterArea'
 
-function renderDraggable(initialX = 10, initialY = 20, index = 0) {
+function renderDraggable(initialX = 10, initialY = 20) {
   // Mirrors production: HomePageClient always passes both triggers (0 initially).
   // (Omitting randomizeTrigger would hit the hook's `undefined !== 0` path and
   // randomize on mount; the app never does this.)

@@ -21,10 +21,6 @@ async function seed(page: Page) {
   await page.goto('http://localhost:3000/')
 }
 
-function cardLocator(page: Page) {
-  return page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
-}
-
 /** Peek char count: 2 for group-final cards ("5,"), else 1. Mirrors peekCharCount. */
 function peekCharsForPlaceValue(placeValue: number): number {
   // Thousands group-final: 1000, 1000000, 1000000000, ...
@@ -48,7 +44,7 @@ for (const input of CASES) {
 
     const slivers = await page.evaluate(
       ({ peekFn }: { peekFn: string }) => {
-        const peekChars = new Function(`return ${peekFn}`)() as (pv: number) => number
+        void peekFn
         const fan = document.querySelector('[role="application"][aria-label="Draggable place value cards"]')
         if (!fan) return [{ error: 'fan not found' }]
         const cardEls = Array.from(fan.children) as HTMLElement[]
@@ -70,8 +66,6 @@ for (const input of CASES) {
           // We need placeValue; get it from a data attribute if present,
           // else infer from text.
           const text = (cardI.textContent ?? '').trim()
-          // Infer placeValue from digit count of the unformatted value.
-          const digits = text.replace(/[^0-9]/g, '').length
           // placeValue = 10^(digits-1), but for "0,000" style it's still positional.
           // Simpler: peek is 2 chars if text matches /^\d,/ (digit + comma).
           const peekCount = /^\d,/.test(text) ? 2 : 1

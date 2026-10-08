@@ -13,8 +13,6 @@ import {
 import {
   getMobileCardMetrics,
   getPeekText,
-  peekCharCount,
-  estimatePeekWidthPx,
   getRightAlignedFanPositions,
 } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
@@ -165,22 +163,10 @@ export function HomePageClient() {
     // right side. Positions are derived from the measured natural widths
     // via getRightAlignedFanPositions. The peek for card i is
     // naturals[i] - naturals[i+1].
-    //
-    // The peekWidths below are still estimated for the measureKey (to
-    // trigger re-measurement when the estimate inputs change), but the
-    // actual positions use natural widths only.
-    const peekWidths = children.map((child, i) => {
+    children.forEach((child, i) => {
       // Natural width: the absolutely-positioned card shrink-wraps its full
       // text, so scrollWidth is the content-driven width.
       naturals[i] = child.scrollWidth
-      if (i === children.length - 1) {
-        return naturals[i]
-      }
-      const fontSize = mobileMetrics?.fontSize ?? 60
-      const letterSpacing = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.3) : 20
-      const padLeft = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.15) : 8
-      const chars = peekCharCount(cards[i].placeValue)
-      return estimatePeekWidthPx(chars, fontSize, padLeft, letterSpacing)
     })
 
     const itemX = getRightAlignedFanPositions(naturals)
