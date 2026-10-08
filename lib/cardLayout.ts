@@ -152,29 +152,12 @@ export function scaleFontSizeToFit(
 }
 
 export function getMobileCardMetrics(peekTexts: string[], viewportWidth: number, minFontSize = 24): MobileCardMetrics {
-  // Page padding on mobile (px-4 = 16px per side).
-  const available = viewportWidth - 32
-  if (peekTexts.length === 0) return { fontSize: 60 }
-
-  const n = peekTexts.length
-
-  // Fan width model at font size fs. Each card contributes its peek (first
-  // digit, plus comma for group-final cards): both horizontal paddings
-  // plus 0.92em per character (0.62 digit advance + 0.3 letter-spacing,
-  // tabular-nums), minus the overlap fudge. The last card is fully visible
-  // but the ones place is a single digit, so the peek model covers it.
-  const fanWidthAt = (fs: number) => {
-    const pad = Math.round(fs * 0.15)
-    return peekTexts.reduce((sum, t) => sum + 2 * pad + t.length * 0.92 * fs, 0) - (n - 1) * OVERLAP_FUDGE_PX
-  }
-
-  // Shrink-to-fit: start at the desktop 60px and decrement until the modeled
-  // fan fits. Terminates: fanWidthAt strictly decreases as fs decreases.
-  // The minFontSize floor keeps text readable; below it the strip scrolls
-  // horizontally instead of shrinking further.
-  let fontSize = 60
-  while (fontSize > minFontSize && fanWidthAt(fontSize) > available) {
-    fontSize -= 1
-  }
-  return { fontSize }
+  // Owner 2026-10-08: no shrink-to-fit. Cards render at their natural size
+  // always; compacting the fan to fit the viewport causes cards to reveal
+  // their real size on drag. The viewportWidth and minFontSize params are
+  // kept for API compatibility but no longer affect the result.
+  void peekTexts
+  void viewportWidth
+  void minFontSize
+  return { fontSize: 60 }
 }

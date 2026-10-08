@@ -18,7 +18,6 @@ import {
   getPeekText,
   peekCharCount,
   estimatePeekWidthPx,
-  scaleFontSizeToFit,
 } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
@@ -40,7 +39,6 @@ export function HomePageClient() {
     setShowNumberFormsDialog,
     isHeaderCollapsed,
     numberInputRef,
-    cardsMoved,
   } = useHeaderContext()
   const isMobile = useIsMobile()
 
@@ -105,20 +103,15 @@ export function HomePageClient() {
         : null,
     [isMobile, peekTexts]
   )
-  const [sizingCorrection, setSizingCorrection] = useState<{ key: string; delta: number } | null>(null)
-  const sizingKey = `${isMobile}|${peekTexts.join(',')}`
+  // Owner 2026-10-08: no shrink-to-fit correction. mobileMetrics is just
+  // the base font size (always 60); the sizingCorrection state and the
+  // scaleFontSizeToFit empirical loop were removed.
   const mobileMetrics = useMemo(() => {
     if (baseFontSize === null) return null
-    const delta = sizingCorrection && sizingCorrection.key === sizingKey ? sizingCorrection.delta : 0
-    const fontSize = Math.max(24, baseFontSize - delta)
-    // On desktop, keep the Tailwind text-6xl rendering untouched unless the
-    // empirical correction actually shrank the font.
-    if (!isMobile && fontSize >= baseFontSize) return null
-    return { fontSize }
-  }, [baseFontSize, sizingCorrection, sizingKey, isMobile])
-  // Available width for the strip on mobile (viewport minus page padding).
-  // Desktop measures the workspace element directly in the layout effect.
-  const mobileAvailableWidth = isMobile && typeof window !== 'undefined' ? window.innerWidth - 32 : 0
+    // On desktop, keep the Tailwind text-6xl rendering untouched.
+    if (!isMobile) return null
+    return { fontSize: baseFontSize }
+  }, [baseFontSize, isMobile])
 
   // Fan layout: true overlapping tiles, like physical arrow cards. Every
   // card renders its FULL text at its natural width; each card is
@@ -198,29 +191,10 @@ export function HomePageClient() {
     const extent = getFanExtent(cardWidths.slice(0, -1), naturals[naturals.length - 1])
     const height = Math.max(...children.map((child) => child.offsetHeight))
 
-    // Fully dynamic sizing: if the measured strip overflows the available
-    // width, increase the correction delta so the font scales down
-    // proportionally, then re-measure. The delta strictly increases (and
-    // the font is floored at 24px), so this terminates; the state update
-    // re-renders and re-runs this effect via the measureKey (which includes
-    // the font size). Below the 24px floor the strip keeps its size and
-    // scrolls horizontally instead of shrinking further. The correction is
-    // keyed, so a stale delta from a previous number never applies.
-    const workspaceEl = fanEl.parentElement as HTMLElement | null
-    const availableWidth = isMobile ? mobileAvailableWidth : (workspaceEl?.clientWidth ?? 0)
-    const base = baseFontSize ?? 60
-    if (availableWidth > 0 && peekTexts.length > 0) {
-      const currentFontSize = mobileMetrics?.fontSize ?? base
-      const corrected = scaleFontSizeToFit(extent, currentFontSize, availableWidth)
-      if (corrected !== null) {
-        const newDelta = base - corrected
-        const prevDelta = sizingCorrection && sizingCorrection.key === sizingKey ? sizingCorrection.delta : 0
-        if (newDelta > prevDelta) {
-          setSizingCorrection({ key: sizingKey, delta: newDelta })
-          return
-        }
-      }
-    }
+    // Owner 2026-10-08: no empirical shrink-to-fit. The fan renders at its
+    // natural size always; the scaleFontSizeToFit correction (and the
+    // sizingCorrection state) caused cards to reveal their real size on
+    // drag. Removed.
 
     setFanLayout((prev) =>
       prev?.key === measureKey &&
@@ -238,11 +212,8 @@ export function HomePageClient() {
     cards,
     cards.length,
     measureTick,
-    sizingKey,
-    sizingCorrection,
     baseFontSize,
     isMobile,
-    mobileAvailableWidth,
     peekTexts,
     mobileMetrics,
   ])
@@ -330,12 +301,12 @@ export function HomePageClient() {
                 ? {
                     width: layout.extent,
                     height: layout.height,
-                    maxWidth: '100%',
-                    // While every card is at fan home the strip may scroll
-                    // horizontally if it overflows; once a card is moved
-                    // (dragged, Mix-scattered, keyboard-moved) the overflow
-                    // is lifted so displaced cards are never clipped.
-                    overflowX: cardsMoved ? 'visible' : 'auto',
+                    // No scrolling, no max-width: the fan renders at its
+                    // natural size always. Compacting cards to fit the
+                    // viewport (or allowing the strip to scroll) causes
+                    // cards to reveal their real size on drag. (Owner
+                    // 2026-10-08: scrolling in the card container is wrong.)
+                    overflowX: 'visible',
                   }
                 : undefined
             }
