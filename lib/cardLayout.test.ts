@@ -183,19 +183,20 @@ describe('getFanExtent', () => {
 
 describe('getMobileCardMetrics', () => {
   it('returns the desktop font size for an empty fan', () => {
-    expect(getMobileCardMetrics([], 375)).toEqual({ fontSize: 60 })
+    expect(getMobileCardMetrics([], 375)).toEqual({ fontSize: 54 })
   })
 
-  it('always returns 60px: no shrink-to-fit (owner 2026-10-08)', () => {
+  it('always returns 54px on mobile: no shrink-to-fit (owner 2026-10-08)', () => {
     // Compacting the fan to fit the viewport caused cards to reveal their
-    // real size on drag. Cards render at natural size always.
-    expect(getMobileCardMetrics(['1', '2', '5'], 375)).toEqual({ fontSize: 60 })
-    expect(getMobileCardMetrics(['5'], 375).fontSize).toBe(60)
-    expect(getMobileCardMetrics(['1', '5'], 1024).fontSize).toBe(60)
+    // real size on drag. Cards render at natural size always. Mobile uses
+    // 54px (smaller than desktop 60px) so the fan does not touch edges.
+    expect(getMobileCardMetrics(['1', '2', '5'], 375)).toEqual({ fontSize: 54 })
+    expect(getMobileCardMetrics(['5'], 375).fontSize).toBe(54)
+    expect(getMobileCardMetrics(['1', '5'], 1024).fontSize).toBe(54)
     const peeks = ['9,', '9', '9', '9,', '9', '9', '9,', '9', '9', '9']
-    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(60)
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(60)
-    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(60)
+    expect(getMobileCardMetrics(peeks, 375).fontSize).toBe(54)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 320).fontSize).toBe(54)
+    expect(getMobileCardMetrics(['3,', '7', '4', '3'], 208).fontSize).toBe(54)
   })
 })
 
