@@ -308,9 +308,9 @@ test.describe('mobile layout', () => {
       .first()
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
 
-    // Owner 2026-10-08: no shrink-to-fit. Font is always 60px.
-    expect(fewDigitFont).toBe(60)
-    expect(manyDigitFont).toBe(60)
+    // Owner 2026-10-08: no shrink-to-fit. Mobile font is 54px (desktop 60px).
+    expect(fewDigitFont).toBe(54)
+    expect(manyDigitFont).toBe(54)
 
     // The fan sits in the vertical middle of the workspace, not the top.
     await input.fill('1234')

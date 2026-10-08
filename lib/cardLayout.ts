@@ -179,10 +179,12 @@ export function scaleFontSizeToFit(
 export function getMobileCardMetrics(peekTexts: string[], viewportWidth: number, minFontSize = 24): MobileCardMetrics {
   // Owner 2026-10-08: no shrink-to-fit. Cards render at their natural size
   // always; compacting the fan to fit the viewport causes cards to reveal
-  // their real size on drag. The viewportWidth and minFontSize params are
-  // kept for API compatibility but no longer affect the result.
+  // their real size on drag. Mobile uses 54px (slightly smaller than the
+  // desktop 60px) so the fan does not touch the screen edges. The
+  // viewportWidth and minFontSize params are kept for API compatibility
+  // but no longer affect the result.
   void peekTexts
   void viewportWidth
   void minFontSize
-  return { fontSize: 60 }
+  return { fontSize: 54 }
 }

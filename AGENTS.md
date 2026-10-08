@@ -96,12 +96,13 @@ behavior on your own.
   focus trap + Escape come free). The bar is a flex-column sibling of the
   footer, never `position: fixed`, so no overlap math is needed.
 - **Hero card sizing.** `getMobileCardMetrics()` in `lib/cardLayout.ts`
-  returns a fixed 60px font size on mobile (same as desktop). Owner
+  returns a fixed 54px font size on mobile (desktop is 60px). Owner
   2026-10-08: no shrink-to-fit, no horizontal scrolling in the card
   container. Compacting cards to fit the viewport (or allowing the strip
   to scroll) caused cards to reveal their real size on drag. The fan
   renders at its natural size always; `overflow-x` is `visible`, no
-  `max-width` cap. The cards anchor on cumulative measured widths inside a
+  `max-width` cap. Mobile uses 54px so the fan does not touch the screen
+  edges. The cards anchor on cumulative measured widths inside a
   wrapper sized to the strip extent (`getFanExtent(cardWidths,
 naturalWidth)` in `lib/cardLayout.ts`) that the flex workspace centers
   via `justify-content`, so the visible strip is centered even though card
