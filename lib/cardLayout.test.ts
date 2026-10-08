@@ -149,6 +149,15 @@ describe('getRightAlignedFanPositions', () => {
     expect(pos[3] - pos[2]).toBe(53) // 123 - 70
   })
 
+  it('caps peeks at desired widths to prevent slivers', () => {
+    const widths = [262, 175, 123, 70]
+    // Desired peeks smaller than natural differences.
+    const pos = getRightAlignedFanPositions(widths, [75, 40, 40])
+    expect(pos[1] - pos[0]).toBe(75)
+    expect(pos[2] - pos[1]).toBe(40)
+    expect(pos[3] - pos[2]).toBe(40)
+  })
+
   it('handles equal widths (no peek)', () => {
     const pos = getRightAlignedFanPositions([100, 100, 100])
     expect(pos).toEqual([0, 0, 0])

@@ -10,7 +10,13 @@ import {
   FIRST_TIME_TOAST_STYLE,
   NumberFormsDialogTab,
 } from '@/lib/constants'
-import { getMobileCardMetrics, getPeekText, getRightAlignedFanPositions } from '@/lib/cardLayout'
+import {
+  getMobileCardMetrics,
+  getPeekText,
+  getRightAlignedFanPositions,
+  peekCharCount,
+  estimatePeekWidthPx,
+} from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
@@ -157,15 +163,23 @@ export function HomePageClient() {
     // Owner 2026-10-08: right-aligned fan. Every card's right edge aligns
     // with the card behind it, so no back card ever peeks out on the
     // right side. Positions are derived from the measured natural widths
-    // via getRightAlignedFanPositions. The peek for card i is
-    // naturals[i] - naturals[i+1].
+    // via getRightAlignedFanPositions, capped by the desired peek widths
+    // to prevent slivers.
+    const desiredPeeks: number[] = []
     children.forEach((child, i) => {
       // Natural width: the absolutely-positioned card shrink-wraps its full
       // text, so scrollWidth is the content-driven width.
       naturals[i] = child.scrollWidth
+      if (i < children.length - 1) {
+        const fontSize = mobileMetrics?.fontSize ?? 60
+        const letterSpacing = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.3) : 20
+        const padLeft = mobileMetrics ? Math.round(mobileMetrics.fontSize * 0.15) : 8
+        const chars = peekCharCount(cards[i].placeValue)
+        desiredPeeks[i] = estimatePeekWidthPx(chars, fontSize, padLeft, letterSpacing)
+      }
     })
 
-    const itemX = getRightAlignedFanPositions(naturals)
+    const itemX = getRightAlignedFanPositions(naturals, desiredPeeks)
     const extent = Math.max(...naturals)
     const height = Math.max(...children.map((child) => child.offsetHeight))
 
