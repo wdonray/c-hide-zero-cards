@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/logo.png" alt="Hide Zero Cards logo" width="120" />
+</p>
+
 # Hide Zero Cards
 
 [![Tests](https://github.com/wdonray/c-hide-zero-cards/actions/workflows/test.yml/badge.svg)](https://github.com/wdonray/c-hide-zero-cards/actions/workflows/test.yml)
