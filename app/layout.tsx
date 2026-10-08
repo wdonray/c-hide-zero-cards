@@ -12,6 +12,7 @@ import { HydrationCheck } from '@/components/HydrationCheck'
 import { WelcomeDialog } from '@/components/WelcomeDialog'
 import { Toaster } from '@/components/ui/sonner'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
+import { VersionReloadToast } from '@/components/VersionReloadToast'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -218,6 +219,7 @@ export default function RootLayout({
           </HydrationCheck>
           <Toaster position="bottom-center" richColors />
           <AnalyticsTracker />
+          <VersionReloadToast />
         </ThemeProvider>
       </body>
     </html>
