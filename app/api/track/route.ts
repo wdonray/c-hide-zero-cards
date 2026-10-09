@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server'
-import { clientIpFromHeaders, isRateLimited, normalizePath, recordPageView } from '@/lib/analytics'
+import {
+  clientIpFromHeaders,
+  isRateLimited,
+  normalizePath,
+  recordEngagedVisitor,
+  recordPageView,
+} from '@/lib/analytics'
 import { reportError } from '@/lib/report-error'
 
 /**
- * POST /api/track { path: "/some/page" }
+ * POST /api/track { path: "/some/page", engaged?: boolean }
  *
- * Records one page view. Bots are filtered, and the client dedupes to one
- * hit per page per browsing session: this endpoint is the last line of
- * defense, not the only one.
+ * Records one page view. When `engaged` is true (the client detected a
+ * human scroll), the visitor is also added to the engaged-uniques set.
+ * Bots are filtered, and the client dedupes to one hit per page per
+ * browsing session: this endpoint is the last line of defense, not the
+ * only one.
  */
 export async function POST(request: Request) {
   try {
@@ -22,6 +30,7 @@ export async function POST(request: Request) {
 
     const body = (await request.json().catch(() => null)) as {
       path?: unknown
+      engaged?: unknown
     } | null
     const path = normalizePath(typeof body?.path === 'string' ? body.path : null)
     if (!path) {
@@ -29,6 +38,9 @@ export async function POST(request: Request) {
     }
 
     await recordPageView(path, ip, userAgent)
+    if (body?.engaged === true) {
+      await recordEngagedVisitor(path, ip, userAgent)
+    }
     return NextResponse.json({ ok: true })
   } catch (error) {
     // Analytics must never break the site.

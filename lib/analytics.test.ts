@@ -1,116 +1,17 @@
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest'
 import {
   __resetClientForTests,
-  __resetRateLimitForTests,
-  clientIpFromHeaders,
   compareDays,
-  dayKey,
   getConfig,
   getPageUniqueViews,
-  hashVisitor,
-  isBot,
   isRateLimited,
-  normalizePath,
+  recordEngagedVisitor,
   recordPageView,
 } from './analytics'
 
 afterEach(() => {
   __resetClientForTests()
   vi.unstubAllEnvs()
-})
-
-describe('isBot', () => {
-  it('flags common crawlers', () => {
-    expect(isBot('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')).toBe(true)
-    expect(isBot('facebookexternalhit/1.1')).toBe(true)
-    expect(isBot('AhrefsBot/7.0')).toBe(true)
-  })
-
-  it('passes real browsers', () => {
-    expect(
-      isBot(
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
-      )
-    ).toBe(false)
-    expect(isBot('')).toBe(false)
-    expect(isBot(null)).toBe(false)
-    expect(isBot(undefined)).toBe(false)
-  })
-})
-
-describe('normalizePath', () => {
-  it('accepts site-relative paths', () => {
-    expect(normalizePath('/')).toBe('/')
-    expect(normalizePath('/version')).toBe('/version')
-    expect(normalizePath('  /analytics  ')).toBe('/analytics')
-  })
-
-  it('rejects junk', () => {
-    expect(normalizePath(null)).toBeNull()
-    expect(normalizePath('')).toBeNull()
-    expect(normalizePath('   ')).toBeNull()
-    expect(normalizePath('https://evil.com')).toBeNull()
-    expect(normalizePath('/page?x=1')).toBeNull()
-    expect(normalizePath('/page#frag')).toBeNull()
-    expect(normalizePath('/<script>')).toBeNull()
-    expect(normalizePath(`/${'a'.repeat(300)}`)).toBeNull()
-  })
-})
-
-describe('dayKey', () => {
-  it('formats as yyyy-mm-dd UTC', () => {
-    expect(dayKey(new Date('2026-10-02T23:30:00Z'))).toBe('2026-10-02')
-  })
-})
-
-describe('hashVisitor', () => {
-  it('is deterministic for the same inputs', () => {
-    const a = hashVisitor('salt', '1.2.3.4', 'ua')
-    const b = hashVisitor('salt', '1.2.3.4', 'ua')
-    expect(a).toBe(b)
-    expect(a).toHaveLength(64)
-  })
-
-  it('changes with salt, ip, or ua', () => {
-    const base = hashVisitor('salt', '1.2.3.4', 'ua')
-    expect(hashVisitor('other', '1.2.3.4', 'ua')).not.toBe(base)
-    expect(hashVisitor('salt', '5.6.7.8', 'ua')).not.toBe(base)
-    expect(hashVisitor('salt', '1.2.3.4', 'other')).not.toBe(base)
-  })
-
-  it('is stable across days so returning visitors count once', () => {
-    // The day is deliberately NOT part of the hash.
-    expect(hashVisitor('salt', '1.2.3.4', 'ua')).toBe(hashVisitor('salt', '1.2.3.4', 'ua'))
-  })
-
-  it('does not leak the ip', () => {
-    const hash = hashVisitor('salt', '1.2.3.4', 'ua')
-    expect(hash).not.toContain('1.2.3.4')
-  })
-})
-
-describe('clientIpFromHeaders', () => {
-  it('takes the first x-forwarded-for entry', () => {
-    const headers = new Headers({
-      'x-forwarded-for': '203.0.113.7, 70.41.3.18',
-    })
-    expect(clientIpFromHeaders(headers)).toBe('203.0.113.7')
-  })
-
-  it('skips empty first forwarded entry', () => {
-    const headers = new Headers({ 'x-forwarded-for': ', 203.0.113.7' })
-    expect(clientIpFromHeaders(headers)).toBe('unknown')
-  })
-
-  it('falls back to x-real-ip then unknown', () => {
-    expect(clientIpFromHeaders(new Headers())).toBe('unknown')
-    expect(clientIpFromHeaders(new Headers({ 'x-real-ip': '198.51.100.9' }))).toBe('198.51.100.9')
-  })
-
-  it('works with plain record headers', () => {
-    expect(clientIpFromHeaders({ 'x-forwarded-for': '203.0.113.7' })).toBe('203.0.113.7')
-    expect(clientIpFromHeaders({ 'x-forwarded-for': null })).toBe('unknown')
-  })
 })
 
 describe('getConfig', () => {
@@ -149,43 +50,26 @@ describe('recordPageView', () => {
   })
 
   it('returns false for invalid paths', async () => {
-    await expect(recordPageView('https://evil.com', '1.2.3.4', 'browser')).resolves.toBe(false)
+    await expect(recordPageView('not-a-path', '1.2.3.4', 'browser')).resolves.toBe(false)
   })
 })
 
-describe('isRateLimited', () => {
-  beforeEach(() => {
-    __resetRateLimitForTests()
+describe('recordEngagedVisitor', () => {
+  it('returns false without configuration (no DynamoDB calls)', async () => {
+    await expect(recordEngagedVisitor('/', '1.2.3.4', 'browser')).resolves.toBe(false)
   })
 
-  it('allows requests under the limit', () => {
-    for (let i = 0; i < 60; i++) {
-      expect(isRateLimited('test-key', 1000 + i)).toBe(false)
-    }
+  it('returns false for bots', async () => {
+    vi.stubEnv('ANALYTICS_TABLE', 't')
+    vi.stubEnv('ANALYTICS_AWS_REGION', 'us-east-1')
+    vi.stubEnv('ANALYTICS_AWS_ACCESS_KEY_ID', 'k')
+    vi.stubEnv('ANALYTICS_AWS_SECRET_ACCESS_KEY', 's')
+    vi.stubEnv('ANALYTICS_SALT', 'salt')
+    await expect(recordEngagedVisitor('/', '1.2.3.4', 'curl/8.0')).resolves.toBe(false)
   })
 
-  it('blocks the 61st request within a minute', () => {
-    for (let i = 0; i < 60; i++) {
-      isRateLimited('test-key', 1000 + i)
-    }
-    expect(isRateLimited('test-key', 2000)).toBe(true)
-  })
-
-  it('resets after the window passes', () => {
-    for (let i = 0; i < 60; i++) {
-      isRateLimited('test-key', 1000 + i)
-    }
-    expect(isRateLimited('test-key', 2000)).toBe(true)
-    // 61 seconds later: window has slid past the burst.
-    expect(isRateLimited('test-key', 62_000)).toBe(false)
-  })
-
-  it('tracks keys independently', () => {
-    for (let i = 0; i < 60; i++) {
-      isRateLimited('key-a', 1000 + i)
-    }
-    expect(isRateLimited('key-a', 2000)).toBe(true)
-    expect(isRateLimited('key-b', 2000)).toBe(false)
+  it('returns false for invalid paths', async () => {
+    await expect(recordEngagedVisitor('not-a-path', '1.2.3.4', 'browser')).resolves.toBe(false)
   })
 })
 
@@ -232,12 +116,17 @@ describe('recordPageView (with DynamoDB)', () => {
     __resetClientForTests()
   })
 
-  it('writes total, daily, and uniques records', async () => {
+  it('writes total and daily records (no uniques)', async () => {
     const send = mockClient(async () => ({}))
     const ok = await recordPageView('/version', '1.2.3.4', 'Mozilla/5.0 Chrome/120', new Date('2026-10-03T12:00:00Z'))
     expect(ok).toBe(true)
-    // TOTAL + page DAY + page UNIQUES + SITE UNIQUES records.
-    expect(send).toHaveBeenCalledTimes(4)
+    // TOTAL + page DAY records only. Uniques are engagement-gated.
+    expect(send).toHaveBeenCalledTimes(2)
+    const sks = send.mock.calls.map((call) => (call[0] as { input: { Key: { sk: string } } }).input.Key.sk)
+    expect(sks).toContain('TOTAL')
+    expect(sks).toContain('DAY#2026-10-03')
+    expect(sks).not.toContain('UNIQUES')
+    expect(sks).not.toContain('UNIQUES_V2')
   })
 
   it('reuses the cached client across calls', async () => {
@@ -245,19 +134,37 @@ describe('recordPageView (with DynamoDB)', () => {
     await recordPageView('/a', '1.1.1.1', 'Mozilla/5.0', new Date())
     await recordPageView('/b', '1.1.1.1', 'Mozilla/5.0', new Date())
     expect(DynamoDBDocumentClient.from).toHaveBeenCalledTimes(1)
-    expect(send).toHaveBeenCalledTimes(8)
+    expect(send).toHaveBeenCalledTimes(4)
+  })
+})
+
+describe('recordEngagedVisitor (with DynamoDB)', () => {
+  beforeEach(() => {
+    setTestEnv()
+    __resetClientForTests()
+  })
+
+  it('writes page and site UNIQUES_V2 records', async () => {
+    const send = mockClient(async () => ({}))
+    const ok = await recordEngagedVisitor('/version', '1.2.3.4', 'Mozilla/5.0 Chrome/120')
+    expect(ok).toBe(true)
+    // Page UNIQUES_V2 + SITE UNIQUES_V2 records.
+    expect(send).toHaveBeenCalledTimes(2)
+    const keys = send.mock.calls.map((call) => (call[0] as { input: { Key: { pk: string; sk: string } } }).input.Key)
+    expect(keys).toContainEqual({ pk: 'PAGE#/version', sk: 'UNIQUES_V2' })
+    expect(keys).toContainEqual({ pk: 'SITE', sk: 'UNIQUES_V2' })
   })
 
   it('writes the same visitor hash on repeat visits a year apart', async () => {
     const send = mockClient(async () => ({}))
     const ip = '203.0.113.9'
     const ua = 'Mozilla/5.0 TestBrowser/1.0'
-    await recordPageView('/', ip, ua, new Date('2026-10-05T12:00:00Z'))
-    await recordPageView('/analytics', ip, ua, new Date('2027-10-05T12:00:00Z'))
+    await recordEngagedVisitor('/', ip, ua)
+    await recordEngagedVisitor('/analytics', ip, ua)
     const uniquesWrites = send.mock.calls.filter(
-      (call) => (call[0] as { input: { Key: { sk: string } } }).input.Key.sk === 'UNIQUES'
+      (call) => (call[0] as { input: { Key: { sk: string } } }).input.Key.sk === 'UNIQUES_V2'
     )
-    // Page UNIQUES + SITE UNIQUES for each of the two visits.
+    // Page UNIQUES_V2 + SITE UNIQUES_V2 for each of the two visits.
     expect(uniquesWrites).toHaveLength(4)
     const hashes = uniquesWrites.map(
       (call) =>
@@ -305,9 +212,12 @@ describe('getPageUniqueViews (with DynamoDB)', () => {
     __resetClientForTests()
   })
 
-  it('returns the size of the persistent visitor set', async () => {
-    mockClient(async () => ({ Item: { visitors: ['a', 'b', 'c'] } }))
+  it('returns the size of the UNIQUES_V2 visitor set', async () => {
+    const send = mockClient(async () => ({ Item: { visitors: ['a', 'b', 'c'] } }))
     await expect(getPageUniqueViews('/version')).resolves.toBe(3)
+    // Reads from UNIQUES_V2, not the legacy UNIQUES key.
+    const key = (send.mock.calls[0][0] as { input: { Key: { sk: string } } }).input.Key
+    expect(key.sk).toBe('UNIQUES_V2')
   })
 
   it('handles Set visitor collections', async () => {
@@ -333,15 +243,22 @@ describe('getAnalyticsSummary (with DynamoDB)', () => {
     await expect(getAnalyticsSummary()).resolves.toBeNull()
   })
 
-  it('aggregates totals, daily stats, and true uniques', async () => {
+  it('aggregates totals, daily stats, and V2 uniques', async () => {
     mockClient(async () => ({
       Items: [
         { pk: 'PAGE#/', sk: 'TOTAL', path: '/', views: 100 },
         {
           pk: 'PAGE#/',
-          sk: 'UNIQUES',
+          sk: 'UNIQUES_V2',
           path: '/',
           visitors: new Set(['u1', 'u2']),
+        },
+        // Legacy UNIQUES (v1) items are ignored by the new read path.
+        {
+          pk: 'PAGE#/',
+          sk: 'UNIQUES',
+          path: '/',
+          visitors: new Set(['legacy1', 'legacy2', 'legacy3']),
         },
         {
           pk: 'PAGE#/',
@@ -380,21 +297,20 @@ describe('getAnalyticsSummary (with DynamoDB)', () => {
         },
         {
           pk: 'SITE',
-          sk: 'UNIQUES',
+          sk: 'UNIQUES_V2',
           visitors: ['u1', 'u2', 'u3'],
         },
-        // UNIQUES item without a visitors field: counts as 0.
-        {
-          pk: 'PAGE#/version',
-          sk: 'UNIQUES',
-          path: '/version',
-        },
-        // Legacy day-bound records are ignored by the new read path.
+        // Legacy SITE UNIQUES (v1) ignored.
         {
           pk: 'SITE',
-          sk: 'DAY#2026-10-03',
-          day: '2026-10-03',
-          visitors: ['legacy1', 'legacy2'],
+          sk: 'UNIQUES',
+          visitors: ['legacy1'],
+        },
+        // UNIQUES_V2 item without a visitors field: counts as 0.
+        {
+          pk: 'PAGE#/version',
+          sk: 'UNIQUES_V2',
+          path: '/version',
         },
       ],
     }))
@@ -488,5 +404,17 @@ describe('compareDays', () => {
     expect(compareDays({ day: '2026-10-01' }, { day: '2026-10-02' })).toBe(-1)
     expect(compareDays({ day: '2026-10-02' }, { day: '2026-10-01' })).toBe(1)
     expect(compareDays({ day: '2026-10-01' }, { day: '2026-10-01' })).toBe(1)
+  })
+})
+
+describe('isRateLimited', () => {
+  it('delegates to the shared rate limiter', () => {
+    // 60 requests per minute per key.
+    for (let i = 0; i < 60; i++) {
+      expect(isRateLimited('test-key', 1000 + i)).toBe(false)
+    }
+    expect(isRateLimited('test-key', 2000)).toBe(true)
+    // Different key is unaffected.
+    expect(isRateLimited('other-key', 2000)).toBe(false)
   })
 })
