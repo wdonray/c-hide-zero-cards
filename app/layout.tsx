@@ -13,6 +13,7 @@ import { WelcomeDialog } from '@/components/WelcomeDialog'
 import { Toaster } from '@/components/ui/sonner'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
 import { VersionReloadToast } from '@/components/VersionReloadToast'
+import { ErrorToaster } from '@/components/ErrorToaster'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -220,6 +221,7 @@ export default function RootLayout({
           <Toaster position="bottom-center" richColors />
           <AnalyticsTracker />
           <VersionReloadToast />
+          <ErrorToaster />
         </ThemeProvider>
       </body>
     </html>
