@@ -15,6 +15,7 @@ jobs:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_ORG: donray-williams
       SENTRY_PROJECT: hide-zero-cards
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: File new Sentry issues as GitHub issues
         run: |
