@@ -37,7 +37,7 @@ jobs:
             exit 0
           fi
 
-          existing=$(gh issue list --label sentry --state all --json body --jq '[.[].body] | join("\n")')
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label sentry --state all --json body --jq '[.[].body] | join("\n")')
 
           filed=0
           for i in $(seq 0 $((count - 1))); do
@@ -71,7 +71,7 @@ jobs:
           <!-- sentry-id: $id -->
           EOF
             )
-            gh issue create --title "[sentry] $title" --label sentry --body "$body"
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "[sentry] $title" --label sentry --body "$body"
             filed=$((filed + 1))
           done
 
