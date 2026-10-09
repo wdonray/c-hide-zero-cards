@@ -3,6 +3,7 @@ import { CARD_KEYBOARD_MOVE_STEP } from './constants'
 import { measureScatterArea } from './scatterArea'
 import { useHeaderContext, type ScatterArea } from './useHeaderContext'
 import { useIsMobile } from './useIsMobile'
+import { reportError } from './report-error'
 
 interface UseDraggableOptions {
   initialX: number
@@ -113,8 +114,9 @@ export function useDraggable({
         if (el.hasPointerCapture(pointerId)) {
           el.releasePointerCapture(pointerId)
         }
-      } catch {
+      } catch (error) {
         // Capture was already released implicitly; nothing left to do.
+        reportError(error, { location: 'useDraggable.releasePointerCapture' })
       }
     }
   }, [])
@@ -137,9 +139,10 @@ export function useDraggable({
 
         try {
           dragRef.current.setPointerCapture(e.pointerId)
-        } catch {
+        } catch (error) {
           // If capture fails the drag still tracks via the document-level
           // listeners below.
+          reportError(error, { location: 'useDraggable.handlePointerDown' })
         }
       }
     },

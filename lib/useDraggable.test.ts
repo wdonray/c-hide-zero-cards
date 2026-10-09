@@ -526,6 +526,27 @@ describe('useDraggable', () => {
     expect(result.current.isDragging).toBe(false)
   })
 
+  it('still tracks the drag when setPointerCapture throws', () => {
+    // If pointer capture fails, the drag falls back to document-level
+    // listeners; the failure is reported to Sentry via reportError.
+    const { result } = renderDraggable()
+    result.current.dragRef.current = {
+      setPointerCapture: () => {
+        throw new DOMException('capture failed', 'NotFoundError')
+      },
+      releasePointerCapture: () => {},
+      hasPointerCapture: () => false,
+    } as unknown as HTMLDivElement
+    act(() => {
+      result.current.handlers.onPointerDown(pointerEvent(100, 120))
+    })
+    expect(result.current.isDragging).toBe(true)
+    act(() => {
+      result.current.handlers.onPointerMove(pointerEvent(150, 170))
+    })
+    expect(result.current.position).toEqual({ x: 60, y: 70 })
+  })
+
   it('ends the drag on a document-level pointercancel from the active pointer', () => {
     const { result } = renderDraggable()
     act(() => {
