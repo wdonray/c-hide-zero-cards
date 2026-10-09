@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { reportError } from './report-error'
 
 /** Poll every 15 minutes. A background tab interval is negligible traffic. */
 export const VERSION_POLL_INTERVAL_MS = 15 * 60 * 1000
@@ -30,7 +31,8 @@ export async function fetchDeployedVersion(): Promise<string | null> {
     if (typeof data !== 'object' || data === null) return null
     const version = (data as VersionPayload).version
     return typeof version === 'string' ? version : null
-  } catch {
+  } catch (error) {
+    reportError(error, { location: 'useNewVersion.fetchDeployedVersion' })
     return null
   } finally {
     clearTimeout(timeout)

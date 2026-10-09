@@ -19,6 +19,7 @@ import {
 } from '@/lib/cardLayout'
 import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
+import { reportError } from '@/lib/report-error'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
 import { ZeroStateIndicator } from '@/components/ZeroStateIndicator'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
@@ -222,7 +223,9 @@ export function HomePageClient() {
             })
           }
         })
-        .catch(() => {})
+        .catch((error) => {
+          reportError(error, { location: 'HomePageClient.fontsReady' })
+        })
     }
     window.addEventListener('resize', bump)
     return () => {

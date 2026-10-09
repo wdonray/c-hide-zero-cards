@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { reportError } from '@/lib/report-error'
 
 /**
  * Fires one page-view hit per page per browsing session. Rendered once in
@@ -18,7 +19,8 @@ function TrackerInner() {
       // Set the flag before sending so StrictMode double-effects don't
       // double-count in development.
       sessionStorage.setItem(key, '1')
-    } catch {
+    } catch (error) {
+      reportError(error, { location: 'AnalyticsTracker.sessionStorage' })
       return
     }
 
@@ -34,7 +36,9 @@ function TrackerInner() {
       headers: { 'content-type': 'application/json' },
       body: payload,
       keepalive: true,
-    }).catch(() => {})
+    }).catch((error) => {
+      reportError(error, { location: 'AnalyticsTracker.track' })
+    })
   }, [pathname])
 
   return null
