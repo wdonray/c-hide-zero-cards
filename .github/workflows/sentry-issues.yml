@@ -1,0 +1,77 @@
+name: Sentry issues
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: donray-williams
+      SENTRY_PROJECT: hide-zero-cards
+    steps:
+      - name: File new Sentry issues as GitHub issues
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SENTRY_AUTH_TOKEN:-}" ]; then
+            echo "The SENTRY_AUTH_TOKEN repo secret is not set. Add a Sentry auth token as the SENTRY_AUTH_TOKEN secret, then re-run; exiting without doing anything."
+            exit 0
+          fi
+
+          response=$(
+            curl -sS -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+              "https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/issues/?query=is:unresolved&limit=25"
+          )
+
+          count=$(echo "$response" | jq 'length')
+          if [ "$count" -eq 0 ]; then
+            echo "No unresolved Sentry issues. Nothing to file."
+            exit 0
+          fi
+
+          existing=$(gh issue list --label sentry --state all --json body --jq '[.[].body] | join("\n")')
+
+          filed=0
+          for i in $(seq 0 $((count - 1))); do
+            id=$(echo "$response" | jq -r ".[$i].id")
+            title=$(echo "$response" | jq -r ".[$i].title")
+            if echo "$existing" | grep -qF "sentry-id: $id"; then
+              echo "Skipping Sentry issue $id (already filed)."
+              continue
+            fi
+            permalink=$(echo "$response" | jq -r ".[$i].permalink")
+            first_seen=$(echo "$response" | jq -r ".[$i].firstSeen")
+            last_seen=$(echo "$response" | jq -r ".[$i].lastSeen")
+            events=$(echo "$response" | jq -r ".[$i].count")
+            err_type=$(echo "$response" | jq -r ".[$i].metadata.type // \"\"")
+            err_value=$(echo "$response" | jq -r "(.[$i].metadata.value // \"\") | .[0:500]")
+
+            body=$(cat << EOF
+          ## Sentry issue
+
+          **Project:** $SENTRY_PROJECT
+          **Sentry:** $permalink
+          **First seen:** $first_seen | **Last seen:** $last_seen | **Events:** $events
+
+          ### Error
+
+          $err_type: $err_value
+
+          ---
+          *Filed automatically from Sentry. This workflow will not file this issue again.*
+
+          <!-- sentry-id: $id -->
+          EOF
+            )
+            gh issue create --title "[sentry] $title" --label sentry --body "$body"
+            filed=$((filed + 1))
+          done
+
+          echo "Filed $filed new issue(s)."
