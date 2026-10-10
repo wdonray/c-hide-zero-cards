@@ -26,6 +26,9 @@ export { SITE_UNIQUES_PK, UNIQUES_SK_V2, clientIpFromHeaders, dayKey, hashVisito
  *   Only visitors who scroll (human engagement signal) are recorded here.
  * - One item for site-wide engaged human visitors: pk = "SITE", sk = "UNIQUES_V2"
  *   so the headline count dedupes across pages.
+ * - Legacy pre-migration unique-visitor sets (sk = "UNIQUES", written before
+ *   the @wdonray/analytics-core migration) are kept for history: dashboard
+ *   reads sum the legacy UNIQUES set and the UNIQUES_V2 set.
  * - Raw IPs are never stored. Visitor identity comes from
  *   @wdonray/analytics-core (SHA-256(salt | ip | user-agent)).
  * - All records are kept permanently (no TTL). The table is tiny and
@@ -224,10 +227,14 @@ export interface AnalyticsSummary {
   fetchedAt: string
 }
 
+/** Sort key for the legacy (pre-migration) per-page/site unique-visitor sets. */
+const UNIQUES_SK_V1 = 'UNIQUES'
+
 /**
  * Read the analytics table for the public dashboard. Returns null when
  * analytics is not configured (local dev / CI without credentials).
- * Unique visitor counts come from the UNIQUES_V2 sets (engagement-gated).
+ * Unique visitor counts sum the legacy UNIQUES sets (pre-migration history)
+ * and the UNIQUES_V2 sets (engagement-gated, post-migration).
  */
 export async function getAnalyticsSummary(days = 30, now: Date = new Date()): Promise<AnalyticsSummary | null> {
   const config = getConfig()
@@ -271,8 +278,8 @@ export async function getAnalyticsSummary(days = 30, now: Date = new Date()): Pr
   for (const item of items) {
     const pk = item.pk as string | undefined
     const sk = item.sk as string | undefined
-    if (pk === SITE_UNIQUES_PK && sk === UNIQUES_SK_V2) {
-      siteUniques = countUniques(item)
+    if (pk === SITE_UNIQUES_PK && (sk === UNIQUES_SK_V2 || sk === UNIQUES_SK_V1)) {
+      siteUniques += countUniques(item)
       continue
     }
     if (!pk?.startsWith('PAGE#')) continue
@@ -280,8 +287,8 @@ export async function getAnalyticsSummary(days = 30, now: Date = new Date()): Pr
     const stat = ensure(path)
     if (sk === 'TOTAL') {
       stat.totalViews = (item.views as number) ?? 0
-    } else if (sk === UNIQUES_SK_V2) {
-      stat.uniques = countUniques(item)
+    } else if (sk === UNIQUES_SK_V2 || sk === UNIQUES_SK_V1) {
+      stat.uniques += countUniques(item)
     } else if (sk?.startsWith('DAY#')) {
       const day = sk.slice('DAY#'.length)
       if (day >= cutoffDay) {
@@ -337,21 +344,35 @@ export async function getPageTotalViews(path: string): Promise<number | null> {
 }
 
 /**
- * Engaged human unique visitors for a page: the size of its UNIQUES_V2 set.
- * Only visitors who scrolled (human engagement signal) are counted.
+ * Unique visitors for a page: the sum of the legacy UNIQUES set
+ * (pre-migration history) and the UNIQUES_V2 set (engagement-gated,
+ * post-migration). A visitor who returns any number of times still
+ * counts once per set.
  */
 export async function getPageUniqueViews(path: string): Promise<number | null> {
   const config = getConfig()
   if (!config) return null
   const client = getClient(config)
-  const res = await client.send(
-    new GetCommand({
-      TableName: config.table,
-      Key: { pk: pkFor(path), sk: UNIQUES_SK_V2 },
-    })
-  )
-  const item = res.Item as { visitors?: string[] | Set<string> } | undefined
-  const visitors = item?.visitors
+  const [v2Res, v1Res] = await Promise.all([
+    client.send(
+      new GetCommand({
+        TableName: config.table,
+        Key: { pk: pkFor(path), sk: UNIQUES_SK_V2 },
+      })
+    ),
+    client.send(
+      new GetCommand({
+        TableName: config.table,
+        Key: { pk: pkFor(path), sk: UNIQUES_SK_V1 },
+      })
+    ),
+  ])
+  return countVisitors(v2Res.Item) + countVisitors(v1Res.Item)
+}
+
+/** Size of a DynamoDB `visitors` string-set item (0 when missing). */
+function countVisitors(item: unknown): number {
+  const visitors = (item as { visitors?: string[] | Set<string> } | undefined)?.visitors
   if (!visitors) return 0
   return Array.isArray(visitors) ? visitors.length : visitors.size
 }
