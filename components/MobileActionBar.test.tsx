@@ -73,6 +73,18 @@ describe('MobileActionBar', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
+  it('renders nothing on the privacy route', () => {
+    mockUsePathname.mockReturnValue('/privacy')
+    const { container } = render(<MobileActionBar />)
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('renders nothing on the terms route', () => {
+    mockUsePathname.mockReturnValue('/terms')
+    const { container } = render(<MobileActionBar />)
+    expect(container).toBeEmptyDOMElement()
+  })
+
   it('renders seven labeled actions on mobile', () => {
     render(<MobileActionBar />)
     const nav = screen.getByRole('navigation', { name: 'Quick actions' })

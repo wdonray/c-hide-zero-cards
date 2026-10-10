@@ -74,9 +74,10 @@ export function MobileActionBar() {
   // only instance of these controls in the DOM and accessibility tree.
   if (!isMobile) return null
 
-  // The /version page is informational; the card actions are meaningless
-  // there, so the bar stays out of the way.
-  if (pathname === '/version' || pathname === '/analytics') return null
+  // The /version, /analytics, /privacy, and /terms pages are informational;
+  // the card actions are meaningless there, so the bar stays out of the way.
+  if (pathname === '/version' || pathname === '/analytics' || pathname === '/privacy' || pathname === '/terms')
+    return null
 
   function handleClearInput() {
     setInputNumber(null)
