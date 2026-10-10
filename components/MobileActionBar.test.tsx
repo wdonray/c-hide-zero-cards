@@ -120,6 +120,8 @@ describe('MobileActionBar', () => {
     expect(inSheet.getByText('Theme')).toBeInTheDocument()
     expect(inSheet.getByText('App version')).toBeInTheDocument()
     expect(inSheet.getByTitle('App version and release history')).toHaveAttribute('href', '/version')
+    expect(inSheet.getByTitle('Privacy policy')).toHaveAttribute('href', '/privacy')
+    expect(inSheet.getByTitle('Terms of use')).toHaveAttribute('href', '/terms')
   })
 
   it('invokes the context actions from the bar buttons', () => {
