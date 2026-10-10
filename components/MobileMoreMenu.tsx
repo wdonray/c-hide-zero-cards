@@ -142,6 +142,20 @@ export function MobileMoreMenu({
                 LinkedIn
               </a>
               <BuyMeACoffeeButton variant="ghost" size="sm" />
+              <Link
+                href="/privacy"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                title="Privacy policy"
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                title="Terms of use"
+              >
+                Terms
+              </Link>
             </nav>
             <p className="mt-3 text-center text-xs text-muted-foreground">© {CURRENT_YEAR} Donray Williams</p>
           </div>
