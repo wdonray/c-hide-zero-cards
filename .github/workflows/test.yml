@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: read
 
 # Cancel stale runs when a PR is updated.
 concurrency:
@@ -57,8 +56,6 @@ jobs:
 
       - name: Install
         run: npm ci --ignore-scripts --no-audit --no-fund
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Lint (oxlint)
         run: npm run lint
@@ -86,8 +83,6 @@ jobs:
 
       - name: Install
         run: npm ci --ignore-scripts --no-audit --no-fund
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Unit tests
         run: npm run test:unit
@@ -109,8 +104,6 @@ jobs:
 
       - name: Install
         run: npm ci --ignore-scripts --no-audit --no-fund
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Playwright browser
         # Headless shell only: smaller/faster download, sufficient for CI.
@@ -139,8 +132,6 @@ jobs:
 
       - name: Install
         run: npm ci --ignore-scripts --no-audit --no-fund
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Audit production dependencies
         run: npm audit --omit=dev
@@ -160,8 +151,6 @@ jobs:
 
       - name: Install
         run: npm ci --ignore-scripts --no-audit --no-fund
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: npm run build
