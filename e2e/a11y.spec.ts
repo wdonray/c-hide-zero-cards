@@ -157,6 +157,42 @@ test.describe('accessibility', () => {
           // Same unfiltered gate as the home page scan above.
           expect(results.violations).toEqual([])
         })
+
+        for (const [pagePath, headingName] of [
+          ['/privacy', 'Privacy Policy'],
+          ['/terms', 'Terms of Use'],
+        ] as const) {
+          test(`${headingName} page has no WCAG 2.2 AA violations in ${theme} mode`, async ({ page }) => {
+            // Suppress the welcome dialog; scan the legal page surface.
+            await page.addInitScript(() => {
+              localStorage.setItem('hzc-has-seen-welcome-dialog', 'true')
+            })
+            await page.goto(pagePath)
+            await expect(page.getByRole('heading', { name: headingName })).toBeVisible()
+
+            if (theme === 'dark') {
+              if (viewport.name === 'mobile') {
+                // The mobile theme toggle lives in the More sheet, whose
+                // trigger is part of the action bar that legal pages unmount.
+                // Switch the theme from the home page; it persists across
+                // navigation.
+                await page.goto('/')
+                await switchToDarkTheme(page)
+                await page.goto(pagePath)
+                await expect(page.getByRole('heading', { name: headingName })).toBeVisible()
+              } else {
+                await switchToDarkTheme(page)
+              }
+            }
+
+            const results = await new AxeBuilder({ page })
+              .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+              .analyze()
+
+            // Same unfiltered gate as the home page scan above.
+            expect(results.violations).toEqual([])
+          })
+        }
       }
     })
   }
