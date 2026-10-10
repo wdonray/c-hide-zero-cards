@@ -45,6 +45,22 @@ export function Footer() {
           </Link>
           <span>•</span>
           <Link
+            href="/privacy"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            title="Privacy policy"
+          >
+            Privacy
+          </Link>
+          <span>•</span>
+          <Link
+            href="/terms"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            title="Terms of use"
+          >
+            Terms
+          </Link>
+          <span>•</span>
+          <Link
             href="/version"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             title="App version and release history"
