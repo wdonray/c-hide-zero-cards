@@ -42,9 +42,10 @@ export const CARD_PAINT: Record<number, { from: string; to: string }> = {
  * (the "chunky" tile look), and a soft shadow under the white digits.
  */
 export const CARD_PAINT_STYLE = {
-  borderRadius: '16px',
-  boxShadow: '0 6px 16px rgba(43, 33, 24, 0.18), inset 0 -4px 0 rgba(0, 0, 0, 0.08)',
-  textShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
+  borderRadius: '20px',
+  boxShadow:
+    '0 8px 24px rgba(43, 33, 24, 0.25), inset 0 -6px 0 rgba(0, 0, 0, 0.12), inset 0 2px 0 rgba(255, 255, 255, 0.15)',
+  textShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
 } as const
 
 /**
