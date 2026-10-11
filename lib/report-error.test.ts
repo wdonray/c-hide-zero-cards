@@ -58,6 +58,20 @@ describe('reportError', () => {
     expect(mocks.captureException).not.toHaveBeenCalled()
   })
 
+  it('ignores network failures (TypeError: Failed to fetch)', () => {
+    reportError(new TypeError('Failed to fetch'), { location: 'Test.here' })
+
+    expect(mocks.withScope).not.toHaveBeenCalled()
+    expect(mocks.captureException).not.toHaveBeenCalled()
+  })
+
+  it('reports other TypeErrors', () => {
+    const error = new TypeError('cannot read property of undefined')
+    reportError(error, { location: 'Test.here' })
+
+    expect(mocks.captureException).toHaveBeenCalledWith(error)
+  })
+
   it('reports non-abort DOMExceptions', () => {
     const notFound = new DOMException('Not found', 'NotFoundError')
     reportError(notFound, { location: 'Test.here' })
