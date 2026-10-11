@@ -47,12 +47,38 @@ jobs:
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
           BRANCH=$(gh pr view "$PR_NUMBER" --json headRefName --jq '.headRefName')
-          COUNT=$(gh run list --workflow=coderabbit-responder.yml --branch="$BRANCH" --status=completed --json databaseId --jq 'length')
+          # Count only runs that actually did work on this PR. Runs skipped by
+          # the job-level `if` (e.g. human reviews) report status completed
+          # with conclusion skipped, so filter on conclusion, not status.
+          REVIEW_RUNS=$(gh run list --workflow=coderabbit-responder.yml --status=completed --limit 500 \
+            --json conclusion,event,headBranch --jq '.' | \
+            jq --arg branch "$BRANCH" \
+              '[.[] | select(.conclusion == "success" and .event == "pull_request_review" and .headBranch == $branch)] | length')
+          # issue_comment runs are recorded on the default branch with no PR
+          # association, so count Donray's label-gated comments on this PR from
+          # the issue timeline instead. Each one triggered a responder run
+          # that did work: the job-level `if` only passes for his comments
+          # while the needs-donray label is present.
+          COMMENT_RUNS=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/timeline" --paginate --jq '
+            [ .[] | select(.event == "commented" or .event == "labeled" or .event == "unlabeled") ]
+            | sort_by(.created_at)
+            | reduce .[] as $e ({labeled: false, count: 0};
+                if ($e.event == "labeled" or $e.event == "unlabeled") and $e.label.name == "needs-donray"
+                then .labeled = ($e.event == "labeled")
+                elif $e.event == "commented" and .labeled and $e.user.login == "wdonray"
+                then .count += 1
+                else . end)
+            | .count')
+          COUNT=$((REVIEW_RUNS + COMMENT_RUNS))
           if [ "$COUNT" -ge 3 ]; then
-            echo "Responder already ran $COUNT times on this PR; flagging for Donray."
+            echo "Responder already ran $COUNT times on this PR without fully resolving all threads; flagging for Donray."
             echo "skip=true" >> $GITHUB_OUTPUT
-            gh pr comment "$PR_NUMBER" --body "The CodeRabbit responder has run 3 times on this PR without fully resolving all threads. This needs Donray's eyes."
-            gh pr edit "$PR_NUMBER" --add-label "needs-donray"
+            if [ "$(gh pr view "$PR_NUMBER" --json labels --jq '[.labels[].name] | any(. == "needs-donray")')" = "true" ]; then
+              echo "needs-donray label already present; skipping repeat escalation comment."
+            else
+              gh pr comment "$PR_NUMBER" --body "The CodeRabbit responder has run $COUNT times on this PR without fully resolving all threads. This needs Donray's eyes."
+              gh pr edit "$PR_NUMBER" --add-label "needs-donray"
+            fi
           fi
 
       - uses: anomalyco/opencode/github@latest
