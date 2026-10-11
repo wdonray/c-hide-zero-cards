@@ -7,7 +7,7 @@ import { NumberInput } from '@/components/NumberInput'
 import { DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
 import { RandomNumberPopover } from './RandomNumberPopover'
-import { APP_TOOLBAR_ID, NUMBER_INPUT_ID } from '@/lib/scatterArea'
+import { APP_TOOLBAR_ID } from '@/lib/scatterArea'
 
 const pillBase =
   'inline-flex h-[52px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-white px-[22px] text-[17px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
@@ -52,9 +52,7 @@ export function Toolbar() {
   return (
     <div id={APP_TOOLBAR_ID} className="w-full" style={{ background: '#FFF6EC' }}>
       <div className="flex flex-wrap items-center justify-center gap-3 px-5 py-[18px]" style={baloo}>
-        <div id={NUMBER_INPUT_ID}>
-          <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
-        </div>
+        <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
 
         <button
           onClick={toggleZeroCards}
