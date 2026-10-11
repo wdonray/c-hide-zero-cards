@@ -36,15 +36,22 @@ Starter plan allows max 3 pages. Use:
 - No hover-dependent affordances. No multi-finger gestures. No precise or
   long drags.
 
-## Scope: chrome-only reskin
+## Scope: chrome reskin + card visual restyle
 
-This redesign changes everything _around_ the cards: page background,
-header, typography, buttons, input styling, spacing.
+This redesign changes the page around the cards (background, header,
+typography, buttons, input styling, spacing) AND the card container's
+visual paint (gradient, border-radius, shadow) to match the approved
+high-fidelity prototype.
 
-Out of scope, shipping unchanged: the card component, fan layout and
-positioning, drag physics, and hide-zero logic. The cards took a long,
-continuous process to perfect. This redesign does not touch them; it
-only gains the kids-centric look around them.
+May change: page chrome, plus card container paint only (gradient,
+border-radius, box-shadow, text-shadow).
+
+Must ship unchanged: card dimensions, fan layout and positioning,
+drag physics, hide-zero logic, and interior digit/comma spacing (the
+sliver-fix metrics). The cards took a long, continuous process to
+perfect; the restyle touches only their paint, never their geometry
+or behavior. Requires Donray's explicit visual screenshot approval
+before merge, per the standing fan-layout rule.
 
 ## Palette
 
