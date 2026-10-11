@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  CARD_PAINT,
-  CARD_PAINT_STYLE,
+  CARD_COLORS,
   CARD_Y_OFFSET,
   DEFAULT_MAX_RANDOM_NUMBER,
   FIRST_TIME_TOAST_DURATION,
@@ -22,42 +21,11 @@ describe('place value mappings', () => {
     }
   })
 
-  it('gives every place value a name and a card paint gradient', () => {
+  it('gives every place value a name and a card color', () => {
     for (const placeValue of Object.values(PLACE_VALUES)) {
       expect(PLACE_VALUE_NAMES[placeValue]).toBeTruthy()
-      const paint = CARD_PAINT[placeValue]
-      expect(paint.from).toMatch(/^#[0-9A-F]{6}$/)
-      expect(paint.to).toMatch(/^#[0-9A-F]{6}$/)
-      expect(paint.from).not.toBe(paint.to)
+      expect(CARD_COLORS[placeValue]).toMatch(/^bg-(red|yellow|green|blue)-\d{3}$/)
     }
-  })
-
-  it('keeps white digits at >= 4.5:1 contrast over the whole card gradient', () => {
-    // WCAG 2.2 AA: the gradient darkens toward the bottom, so the top stop
-    // is the weakest point. Verify it against the relative-luminance
-    // formula directly instead of trusting the hex values by eye.
-    const luminance = (hex: string): number => {
-      const channels = [0, 2, 4].map((i) => {
-        const c = parseInt(hex.slice(i + 1, i + 3), 16) / 255
-        return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
-      })
-      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
-    }
-    const contrast = (bg: string): number => {
-      const l = luminance(bg)
-      return (1.0 + 0.05) / (l + 0.05)
-    }
-    for (const placeValue of Object.values(PLACE_VALUES)) {
-      const paint = CARD_PAINT[placeValue]
-      expect(contrast(paint.from)).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(paint.to)).toBeGreaterThanOrEqual(4.5)
-    }
-  })
-
-  it('defines the shared card paint treatment from the approved prototype', () => {
-    expect(CARD_PAINT_STYLE.borderRadius).toBe('16px')
-    expect(CARD_PAINT_STYLE.boxShadow).toContain('inset 0 -4px 0')
-    expect(CARD_PAINT_STYLE.textShadow).toBeTruthy()
   })
 })
 

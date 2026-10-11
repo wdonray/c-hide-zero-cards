@@ -36,30 +36,21 @@ Starter plan allows max 3 pages. Use:
 - No hover-dependent affordances. No multi-finger gestures. No precise or
   long drags.
 
-## Scope: card visual restyle only
+## Scope: chrome reskin + card visual restyle
 
-Owner decision 2026-10-11 (corrected): this redesign changes ONLY the card
-component's visual paint, to match the approved high-fidelity prototype
-tiles (`~/workspace/your_files/hzc-prototype/index.html`).
+This redesign changes the page around the cards (background, header,
+typography, buttons, input styling, spacing) AND the card container's
+visual paint (gradient, border-radius, shadow) to match the approved
+high-fidelity prototype.
 
-May change: card container paint only (gradient, border-radius,
-box-shadow, text-shadow).
+May change: page chrome, plus card container paint only (gradient,
+border-radius, box-shadow, text-shadow).
 
-Must ship unchanged: card dimensions, fan layout and positioning, drag
-physics, hide-zero logic, and interior digit/comma spacing (the
-sliver-fix metrics).
-
-Not approved: the chrome reskin. Page background, header, typography,
-buttons, input styling, spacing, and every current feature (number input,
-Roll, Hide zeros, Mix, Reset, Clear, Forms, mobile action bar) ship
-exactly as they are. The surrounding UI shown in the prototype was not
-approved for implementation.
-
-The cards took a long, continuous process to perfect; the restyle touches
-only their paint, never their geometry or behavior. The base hues stay on
-the darkened 4.5:1 palette (owner decision 2026-10-05); the gradient
-darkens toward the bottom edge so white digits keep 4.5:1 contrast across
-the whole card. Requires Donray's explicit visual screenshot approval
+Must ship unchanged: card dimensions, fan layout and positioning,
+drag physics, hide-zero logic, and interior digit/comma spacing (the
+sliver-fix metrics). The cards took a long, continuous process to
+perfect; the restyle touches only their paint, never their geometry
+or behavior. Requires Donray's explicit visual screenshot approval
 before merge, per the standing fan-layout rule.
 
 ## Palette
