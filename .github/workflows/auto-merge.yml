@@ -13,6 +13,10 @@ jobs:
     steps:
       - name: Enable auto-merge
         run: |
+          if [ "$(gh pr view "${{ github.event.pull_request.html_url }}" --json isDraft --jq '.isDraft')" = "true" ]; then
+            echo "PR is a draft; GitHub cannot enable auto-merge on drafts. Skipping."
+            exit 0
+          fi
           if [ "$(gh pr view "${{ github.event.pull_request.html_url }}" --json autoMergeRequest --jq '.autoMergeRequest != null')" = "false" ]; then
             gh pr merge --auto --merge "${{ github.event.pull_request.html_url }}"
           fi
