@@ -1,5 +1,5 @@
 import { useDraggable } from '@/lib/useDraggable'
-import { CARD_COLORS, CARD_Y_OFFSET } from '@/lib/constants'
+import { CARD_PAINT, CARD_PAINT_STYLE, CARD_Y_OFFSET } from '@/lib/constants'
 import type { ScatterArea } from '@/lib/useHeaderContext'
 import type { MobileCardMetrics } from '@/lib/cardLayout'
 import { formatCardValue } from '@/lib/cardLayout'
@@ -69,7 +69,12 @@ export function DraggableCard({
     [index, fanX, resetTrigger, randomizeTrigger, scatterArea, naturalWidth]
   )
 
-  const cardColor = useCallback((placeValue: number) => CARD_COLORS[placeValue], [])
+  // Kids redesign (issue #97): card container paint. The geometry is
+  // untouched (dimensions, fan positioning, drag physics, hide-zero logic,
+  // digit/comma spacing all ship unchanged); only the paint changes to
+  // match the approved prototype tiles: a vertical gradient in the same
+  // darkened hue, a larger corner radius, and layered shadows.
+  const paint = CARD_PAINT[placeValue]
   // The card element, mirrored into state via callback ref so the hook can
   // measure it at scatter time without reading a ref during render.
   const [cardEl, setCardEl] = useState<HTMLDivElement | null>(null)
@@ -107,9 +112,16 @@ export function DraggableCard({
       tabIndex={isHidden ? undefined : 0}
       aria-hidden={isHidden || undefined}
       aria-label={`${displayValue} place value card. Use arrow keys to move it.`}
-      className={`flex items-center justify-start gap-0 rounded-xl px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white shadow-md ${cardColor(placeValue)}`}
+      className="flex items-center justify-start gap-0 px-1 md:px-2 py-4 md:py-10 text-lg md:text-6xl font-bold cursor-move select-none tracking-[10px] md:tracking-[20px] tabular-nums text-white"
       style={{
         position: 'absolute',
+        // Paint: vertical gradient in the card's hue plus the prototype's
+        // corner radius and shadows. Replaces the old solid bg-* color and
+        // shadow-md; everything else about the card's box is unchanged.
+        background: `linear-gradient(180deg, ${paint.from} 0%, ${paint.to} 100%)`,
+        borderRadius: CARD_PAINT_STYLE.borderRadius,
+        boxShadow: CARD_PAINT_STYLE.boxShadow,
+        textShadow: CARD_PAINT_STYLE.textShadow,
         // Cards anchor on the fan wrapper's left edge at their cumulative
         // offset (fanX); the parent centers the wrapper, so the visible
         // fan is centered.
