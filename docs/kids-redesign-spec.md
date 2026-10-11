@@ -36,6 +36,16 @@ Starter plan allows max 3 pages. Use:
 - No hover-dependent affordances. No multi-finger gestures. No precise or
   long drags.
 
+## Scope: chrome-only reskin
+
+This redesign changes everything _around_ the cards: page background,
+header, typography, buttons, input styling, spacing.
+
+Out of scope, shipping unchanged: the card component, fan layout and
+positioning, drag physics, and hide-zero logic. The cards took a long,
+continuous process to perfect. This redesign does not touch them; it
+only gains the kids-centric look around them.
+
 ## Palette
 
 | Token               | Hex                       | Use                                      |
