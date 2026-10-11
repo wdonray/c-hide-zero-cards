@@ -105,6 +105,13 @@ c-hide-zero-cards/
 
 Open issues for bugs or feature requests. Pull requests welcome — one focused PR per change, with the CI gate green before merge.
 
+## Design Research
+
+The kids-centric redesign (issue #97) is backed by a living research
+document: [docs/kids-redesign-research.md](docs/kids-redesign-research.md).
+It covers the target age range, design precedents, UX guidance, and the
+recommended direction, and it grows as new research lands.
+
 ## License
 
 Educational use only.

@@ -46,6 +46,10 @@ behavior on your own.
 
 ## Conventions
 
+- **Kids-redesign research is a living document.** Design research for the
+  kids-centric redesign (issue #97) lives in
+  [`docs/kids-redesign-research.md`](docs/kids-redesign-research.md). Update
+  it whenever new research lands; the README links it too.
 - **Mobile is responsive, portrait-first.** No mobile warning dialog, no
   rotation lock (iOS Safari cannot lock orientation, so a rotate nag would just
   replace one annoyance with another).
