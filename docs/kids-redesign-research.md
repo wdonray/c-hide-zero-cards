@@ -12,8 +12,9 @@
 - [x] Age-range research (2026-10-11): who learns place value, and when.
 - [x] Design-precedent research (2026-10-11): best kids' math interactives,
       place-value manipulatives, design guidance, recommended direction.
-- [ ] Landing-page research (in flight as of 2026-10-11): whether a no-login,
-      get-right-in tool like this should have a landing page, and how.
+- [x] Landing-page research (2026-10-11): hybrid recommendation. Root URL is
+      both a brief landing page and the working tool; `/play` is the
+      chrome-free share/bookmark/smartboard target.
 
 ## 1. Age range: who learns place value, and when
 
@@ -215,11 +216,108 @@ toddlerish.
 
 ## 6. Landing page research
 
-Pending. Research in flight as of 2026-10-11: whether a no-login,
-get-right-in tool like this should have a landing page, how comparable
-tools (MLC apps, ABCya, Coolmath Games, PhET, Toy Theater) handle it, and
-what the tradeoffs are for teachers, smartboards, and shared links. This
-section will be filled in when the findings land.
+Researched 2026-10-11. Question: should a no-login, get-right-in tool like
+this have a landing page, and how would that work?
+
+**Recommendation: hybrid.** Make the root URL a single page that is BOTH a
+brief landing page and the working tool (the tool loads immediately, no
+click gate), with compact teacher-facing copy around it for SEO and
+discoverability. Add a dedicated chrome-free `/play` (or `/app`) URL as
+the canonical share/bookmark/smartboard target.
+
+Concretely:
+
+- `hidezerocards.org/` loads the tool immediately, no click gate, no
+  onboarding, with a compact teacher-facing header around it: a clear H1,
+  2-3 sentences on what it is and who it's for, and 3 tiny steps ("Type a
+  number, drag the cards, hide the zeros"). This gives search engines
+  indexable copy and gives a discovering teacher the at-a-glance "what is
+  this" story.
+- `hidezerocards.org/play` serves the tool full-screen with minimal
+  chrome. Every shared link, bookmark, QR code, and smartboard shortcut
+  should point here. It opens straight into the working tool.
+- Keep all teacher/SEO content on the root page; keep all guidance _in_
+  the tool as tiny contextual cues (kids skip instruction paragraphs).
+
+**How it serves each audience:**
+
+- _Teachers discovering the tool:_ the root page ranks for place-value
+  searches with real copy, and the tool is visible working on the same
+  page. The product sells itself instantly.
+- _Kids on a smartboard:_ zero extra clicks. The teacher opens the
+  bookmarked `/play` link and the tool is live. No launch button, no tour,
+  no text to read.
+- _Shared/bookmarked links:_ any link (root or `/play`) opens the working
+  tool, never a gate. `/play` is the canonical share target.
+
+**Precedents.** No comparable tool gates the tool behind a marketing
+landing page. The dominant convention is the hybrid per-tool page: one URL
+that is simultaneously the SEO/discovery page _and_ the working tool.
+
+- Math Learning Center: catalog at
+  [mathlearningcenter.org/apps](https://www.mathlearningcenter.org/apps)
+  with "Open web app" links going straight into the tool; share links like
+  `apps.mathlearningcenter.org/numberframes/?4ny52h37` open the working
+  app immediately.
+- PhET: per-sim info page with a Play button, PLUS a direct launch URL
+  (`phet.colorado.edu/sims/html/..._en.html`) that teachers paste into
+  worksheets. ([PhET GitHub](https://github.com/phetsims/balloons-and-static-electricity/issues/93))
+- Toy Theater: each tool page (e.g.
+  [toytheater.com/base-ten-blocks](https://toytheater.com/base-ten-blocks/))
+  embeds the tool directly with a one-sentence description and a FULL
+  SCREEN link. The page is both landing and tool.
+- Coolmath Games, ABCya, Sheppard Software: same hybrid per-game page
+  pattern. Tool loads in-page, description/instructions around it, no
+  login.
+- Math Curious (closest analog, a no-login digital place-value tool):
+  "Click the link inside it, the game opens straight away in any browser.
+  Send the link to your students, or open it on the board. There is
+  nothing to install and no account to make."
+  ([mathcurious.com](https://mathcurious.com/blog/digital-place-value-tools-3-6-digits/))
+
+**Tradeoffs.**
+
+- _SEO:_ a JavaScript-only tool screen has almost no indexable text.
+  Every precedent puts crawlable copy on or next to the tool page.
+- _First-run guidance:_ NN/g's children's research found kids skip long
+  instructions and want instant gratification. Guidance belongs in-tool as
+  contextual cues, not on a landing page.
+  ([nngroup.com](https://www.nngroup.com/articles/childrens-websites-usability-issues/))
+- _Shareability:_ teachers share direct tool links (PhET worksheets, MLC
+  PDFs, Math Curious's link-based distribution). A shared link must open
+  the working tool.
+- _Smartboard:_ every extra click costs attention when a teacher is
+  projecting to 25 kids. The expectation is "open the page and teach."
+- _Return visits:_ NN/g found children rely more on bookmarks than
+  search, so the bookmark target must be the tool itself.
+
+**UX guidance.**
+
+- NN/g "Children's UX" (three rounds of studies, 125 children ages 3-12):
+  instant gratification, skip instructions, bookmark reliance, minimal
+  text for young readers.
+  ([nngroup.com](https://www.nngroup.com/articles/childrens-websites-usability-issues/))
+- Influense Design: "The landing page isn't the objective. Getting the
+  right person to the right information without making them hunt for it
+  is." For a single, self-explanatory tool, the tool page itself can be
+  the landing page.
+  ([influense.design](https://influense.design/blog/what-is-a-landing-page-when-do-you-need-one/))
+- Splitbase: for self-explanatory products, a direct page with clear copy
+  suffices. "Sometimes the homepage IS the best landing page."
+  ([splitbase.com](https://splitbase.com/blog/do-you-always-need-a-landing-page))
+
+**Anti-patterns to avoid.**
+
+- A landing page that buries the tool below the fold or behind a "Launch
+  the tool" button.
+- Forced onboarding tours, coach marks, or multi-step first-run modals.
+- Email gates, accounts, or any signup wall.
+- Ad clutter or promotional popups on the tool page.
+- Making the shared/bookmarked URL resolve to anything other than the
+  working tool.
+
+Full notes:
+`~/workspace/research_notes/hzc-landing-page-research-20261011-1306/`.
 
 ## Sources
 
@@ -266,4 +364,7 @@ section will be filled in when the findings land.
   Caveat: Khan Academy Kids, Prodigy, Zearn lesson UI, and SplashLearn's
   in-game screens were documented via third-party reviews, not live
   browser sessions.
-- 2026-10-11: landing-page research kicked off (in flight).
+- 2026-10-11: landing-page research completed. Recommendation: hybrid
+  (root URL = brief landing page + working tool; `/play` = chrome-free
+  share/bookmark/smartboard target). Full notes:
+  `~/workspace/research_notes/hzc-landing-page-research-20261011-1306/`.
