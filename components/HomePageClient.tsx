@@ -273,7 +273,7 @@ export function HomePageClient() {
 
         <main
           aria-label="Place value cards workspace"
-          className="relative mx-7 flex min-h-[560px] items-center justify-center overflow-hidden rounded-[28px] border-2 border-[#E8DCC8] bg-white/65 px-5 py-10 max-md:mx-3 max-md:min-h-[420px] max-md:rounded-[20px]"
+          className="relative mx-7 flex min-h-[560px] items-center justify-center overflow-hidden px-5 py-10 max-md:mx-3 max-md:min-h-[420px]"
         >
           {/* Subtle dot texture */}
           <div
