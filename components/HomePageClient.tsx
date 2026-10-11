@@ -3,13 +3,7 @@
 import { useLayoutEffect, useMemo, useEffect, useRef, useState } from 'react'
 import { DraggableCard } from '@/components/DraggableCard'
 import { LandingSection } from '@/components/LandingSection'
-import {
-  PLACE_VALUES,
-  LOCAL_STORAGE_KEYS,
-  FIRST_TIME_TOAST_DURATION,
-  FIRST_TIME_TOAST_STYLE,
-  NumberFormsDialogTab,
-} from '@/lib/constants'
+import { PLACE_VALUES, LOCAL_STORAGE_KEYS, NumberFormsDialogTab } from '@/lib/constants'
 import {
   getMobileCardMetrics,
   getPeekText,
@@ -23,8 +17,6 @@ import { reportError } from '@/lib/report-error'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
 import { ZeroStateIndicator } from '@/components/ZeroStateIndicator'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
-import { toast } from 'sonner'
-import { FirstTimeToast } from '@/components/FirstTimeToast'
 
 export function HomePageClient() {
   const {
@@ -240,14 +232,8 @@ export function HomePageClient() {
     window.scrollTo(0, 0)
   }, [])
 
-  // One-time toast: guarded by localStorage directly, so the effect only
-  // touches external systems (storage + the toast library) and never state.
-  useEffect(() => {
-    if (cards.length > 1 && localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST) === null) {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST, JSON.stringify(true))
-      toast(<FirstTimeToast />, { duration: FIRST_TIME_TOAST_DURATION, style: FIRST_TIME_TOAST_STYLE })
-    }
-  }, [cards])
+  // First-time toast removed per owner decision 2026-10-11 (kids redesign):
+  // the "Great job!" popover no longer appears.
 
   return (
     <>
@@ -261,7 +247,7 @@ export function HomePageClient() {
       {/* <BuyMeACoffeeWidget /> */}
 
       <section
-        className="kids-page flex flex-col items-center gap-8 max-md:w-full max-md:flex-1 max-md:gap-3"
+        className="flex flex-col items-center gap-8 max-md:w-full max-md:flex-1 max-md:gap-3"
         aria-label="Interactive Place Value Cards"
       >
         <header className="flex flex-col items-center max-md:w-full">
