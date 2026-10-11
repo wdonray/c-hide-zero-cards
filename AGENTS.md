@@ -50,6 +50,11 @@ behavior on your own.
   kids-centric redesign (issue #97) lives in
   [`docs/kids-redesign-research.md`](docs/kids-redesign-research.md). Update
   it whenever new research lands; the README links it too.
+- **Kids-redesign Figma build spec.** The build input for the Figma
+  redesign doc (issue #97) lives in
+  [`docs/kids-redesign-spec.md`](docs/kids-redesign-spec.md): palette,
+  typography, components, screens, and anti-patterns, all sourced from
+  the research.
 - **Mobile is responsive, portrait-first.** No mobile warning dialog, no
   rotation lock (iOS Safari cannot lock orientation, so a rotate nag would just
   replace one annoyance with another).
