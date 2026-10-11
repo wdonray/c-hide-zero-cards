@@ -59,9 +59,14 @@ export const NumberInput = forwardRef<NumberInputRef, NumberInputProps>(({ value
       pattern="[0-9]*"
       enterKeyHint="done"
       value={formattedNumber}
-      placeholder="Type a number here!"
+      placeholder="Type a number"
       onChange={handleInputChange}
-      className={`!text-4xl !font-semibold !h-16 !px-6 max-md:!text-2xl max-md:!px-4 ${!isTouched ? 'animate-pulse' : ''}`}
+      aria-label="Type a number"
+      className={`!h-[56px] !w-[230px] !rounded-full !border-2 !border-[#2B2118] !bg-white !px-6 !text-center !text-[26px] !font-bold !text-[#2B2118] placeholder:!text-[18px] placeholder:!font-medium placeholder:!text-[#8A7B6B] focus:!border-[#E76F51] ${!isTouched ? 'animate-pulse' : ''}`}
+      style={{
+        fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+        boxShadow: 'inset 0 2px 6px rgba(43, 33, 24, 0.06)',
+      }}
     />
   )
 })

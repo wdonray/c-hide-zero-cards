@@ -79,6 +79,15 @@
   --toast-bg: oklch(0.98 0.005 85);
   --toast-text: oklch(0.141 0.005 285.823);
   --toast-border: oklch(0.92 0.008 85);
+  /* Kids redesign palette (issue #97) */
+  --kids-cream: #fff6ec;
+  --kids-paper: #fffdf7;
+  --kids-ink: #2b2118;
+  --kids-muted: #8a7b6b;
+  --kids-primary: #e76f51;
+  --kids-primary-dark: #c14e33;
+  --kids-border: #e8dcc8;
+  --font-baloo: var(--font-baloo);
 }
 
 .dark {
@@ -210,4 +219,9 @@
 
 .dark #bmc-wbtn {
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* Kids redesign (issue #97): cream page background */
+.kids-page {
+  background-color: #fff6ec;
 }

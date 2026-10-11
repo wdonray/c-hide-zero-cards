@@ -1,8 +1,8 @@
 'use client'
 
 import { useLayoutEffect, useMemo, useEffect, useRef, useState } from 'react'
-import { NumberInput } from '@/components/NumberInput'
 import { DraggableCard } from '@/components/DraggableCard'
+import { LandingSection } from '@/components/LandingSection'
 import {
   PLACE_VALUES,
   LOCAL_STORAGE_KEYS,
@@ -37,7 +37,6 @@ export function HomePageClient() {
     showNumberFormsDialog,
     setShowNumberFormsDialog,
     isHeaderCollapsed,
-    numberInputRef,
   } = useHeaderContext()
   const isMobile = useIsMobile()
 
@@ -262,60 +261,73 @@ export function HomePageClient() {
       {/* <BuyMeACoffeeWidget /> */}
 
       <section
-        className="flex flex-col items-center gap-8 max-md:w-full max-md:flex-1 max-md:gap-3"
+        className="kids-page flex flex-col items-center gap-8 max-md:w-full max-md:flex-1 max-md:gap-3"
         aria-label="Interactive Place Value Cards"
       >
         <header className="flex flex-col items-center max-md:w-full">
-          {/* Desktop: the zero-state readout lives here, above the number
-              input and below the toolbar's bottom border. Mobile renders its
-              own instance above the bottom action bar instead. */}
+          {/* Desktop: the zero-state readout lives here, above the play
+              area. The number input now lives in the toolbar row above.
+              Mobile renders its own instance above the bottom action bar. */}
           {!isMobile && <ZeroStateIndicator className="mb-1.5" />}
-          <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
         </header>
 
         <main
-          className={`w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} max-md:h-auto max-md:min-h-[280px] max-md:flex-1 transition-[height] duration-300 flex items-center justify-center relative`}
           aria-label="Place value cards workspace"
+          className="relative mx-7 flex min-h-[560px] items-center justify-center overflow-hidden rounded-[28px] border-2 border-[#E8DCC8] bg-white/65 px-5 py-10 max-md:mx-3 max-md:min-h-[420px] max-md:rounded-[20px]"
         >
+          {/* Subtle dot texture */}
           <div
-            ref={fanRef}
-            role="application"
-            aria-label="Draggable place value cards"
-            className="relative shrink-0"
-            style={
-              layout
-                ? {
-                    width: layout.extent,
-                    height: layout.height,
-                    // No scrolling, no max-width: the fan renders at its
-                    // natural size always. Compacting cards to fit the
-                    // viewport (or allowing the strip to scroll) causes
-                    // cards to reveal their real size on drag. (Owner
-                    // 2026-10-08: scrolling in the card container is wrong.)
-                    overflowX: 'visible',
-                  }
-                : undefined
-            }
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(43, 33, 24, 0.05) 1.5px, transparent 1.5px)',
+              backgroundSize: '28px 28px',
+            }}
+          />
+          <div
+            className={`relative w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} max-md:h-auto max-md:min-h-[280px] max-md:flex-1 transition-[height] duration-300 flex items-center justify-center`}
           >
-            {cards.map((card, i) => (
-              <DraggableCard
-                key={`${card.firstDigit}-${card.placeValue}-${i}`}
-                firstDigit={card.firstDigit}
-                placeValue={card.placeValue}
-                index={i}
-                totalCards={cards.length}
-                fanX={layout ? layout.itemX[i] : 0}
-                mobileMetrics={mobileMetrics}
-                naturalWidth={layout ? layout.naturals[i] : undefined}
-                hiddenZero={card.firstDigit === 0 && !showZeroCards}
-                resetTrigger={resetTrigger}
-                randomizeTrigger={randomizeTrigger}
-                scatterArea={scatterArea}
-              />
-            ))}
+            <div
+              ref={fanRef}
+              role="application"
+              aria-label="Draggable place value cards"
+              className="relative shrink-0"
+              style={
+                layout
+                  ? {
+                      width: layout.extent,
+                      height: layout.height,
+                      // No scrolling, no max-width: the fan renders at its
+                      // natural size always. Compacting cards to fit the
+                      // viewport (or allowing the strip to scroll) causes
+                      // cards to reveal their real size on drag. (Owner
+                      // 2026-10-08: scrolling in the card container is wrong.)
+                      overflowX: 'visible',
+                    }
+                  : undefined
+              }
+            >
+              {cards.map((card, i) => (
+                <DraggableCard
+                  key={`${card.firstDigit}-${card.placeValue}-${i}`}
+                  firstDigit={card.firstDigit}
+                  placeValue={card.placeValue}
+                  index={i}
+                  totalCards={cards.length}
+                  fanX={layout ? layout.itemX[i] : 0}
+                  mobileMetrics={mobileMetrics}
+                  naturalWidth={layout ? layout.naturals[i] : undefined}
+                  hiddenZero={card.firstDigit === 0 && !showZeroCards}
+                  resetTrigger={resetTrigger}
+                  randomizeTrigger={randomizeTrigger}
+                  scatterArea={scatterArea}
+                />
+              ))}
+            </div>
           </div>
         </main>
       </section>
+      <LandingSection />
     </>
   )
 }

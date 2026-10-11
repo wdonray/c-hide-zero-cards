@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Baloo_2 } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/Header'
 import { Toolbar } from '@/components/Toolbar'
@@ -23,6 +23,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+})
+
+const baloo2 = Baloo_2({
+  variable: '--font-baloo',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
@@ -201,7 +207,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background max-md:flex max-md:min-h-dvh max-md:flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${baloo2.variable} antialiased bg-background max-md:flex max-md:min-h-dvh max-md:flex-col`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <HydrationCheck>

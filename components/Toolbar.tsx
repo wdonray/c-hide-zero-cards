@@ -2,20 +2,24 @@
 
 import { usePathname } from 'next/navigation'
 import { useHeaderContext } from '@/lib/useHeaderContext'
-import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
 import { useIsMobile } from '@/lib/useIsMobile'
-import { Button } from '@/components/ui/button'
-import { CaretUp, CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
+import { NumberInput } from '@/components/NumberInput'
+import { DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
 import { RandomNumberPopover } from './RandomNumberPopover'
-import { APP_TOOLBAR_ID } from '@/lib/scatterArea'
+import { APP_TOOLBAR_ID, NUMBER_INPUT_ID } from '@/lib/scatterArea'
+
+const pillBase =
+  'inline-flex h-[52px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-white px-[22px] text-[17px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
+
+const pillShadow = '0 3px 0 rgba(43, 33, 24, 0.15)'
+
+const baloo = { fontFamily: 'var(--font-baloo), system-ui, sans-serif' } as const
 
 export function Toolbar() {
   const isMobile = useIsMobile()
   const pathname = usePathname()
   const {
-    isHeaderCollapsed,
-    toggleHeader,
     handleRandomNumber,
     isDiceRolling,
     handleRandomizeCardPosition,
@@ -27,6 +31,7 @@ export function Toolbar() {
     setShowNumberFormsDialog,
     cardsMoved,
     focusNumberInput,
+    numberInputRef,
   } = useHeaderContext()
 
   function handleClearInput() {
@@ -42,124 +47,82 @@ export function Toolbar() {
 
   // On mobile the top toolbar is superseded by the bottom action bar
   // (MobileActionBar), which carries the same actions with visible labels.
-  // Unmounting (rather than CSS-hiding) keeps a single instance of each
-  // control in the DOM and the accessibility tree.
   if (isMobile) return null
 
   return (
-    <>
-      <div
-        id={APP_TOOLBAR_ID}
-        className={`sticky z-40 w-full border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/50 transition-all duration-300 ${
-          isHeaderCollapsed ? 'top-0' : 'top-14'
-        }`}
-      >
-        <div className="container m-auto px-3 md:px-8 flex h-12 max-md:h-auto max-md:py-1.5 items-center justify-between">
-          <div className="flex items-center gap-1.5 md:gap-4 max-md:flex-wrap">
-            <div className="flex rounded-md shadow-sm" role="group">
-              <Button
-                size="sm"
-                onClick={handleRandomNumber}
-                disabled={isDiceRolling}
-                className={`md:hidden bg-blue-600 hover:bg-blue-700 ${COARSE_POINTER_TOUCH_TARGET}`}
-                title="Roll a random number"
-              >
-                <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
-              </Button>
-
-              <Button
-                size="sm"
-                onClick={handleRandomNumber}
-                disabled={isDiceRolling}
-                className={`hidden md:flex rounded-r-none bg-blue-600 hover:bg-blue-700 ${COARSE_POINTER_TOUCH_TARGET}`}
-                title="Roll a random number"
-              >
-                <DiceSix className={`h-4 w-4 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
-                <span className="hidden md:block">Roll</span>
-              </Button>
-              <RandomNumberPopover />
-            </div>
-
-            <Button
-              variant="outline"
-              disabled={!inputNumber}
-              size="sm"
-              onClick={handleClearInput}
-              className={COARSE_POINTER_TOUCH_TARGET}
-              title="Clear input number and reset cards"
-            >
-              <X className="h-4 w-4 text-red-600" />
-              <span className="hidden md:block">Clear</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              disabled={!inputNumber}
-              size="sm"
-              onClick={toggleZeroCards}
-              className={COARSE_POINTER_TOUCH_TARGET}
-              title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
-            >
-              {showZeroCards ? (
-                <EyeSlash className="h-4 w-4 text-slate-600" />
-              ) : (
-                <Eye className="h-4 w-4 text-slate-600" />
-              )}
-              <span className="hidden md:block">Zero</span>
-            </Button>
-
-            <Button
-              size="sm"
-              disabled={!inputNumber}
-              variant="outline"
-              onClick={handleRandomizeCardPosition}
-              className={COARSE_POINTER_TOUCH_TARGET}
-              title="Randomize card position"
-            >
-              <Shuffle className="h-4 w-4 text-purple-600" />
-              <span className="hidden md:block">Mix</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              disabled={!inputNumber || !cardsMoved}
-              size="sm"
-              onClick={handleResetCardPosition}
-              className={COARSE_POINTER_TOUCH_TARGET}
-              title="Reset cards to original position"
-            >
-              <ArrowClockwise className="h-4 w-4 text-green-600" />
-              <span className="hidden md:block">Reset</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              disabled={!inputNumber}
-              size="sm"
-              onClick={() => setShowNumberFormsDialog(true)}
-              className={COARSE_POINTER_TOUCH_TARGET}
-              title={
-                inputNumber
-                  ? `Number Forms & Representations for ${inputNumber?.toLocaleString()}`
-                  : 'Number Forms & Representations'
-              }
-            >
-              <Layers className="h-4 w-4 text-blue-600" />
-              <span className="hidden md:block">Number Forms</span>
-            </Button>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleHeader}
-            className={`shrink-0 ${COARSE_POINTER_TOUCH_TARGET}`}
-            title={isHeaderCollapsed ? 'Expand header' : 'Collapse header'}
-          >
-            {isHeaderCollapsed ? <CaretDown className="h-4 w-4" /> : <CaretUp className="h-4 w-4" />}
-          </Button>
+    <div id={APP_TOOLBAR_ID} className="w-full" style={{ background: '#FFF6EC' }}>
+      <div className="flex flex-wrap items-center justify-center gap-3 px-5 py-[18px]" style={baloo}>
+        <div id={NUMBER_INPUT_ID}>
+          <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
         </div>
+
+        <button
+          onClick={toggleZeroCards}
+          disabled={!inputNumber}
+          title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
+          className="inline-flex h-[56px] items-center gap-2 rounded-full border-2 border-[#C14E33] bg-[#E76F51] px-7 text-[19px] font-semibold text-white transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
+          style={{ ...baloo, boxShadow: '0 4px 0 #C14E33' }}
+        >
+          {showZeroCards ? <EyeSlash className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          {showZeroCards ? 'Show zeros' : 'Hide zeros'}
+        </button>
+
+        <button
+          onClick={handleRandomNumber}
+          disabled={isDiceRolling}
+          title="Roll a random number"
+          className={pillBase}
+          style={{ ...baloo, boxShadow: pillShadow }}
+        >
+          <DiceSix className={`h-5 w-5 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
+          Roll
+        </button>
+        <RandomNumberPopover />
+
+        <button
+          onClick={handleRandomizeCardPosition}
+          disabled={!inputNumber}
+          title="Mix: scatter cards to random positions"
+          className={pillBase}
+          style={{ ...baloo, boxShadow: pillShadow }}
+        >
+          <Shuffle className="h-5 w-5" />
+          Mix
+        </button>
+
+        <button
+          onClick={handleResetCardPosition}
+          disabled={!inputNumber || !cardsMoved}
+          title="Reset cards to fan position"
+          className={pillBase}
+          style={{ ...baloo, boxShadow: pillShadow }}
+        >
+          <ArrowClockwise className="h-5 w-5" />
+          Reset
+        </button>
+
+        <button
+          onClick={handleClearInput}
+          disabled={!inputNumber}
+          title="Clear input number and reset cards"
+          className={pillBase}
+          style={{ ...baloo, boxShadow: pillShadow }}
+        >
+          <X className="h-5 w-5" />
+          Clear
+        </button>
+
+        <button
+          onClick={() => setShowNumberFormsDialog(true)}
+          disabled={!inputNumber}
+          title={inputNumber ? `Number Forms for ${inputNumber.toLocaleString()}` : 'Number Forms'}
+          className={pillBase}
+          style={{ ...baloo, boxShadow: pillShadow }}
+        >
+          <Layers className="h-5 w-5" />
+          Forms
+        </button>
       </div>
-    </>
+    </div>
   )
 }
