@@ -19,7 +19,7 @@ export function Header() {
       // Dynamic Island once viewport-fit=cover lets the page extend under it.
       // env() is 0 on desktop, so this is a no-op there: the calc falls back
       // to exactly 60px and the padding to 0.
-      className="sticky top-0 z-50 h-[calc(60px+env(safe-area-inset-top))] w-full bg-white pt-[env(safe-area-inset-top)]"
+      className="sticky top-0 z-50 h-[calc(60px+env(safe-area-inset-top))] w-full bg-white dark:bg-[#1a1512] pt-[env(safe-area-inset-top)]"
       style={{
         boxShadow: '0 2px 12px rgba(43, 33, 24, 0.06)',
         fontFamily: 'var(--font-baloo), system-ui, sans-serif',
@@ -32,7 +32,7 @@ export function Header() {
           className="flex items-center gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <Image src={logo} alt="Hide Zero Cards Logo" className="h-9 w-auto" />
-          <span className="text-2xl font-extrabold tracking-tight text-[#2B2118]">
+          <span className="text-2xl font-extrabold tracking-tight text-[#2B2118] dark:text-[#FFF6EC]">
             Hide <span className="text-[#C14E33]">Zero</span> Cards
           </span>
         </Link>
