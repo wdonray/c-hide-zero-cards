@@ -12,8 +12,8 @@ export function Footer() {
       className="w-full border-t border-[#E8DCC8] bg-white/80"
       style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
     >
-      <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-2 px-4 py-5">
-        <p className="text-[14px] font-medium text-[#8A7B6B]">Free for classrooms. No login, no ads.</p>
+      <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-2 px-4 py-5 max-md:gap-1 max-md:py-3">
+        <p className="text-[14px] font-medium text-[#8A7B6B] max-md:hidden">Free for classrooms. No login, no ads.</p>
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           <a
             href="https://www.donray.dev/"

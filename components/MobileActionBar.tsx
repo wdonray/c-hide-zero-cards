@@ -34,12 +34,17 @@ function BarButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40',
-        primary && 'bg-blue-600 text-white hover:bg-blue-700 hover:text-white'
+        'flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-transparent px-1 text-[#8A7B6B] transition-all hover:text-[#2B2118] disabled:pointer-events-none disabled:opacity-40',
+        primary && 'border-[#C14E33] bg-[#E76F51] text-white hover:text-white'
       )}
+      style={
+        primary
+          ? { boxShadow: '0 3px 0 #C14E33', fontFamily: 'var(--font-baloo), system-ui, sans-serif' }
+          : { fontFamily: 'var(--font-baloo), system-ui, sans-serif' }
+      }
     >
       {children}
-      <span className="text-[10px] font-medium leading-none">{label}</span>
+      <span className="text-[10px] font-semibold leading-none">{label}</span>
     </button>
   )
 }
