@@ -32,7 +32,7 @@ export function Header() {
           className="flex items-center gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <Image src={logo} alt="Hide Zero Cards Logo" className="h-9 w-auto" />
-          <span className="text-2xl font-extrabold tracking-tight text-[#2B2118] dark:text-white">
+          <span className="text-2xl font-extrabold tracking-tight text-[#2B2118] dark:text-[#FFF6EC]">
             Hide <span className="text-[#C14E33] dark:text-[#FF8A6B]">Zero</span> Cards
           </span>
         </Link>
