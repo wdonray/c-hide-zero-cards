@@ -73,7 +73,7 @@ export function Toolbar() {
             onClick={handleRandomNumber}
             disabled={isDiceRolling}
             title="Roll a random number"
-            className="inline-flex h-[64px] items-center gap-2 rounded-l-full rounded-r-none border-2 border-r-0 border-[#2B2118] bg-white px-[22px] text-[18px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
+            className="inline-flex h-[64px] items-center gap-2 rounded-l-full rounded-r-none border-2 border-r-0 border-[#2B2118] bg-white px-[22px] text-[18px] font-semibold text-[#2B2118] transition-colors hover:bg-[#FFF6EC] active:bg-[#FFEED5] disabled:opacity-40 disabled:pointer-events-none"
             style={{ ...baloo, boxShadow: pillShadow }}
           >
             <DiceSix className={`h-6 w-6 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
