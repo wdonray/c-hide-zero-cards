@@ -2,7 +2,6 @@
 
 import { useLayoutEffect, useMemo, useEffect, useRef, useState } from 'react'
 import { DraggableCard } from '@/components/DraggableCard'
-import { LandingSection } from '@/components/LandingSection'
 import { PLACE_VALUES, LOCAL_STORAGE_KEYS, NumberFormsDialogTab } from '@/lib/constants'
 import {
   getMobileCardMetrics,
@@ -313,7 +312,6 @@ export function HomePageClient() {
           </div>
         </main>
       </section>
-      <LandingSection />
     </>
   )
 }

@@ -28,7 +28,7 @@ export function RandomNumberPopover() {
     <Popover open={showRandomRange} onOpenChange={setShowRandomRange}>
       <PopoverTrigger asChild>
         <button
-          className="inline-flex h-[52px] w-[52px] items-center justify-center rounded-full border-2 border-[#2B2118] bg-white text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px]"
+          className="inline-flex h-[52px] w-[44px] items-center justify-center rounded-l-none rounded-r-full border-2 border-l-0 border-[#2B2118] bg-white text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px]"
           style={{ boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)' }}
           title="Set random number range"
           aria-label="Set random number range"
