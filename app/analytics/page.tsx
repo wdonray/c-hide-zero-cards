@@ -41,12 +41,12 @@ export default async function AnalyticsPage() {
       <div className="space-y-2">
         <div className="h-1.5 w-12 rounded-full bg-[#C14E33]" aria-hidden="true" />
         <h1
-          className="text-3xl font-bold tracking-tight text-[#2B2118]"
+          className="text-3xl font-bold tracking-tight text-[#2B2118] dark:text-[#FFF6EC]"
           style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
         >
           Analytics
         </h1>
-        <p className="text-[#6B5D4F]">
+        <p className="text-[#6B5D4F] dark:text-[#C9BBA8]">
           Public, privacy-respecting traffic stats for Hide Zero Cards. No cookies, no raw IP addresses stored. Ever.
         </p>
       </div>

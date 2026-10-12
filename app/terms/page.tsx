@@ -18,12 +18,12 @@ function Section({ id, title, children }: { id: string; title: string; children:
     <section aria-labelledby={id} className="space-y-3">
       <h2
         id={id}
-        className="text-xl font-bold tracking-tight text-[#2B2118]"
+        className="text-xl font-bold tracking-tight text-[#2B2118] dark:text-[#FFF6EC]"
         style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
       >
         {title}
       </h2>
-      <div className="space-y-3 text-[#6B5D4F] leading-relaxed">{children}</div>
+      <div className="space-y-3 text-[#6B5D4F] dark:text-[#C9BBA8] leading-relaxed">{children}</div>
     </section>
   )
 }
@@ -35,15 +35,15 @@ export default function TermsOfUsePage() {
       <div className="space-y-2">
         <div className="h-1.5 w-12 rounded-full bg-[#C14E33]" aria-hidden="true" />
         <h1
-          className="text-3xl font-bold tracking-tight text-[#2B2118]"
+          className="text-3xl font-bold tracking-tight text-[#2B2118] dark:text-[#FFF6EC]"
           style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
         >
           Terms of Use
         </h1>
-        <p className="text-[#6B5D4F]">Effective date: {EFFECTIVE_DATE}</p>
+        <p className="text-[#6B5D4F] dark:text-[#C9BBA8]">Effective date: {EFFECTIVE_DATE}</p>
       </div>
 
-      <div className="space-y-3 text-[#6B5D4F] leading-relaxed">
+      <div className="space-y-3 text-[#6B5D4F] dark:text-[#C9BBA8] leading-relaxed">
         <p>
           These terms govern your use of Hide Zero Cards (&ldquo;this site&rdquo;), a free place-value card game run by
           Donray Williams. By using the site, you agree to these terms. If you do not agree, please do not use the site.
@@ -79,7 +79,10 @@ export default function TermsOfUsePage() {
       <Section id="privacy" title="Privacy">
         <p>
           Your use of the site is also governed by the{' '}
-          <Link href="/privacy" className="underline text-[#C14E33] hover:text-[#8F3520]">
+          <Link
+            href="/privacy"
+            className="underline text-[#C14E33] hover:text-[#8F3520] dark:text-[#FFB09A] dark:hover:text-[#FFD0C0]"
+          >
             Privacy Policy
           </Link>
           , which explains what information is collected and how it is used.
@@ -120,7 +123,10 @@ export default function TermsOfUsePage() {
       <Section id="contact" title="Contact">
         <p>
           Questions about these terms can be sent to{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="underline text-[#C14E33] hover:text-[#8F3520]">
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="underline text-[#C14E33] hover:text-[#8F3520] dark:text-[#FFB09A] dark:hover:text-[#FFD0C0]"
+          >
             {CONTACT_EMAIL}
           </a>
           .
