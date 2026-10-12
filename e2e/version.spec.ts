@@ -85,7 +85,7 @@ test.describe('/version page', () => {
       (route) => route.fulfill(mockReleases([]))
     )
     await page.goto('/')
-    await page.getByRole('link', { name: `v${version}` }).click()
+    await page.getByRole('link', { name: 'Versions' }).click()
     await expect(page).toHaveURL('/version')
     await expect(page.getByRole('heading', { name: 'Version' })).toBeVisible()
   })

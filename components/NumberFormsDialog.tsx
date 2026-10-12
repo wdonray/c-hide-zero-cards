@@ -65,7 +65,7 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
       >
         <DialogHeader className="flex flex-col gap-4 max-md:gap-2">
           <DialogTitle
-            className="flex items-center gap-2 text-base md:text-lg max-md:pr-12 max-md:text-lg max-md:leading-normal max-md:py-1 !text-[#2B2118] dark:!text-[#FFF6EC]"
+            className="flex items-center gap-2 text-base md:text-lg max-md:pr-12 max-md:text-lg max-md:leading-normal !text-[#2B2118] dark:!text-[#FFF6EC]"
             style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
           >
             <Layers className="h-5 w-5 shrink-0 max-md:hidden text-[#C14E33]" aria-hidden="true" />

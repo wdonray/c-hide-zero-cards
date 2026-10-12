@@ -61,9 +61,9 @@ export function Footer() {
           <Link
             href="/version"
             className="text-[13px] text-[#6B5D4F] dark:text-[#C9BBA8] transition-colors hover:text-[#2B2118] dark:hover:text-[#FFF6EC]"
-            title="App version and release history"
+            title={`App version v${VERSION} and release history`}
           >
-            v{VERSION}
+            Versions
           </Link>
         </div>
       </div>
