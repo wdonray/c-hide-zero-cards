@@ -40,9 +40,9 @@ export function Header() {
             <>
               <InstructionalGuideDialog />
               <ThemeToggle />
+              <FullscreenButton />
             </>
           )}
-          <FullscreenButton />
         </div>
       </div>
     </header>
