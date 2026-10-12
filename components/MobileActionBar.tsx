@@ -36,9 +36,12 @@ function BarButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-transparent px-1 text-[#6B5D4F] transition-all hover:text-[#2B2118] disabled:pointer-events-none disabled:opacity-40',
+        'flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-transparent px-1 transition-all hover:text-[#2B2118] dark:hover:text-[#FFF6EC] disabled:pointer-events-none disabled:opacity-40',
+        // Muted label color only when not primary: the primary button keeps
+        // white text in both themes (dark: would otherwise override it).
+        !primary && 'text-[#6B5D4F] dark:text-[#C9BBA8]',
         primary && 'border-[#8F3520] bg-[#C14E33] text-white hover:text-white',
-        ghost && 'text-[#6B5D4F]'
+        ghost && 'text-[#6B5D4F] dark:text-[#C9BBA8]'
       )}
       style={
         primary

@@ -190,7 +190,7 @@ test.describe("teacher's guide", () => {
   test('opens the guide and switches tabs', async ({ page }) => {
     await page.goto('/')
 
-    await page.getByRole('button', { name: 'How to Use' }).click()
+    await page.getByRole('button', { name: 'Guide' }).click()
     const dialog = page.getByRole('dialog', { name: "Hide Zero Cards - Teacher's Guide" })
     await expect(dialog).toBeVisible()
 

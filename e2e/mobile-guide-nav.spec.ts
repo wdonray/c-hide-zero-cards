@@ -105,7 +105,7 @@ test.describe('desktop tabs unchanged', () => {
   })
 
   test('tab row still works on desktop', async ({ page }) => {
-    await page.getByRole('button', { name: 'How to Use' }).click()
+    await page.getByRole('button', { name: 'Guide' }).click()
     const dialog = page.getByRole('dialog', { name: "Hide Zero Cards - Teacher's Guide" })
     await expect(dialog).toBeVisible()
     await expect(dialog.getByRole('tablist')).toHaveCount(1)

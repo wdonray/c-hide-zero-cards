@@ -122,7 +122,7 @@ test.describe('close buttons on desktop', () => {
   })
 
   test("Teacher's Guide dialog: X is centered and closes the dialog", async ({ page }) => {
-    await page.getByRole('button', { name: 'How to Use' }).click()
+    await page.getByRole('button', { name: 'Guide' }).click()
     const dialog = page.getByRole('dialog', { name: "Hide Zero Cards - Teacher's Guide" })
     await expect(dialog).toBeVisible()
     await expectXCentered(dialog)
