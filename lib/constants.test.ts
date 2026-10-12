@@ -55,8 +55,8 @@ describe('place value mappings', () => {
   })
 
   it('defines the shared card paint treatment from the approved prototype', () => {
-    expect(CARD_PAINT_STYLE.borderRadius).toBe('16px')
-    expect(CARD_PAINT_STYLE.boxShadow).toContain('inset 0 -4px 0')
+    expect(CARD_PAINT_STYLE.borderRadius).toBe('20px')
+    expect(CARD_PAINT_STYLE.boxShadow).toContain('inset 0 -6px 0')
     expect(CARD_PAINT_STYLE.textShadow).toBeTruthy()
   })
 })
