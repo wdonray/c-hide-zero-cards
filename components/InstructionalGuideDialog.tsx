@@ -40,7 +40,7 @@ export function InstructionalGuideDialog() {
       <DialogTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-11 items-center gap-2 rounded-full px-4 text-[16px] font-semibold text-[#2B2118] transition-colors hover:bg-[#FFF6EC] focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex h-11 items-center gap-2 rounded-full px-4 text-[16px] font-semibold text-[#2B2118] dark:text-[#FFF6EC] transition-colors hover:bg-[#FFF6EC] dark:hover:bg-[#3a2f26] focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
           title="Instructional Teachers Guide for Hide Zero Cards"
         >
