@@ -285,3 +285,9 @@
     animation: none;
   }
 }
+
+/* Ensure all buttons show pointer cursor (Tailwind v4 changed default) */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']) {
+  cursor: pointer;
+}
