@@ -12,6 +12,6 @@ describe('Footer', () => {
   it('keeps the existing analytics and version links', () => {
     render(<Footer />)
     expect(screen.getByRole('link', { name: 'Analytics' })).toHaveAttribute('href', '/analytics')
-    expect(screen.getByRole('link', { name: /v\d/ })).toHaveAttribute('href', '/version')
+    expect(screen.getByRole('link', { name: 'Versions' })).toHaveAttribute('href', '/version')
   })
 })
