@@ -9,7 +9,7 @@ export function Footer() {
   return (
     <footer
       id={APP_FOOTER_ID}
-      className="w-full border-t border-[#E8DCC8] bg-white/80"
+      className="w-full border-t border-[#E8DCC8] bg-white/80 max-md:hidden"
       style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
     >
       <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-2 px-4 py-5 max-md:gap-1 max-md:py-3">
