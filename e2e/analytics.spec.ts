@@ -32,6 +32,9 @@ test.describe('/analytics page', () => {
   test('page scroll is not locked (html has no overflow-hidden)', async ({ page }) => {
     await page.goto('/analytics')
 
+    // Wait for EnablePageScroll useEffect to remove the lock.
+    await page.waitForFunction(() => !document.documentElement.classList.contains('overflow-hidden'))
+
     // The root layout locks document scrolling for the card workspace;
     // content pages opt out via EnablePageScroll.
     const overflowHidden = await page.evaluate(() => document.documentElement.classList.contains('overflow-hidden'))

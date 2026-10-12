@@ -283,7 +283,8 @@ test.describe('mobile layout', () => {
     await expect(bar).toBeVisible()
 
     // Every action carries a visible text label (no hover tooltips on touch).
-    for (const label of ['Roll', 'Zero', 'Mix', 'Reset', 'Clear', 'Forms', 'More']) {
+    // Note: Zero button is toggle-aware ("Show zeros"/"Hide zeros").
+    for (const label of ['Roll', 'Show zeros', 'Mix', 'Reset', 'Clear', 'Forms', 'More']) {
       await expect(bar.getByText(label, { exact: true })).toBeVisible()
     }
 

@@ -134,6 +134,9 @@ test.describe('zero-hidden fan alignment', () => {
 
           await page.getByTitle('Hide zero cards', { exact: true }).click()
 
+          // Wait for hide-zeros micro-celebration animation (250ms + stagger) to complete.
+          await page.waitForTimeout(400)
+
           // No card is removed: the count never changes.
           await expect(cardEls).toHaveCount(input.length)
           data = await cardData(page)
