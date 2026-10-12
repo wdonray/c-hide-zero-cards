@@ -15,7 +15,11 @@ export function Header() {
   return (
     <header
       id={APP_HEADER_ID}
-      className="sticky top-0 z-50 h-[60px] w-full bg-white"
+      // The top safe-area inset keeps the sticky header clear of the notch /
+      // Dynamic Island once viewport-fit=cover lets the page extend under it.
+      // env() is 0 on desktop, so this is a no-op there: the calc falls back
+      // to exactly 60px and the padding to 0.
+      className="sticky top-0 z-50 h-[calc(60px+env(safe-area-inset-top))] w-full bg-white pt-[env(safe-area-inset-top)]"
       style={{
         boxShadow: '0 2px 12px rgba(43, 33, 24, 0.06)',
         fontFamily: 'var(--font-baloo), system-ui, sans-serif',
