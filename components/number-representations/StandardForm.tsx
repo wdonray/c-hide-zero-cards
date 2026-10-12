@@ -14,7 +14,7 @@ export function StandardForm({ number, className }: StandardFormProps) {
         className
       )}
     >
-      <CardContent className="flex items-center justify-center py-8">
+      <CardContent className="flex flex-1 items-center justify-center py-8">
         <p className="w-full text-3xl font-mono tabular-nums font-bold text-[#2B2118] dark:text-[#FFF6EC] leading-relaxed text-center">
           {number.toLocaleString()}
         </p>
