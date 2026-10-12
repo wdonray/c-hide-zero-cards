@@ -42,9 +42,14 @@ export function UnitForm({ number, className }: UnitFormProps) {
   const unitForm = units.map((unit) => unit.text).join(' , ')
 
   return (
-    <Card className={cn('flex flex-col', className)}>
+    <Card
+      className={cn(
+        'flex flex-col !bg-white !rounded-3xl !border-2 !border-[#2B2118] !shadow-[0_4px_0_rgba(43,33,24,0.1)]',
+        className
+      )}
+    >
       <CardContent className="flex-1 flex items-center justify-center">
-        <p className="w-full text-lg font-medium text-primary leading-relaxed text-center">{unitForm}</p>
+        <p className="w-full text-lg font-medium text-[#2B2118] leading-relaxed text-center">{unitForm}</p>
       </CardContent>
     </Card>
   )

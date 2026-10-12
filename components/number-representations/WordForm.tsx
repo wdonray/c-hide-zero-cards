@@ -84,9 +84,14 @@ export function WordForm({ number, className }: WordFormProps) {
   const wordForm = numberToWords(number)
 
   return (
-    <Card className={cn('flex flex-col', className)}>
+    <Card
+      className={cn(
+        'flex flex-col !bg-white !rounded-3xl !border-2 !border-[#2B2118] !shadow-[0_4px_0_rgba(43,33,24,0.1)]',
+        className
+      )}
+    >
       <CardContent className="flex-1 flex items-center justify-center">
-        <p className="w-full text-xl font-semibold text-primary leading-relaxed text-center">{wordForm}</p>
+        <p className="w-full text-xl font-semibold text-[#2B2118] leading-relaxed text-center">{wordForm}</p>
       </CardContent>
     </Card>
   )
