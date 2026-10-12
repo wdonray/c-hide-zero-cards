@@ -75,27 +75,13 @@ test.describe('zero toggle status text', () => {
       // The floating "Zeros shown"/"Zeros hidden" text was removed from desktop
       // per owner directive 2026-10-12. The toggle button itself still reflects
       // the state via its label.
-      const status = page.getByRole('status')
-      // Only the sr-only screen-reader instance in MobileActionBar remains (if rendered),
-      // no visible status text on desktop.
-      const visibleCount = await status.filter({ hasNot: page.locator('.sr-only') }).count()
-      await expect(visibleCount).toBe(0)
+      // No visible status element should exist on desktop.
+      await expect(page.locator('[role="status"]:not(.sr-only)')).toHaveCount(0)
 
       // Desktop toolbar button toggles between "Show zeros" and "Hide zeros".
       const zeroButton = page.getByRole('button', { name: 'Show zeros' })
       await zeroButton.click()
       await expect(page.getByRole('button', { name: 'Hide zeros' })).toBeVisible()
-      // so the status now sits below it, not above it).
-      const statusBox = await status.boundingBox()
-      const toolbarBox = await page.locator('#app-toolbar').boundingBox()
-      const workspaceBox = await page.locator('main[aria-label="Place value cards workspace"]').boundingBox()
-      expect(statusBox).not.toBeNull()
-      expect(toolbarBox).not.toBeNull()
-      expect(workspaceBox).not.toBeNull()
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      expect(statusBox!.y).toBeGreaterThanOrEqual(toolbarBox!.y + toolbarBox!.height - 1)
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      expect(statusBox!.y + statusBox!.height).toBeLessThanOrEqual(workspaceBox!.y + 1)
     })
   })
 })
