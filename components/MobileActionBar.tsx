@@ -36,13 +36,13 @@ function BarButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-transparent px-1 text-[#8A7B6B] transition-all hover:text-[#2B2118] disabled:pointer-events-none disabled:opacity-40',
-        primary && 'border-[#C14E33] bg-[#E76F51] text-white hover:text-white',
-        ghost && 'text-[#8A7B6B]'
+        'flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-transparent px-1 text-[#6B5D4F] transition-all hover:text-[#2B2118] disabled:pointer-events-none disabled:opacity-40',
+        primary && 'border-[#8F3520] bg-[#C14E33] text-white hover:text-white',
+        ghost && 'text-[#6B5D4F]'
       )}
       style={
         primary
-          ? { boxShadow: '0 3px 0 #C14E33', fontFamily: 'var(--font-baloo), system-ui, sans-serif' }
+          ? { boxShadow: '0 3px 0 #8F3520', fontFamily: 'var(--font-baloo), system-ui, sans-serif' }
           : { fontFamily: 'var(--font-baloo), system-ui, sans-serif' }
       }
     >

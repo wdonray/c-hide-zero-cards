@@ -13,13 +13,13 @@ export function Footer() {
       style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
     >
       <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-2 px-4 py-5 max-md:gap-1 max-md:py-3">
-        <p className="text-[14px] font-medium text-[#8A7B6B] max-md:hidden">Free for classrooms. No login, no ads.</p>
+        <p className="text-[14px] font-medium text-[#6B5D4F] max-md:hidden">Free for classrooms. No login, no ads.</p>
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           <a
             href="https://www.donray.dev/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[13px] text-[#8A7B6B] transition-colors hover:text-[#2B2118]"
+            className="text-[13px] text-[#6B5D4F] transition-colors hover:text-[#2B2118]"
             title="Donray Williams - Personal Website"
           >
             donray.dev
@@ -28,37 +28,37 @@ export function Footer() {
             href="https://www.linkedin.com/in/donrayxwilliams/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[13px] text-[#8A7B6B] transition-colors hover:text-[#2B2118]"
+            className="text-[13px] text-[#6B5D4F] transition-colors hover:text-[#2B2118]"
             title="Donray Williams - LinkedIn"
           >
             LinkedIn
           </a>
           <BuyMeACoffeeButton variant="ghost" size="sm" />
-          <span className="text-[13px] text-[#8A7B6B]">© {CURRENT_YEAR} Donray Williams</span>
+          <span className="text-[13px] text-[#6B5D4F]">© {CURRENT_YEAR} Donray Williams</span>
           <Link
             href="/analytics"
-            className="text-[13px] text-[#8A7B6B] transition-colors hover:text-[#2B2118]"
+            className="text-[13px] text-[#6B5D4F] transition-colors hover:text-[#2B2118]"
             title="Public traffic statistics"
           >
             Analytics
           </Link>
           <Link
             href="/privacy"
-            className="text-[13px] text-[#8A7B6B] transition-colors hover:text-[#2B2118]"
+            className="text-[13px] text-[#6B5D4F] transition-colors hover:text-[#2B2118]"
             title="Privacy policy"
           >
             Privacy
           </Link>
           <Link
             href="/terms"
-            className="text-[13px] text-[#8A7B6B] transition-colors hover:text-[#2B2118]"
+            className="text-[13px] text-[#6B5D4F] transition-colors hover:text-[#2B2118]"
             title="Terms of use"
           >
             Terms
           </Link>
           <Link
             href="/version"
-            className="text-[13px] text-[#8A7B6B] transition-colors hover:text-[#2B2118]"
+            className="text-[13px] text-[#6B5D4F] transition-colors hover:text-[#2B2118]"
             title="App version and release history"
           >
             v{VERSION}

@@ -61,8 +61,8 @@ export function Toolbar() {
           onClick={toggleZeroCards}
           disabled={!inputNumber}
           title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
-          className="inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#C14E33] bg-[#E76F51] px-[22px] text-[18px] font-semibold text-white transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
-          style={{ ...baloo, boxShadow: '0 4px 0 #C14E33' }}
+          className="inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#8F3520] bg-[#C14E33] px-[22px] text-[18px] font-semibold text-white transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
+          style={{ ...baloo, boxShadow: '0 4px 0 #8F3520' }}
         >
           {showZeroCards ? <EyeSlash className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
           {showZeroCards ? 'Show zeros' : 'Hide zeros'}
@@ -112,7 +112,7 @@ export function Toolbar() {
           style={baloo}
         >
           <X className="h-6 w-6 text-[#C14E33]" />
-          <span className="text-[#8A7B6B]">Clear</span>
+          <span className="text-[#6B5D4F]">Clear</span>
         </button>
 
         <button

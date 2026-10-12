@@ -62,7 +62,7 @@ export const NumberInput = forwardRef<NumberInputRef, NumberInputProps>(({ value
       placeholder="Type a number"
       onChange={handleInputChange}
       aria-label="Type a number"
-      className={`!h-[56px] !w-[230px] !rounded-full !border-2 !border-[#2B2118] !bg-white !px-6 !text-center !text-[26px] !font-bold !text-[#2B2118] placeholder:!text-[18px] placeholder:!font-medium placeholder:!text-[#8A7B6B] focus:!border-[#E76F51] ${!isTouched ? 'animate-pulse' : ''}`}
+      className={`!h-[56px] !w-[230px] !rounded-full !border-2 !border-[#2B2118] !bg-white !px-6 !text-center !text-[26px] !font-bold !text-[#2B2118] placeholder:!text-[18px] placeholder:!font-medium placeholder:!text-[#6B5D4F] focus:!border-[#C14E33] ${!isTouched ? 'animate-pulse' : ''}`}
       style={{
         fontFamily: 'var(--font-baloo), system-ui, sans-serif',
         boxShadow: 'inset 0 2px 6px rgba(43, 33, 24, 0.06)',

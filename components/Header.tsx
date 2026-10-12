@@ -29,7 +29,7 @@ export function Header() {
         >
           <Image src={logo} alt="Hide Zero Cards Logo" className="h-9 w-auto" />
           <span className="text-2xl font-extrabold tracking-tight text-[#2B2118]">
-            Hide <span className="text-[#E76F51]">Zero</span> Cards
+            Hide <span className="text-[#C14E33]">Zero</span> Cards
           </span>
         </Link>
         <div className="flex items-center gap-2">
