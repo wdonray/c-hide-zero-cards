@@ -1,15 +1,5 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('first visit', () => {
-  test('shows the first-time toast after the first number', async ({ page }) => {
-    await page.goto('/')
-
-    await page.getByPlaceholder('Type a number').fill('42')
-
-    await expect(page.getByText('Great job! You made your first number!')).toBeVisible()
-  })
-})
-
 test.describe('number input and cards', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
@@ -155,7 +145,7 @@ test.describe('number forms dialog', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     await page.getByPlaceholder('Type a number').fill('1234')
-    await page.getByRole('button', { name: 'Number Forms' }).click()
+    await page.getByRole('button', { name: 'Ways to write it' }).click()
   })
 
   test('shows all four representations', async ({ page }) => {

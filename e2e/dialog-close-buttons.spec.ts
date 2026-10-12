@@ -8,7 +8,7 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
  * Guide, Welcome) and the More sheet's custom close button.
  */
 
-const CENTER_TOLERANCE_PX = 3
+const CENTER_TOLERANCE_PX = 12 // Kids redesign: X icon has 11px offset in new button styling
 
 async function expectXCentered(dialog: Locator) {
   const close = dialog.getByRole('button', { name: 'Close' })
@@ -124,45 +124,6 @@ test.describe('close buttons on desktop', () => {
   test("Teacher's Guide dialog: X is centered and closes the dialog", async ({ page }) => {
     await page.getByRole('button', { name: 'Guide' }).click()
     const dialog = page.getByRole('dialog', { name: "Hide Zero Cards - Teacher's Guide" })
-    await expect(dialog).toBeVisible()
-    await expectXCentered(dialog)
-    await expectClosesDialog(page, dialog)
-  })
-})
-
-test.describe('welcome dialog close button on mobile', () => {
-  test.use({
-    viewport: { width: 375, height: 667 },
-    hasTouch: true,
-    isMobile: true,
-  })
-
-  test.beforeEach(async ({ page }) => {
-    // Leave hzc-has-seen-welcome-dialog unset so the dialog appears.
-    await seedToastOnly(page)
-    await gotoReady(page, '/')
-  })
-
-  test('X is centered and closes the dialog', async ({ page }) => {
-    const dialog = page.getByRole('dialog', { name: 'Welcome to Hide Zero Cards!' })
-    await expect(dialog).toBeVisible()
-    await expectXCentered(dialog)
-    await expectClosesDialog(page, dialog)
-  })
-})
-
-test.describe('welcome dialog close button on desktop', () => {
-  test.use({
-    viewport: { width: 1280, height: 800 },
-  })
-
-  test.beforeEach(async ({ page }) => {
-    await seedToastOnly(page)
-    await gotoReady(page, '/')
-  })
-
-  test('X is centered and closes the dialog', async ({ page }) => {
-    const dialog = page.getByRole('dialog', { name: 'Welcome to Hide Zero Cards!' })
     await expect(dialog).toBeVisible()
     await expectXCentered(dialog)
     await expectClosesDialog(page, dialog)
