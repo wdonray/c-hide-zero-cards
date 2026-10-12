@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useMemo, useEffect, useRef, useState } from 'react'
 import { DraggableCard } from '@/components/DraggableCard'
-import { PLACE_VALUES, LOCAL_STORAGE_KEYS, NumberFormsDialogTab } from '@/lib/constants'
+import { PLACE_VALUES, NumberFormsDialogTab } from '@/lib/constants'
 import {
   getMobileCardMetrics,
   getPeekText,
