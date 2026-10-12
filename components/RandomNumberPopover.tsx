@@ -26,7 +26,7 @@ export function RandomNumberPopover() {
     <Popover open={showRandomRange} onOpenChange={setShowRandomRange}>
       <PopoverTrigger asChild>
         <button
-          className="inline-flex h-[64px] items-center justify-center gap-1 rounded-l-none rounded-r-full border-2 border-l-0 border-[#2B2118] bg-white px-4 text-[15px] font-semibold text-[#2B2118] transition-colors hover:bg-[#FFF6EC] active:bg-[#FFEED5]"
+          className="inline-flex h-[64px] items-center justify-center gap-1 rounded-l-none rounded-r-full border-2 border-l-0 border-[#2B2118] dark:border-[#5a4a3a] bg-white dark:bg-[#2a2118] px-4 text-[15px] font-semibold text-[#2B2118] dark:text-[#FFF6EC] transition-colors hover:bg-[#FFF6EC] dark:hover:bg-[#3a2f26] active:bg-[#FFEED5] dark:active:bg-[#4a3a2a]"
           style={{
             boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
             fontFamily: 'var(--font-baloo), system-ui, sans-serif',
