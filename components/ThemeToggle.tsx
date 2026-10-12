@@ -2,9 +2,7 @@
 
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
 
 export function ThemeToggle() {
   const { setTheme } = useTheme()
@@ -12,16 +10,16 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={`gap-2 ${COARSE_POINTER_TOUCH_TARGET}`}
+        <button
+          type="button"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#2B2118] transition-colors hover:bg-[#FFF6EC] focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
           title="Toggle light/dark mode"
         >
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
-        </Button>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme('light')}>

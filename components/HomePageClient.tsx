@@ -15,6 +15,7 @@ import { useIsMobile } from '@/lib/useIsMobile'
 import { reportError } from '@/lib/report-error'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
 import { ZeroStateIndicator } from '@/components/ZeroStateIndicator'
+import { ZeroConfetti } from '@/components/ZeroConfetti'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
 
 export function HomePageClient() {
@@ -243,6 +244,7 @@ export function HomePageClient() {
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
       />
+      <ZeroConfetti />
       {/* <BuyMeACoffeeWidget /> */}
 
       <section
@@ -253,7 +255,7 @@ export function HomePageClient() {
           {/* Desktop: the zero-state readout lives here, above the play
               area. The number input now lives in the toolbar row above.
               Mobile renders its own instance above the bottom action bar. */}
-          {!isMobile && <ZeroStateIndicator className="mb-1.5" />}
+          {!isMobile && <ZeroStateIndicator className="mb-1.5 text-[13px] font-semibold text-[#8A7B6B]" />}
         </header>
 
         <main

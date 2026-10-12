@@ -89,7 +89,7 @@ describe('MobileActionBar', () => {
     render(<MobileActionBar />)
     const nav = screen.getByRole('navigation', { name: 'Quick actions' })
     expect(nav).toBeInTheDocument()
-    for (const label of ['Roll', 'Zero', 'Mix', 'Reset', 'Clear', 'Forms', 'More']) {
+    for (const label of ['Roll', 'Show zeros', 'Mix', 'Reset', 'Clear', 'Forms', 'More']) {
       expect(within(nav).getByText(label, { exact: true })).toBeInTheDocument()
     }
   })

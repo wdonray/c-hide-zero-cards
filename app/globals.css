@@ -225,3 +225,61 @@
 .kids-page {
   background-color: #fff6ec;
 }
+
+/* Hide-zeros micro-celebration (kids redesign): zero cards scale+fade with a
+   stagger when toggled. Uses the independent `scale` property so it never
+   fights the inline `transform: translate(...)` used for drag positioning.
+   Transform/opacity only: no layout thrash. */
+@keyframes hzc-zero-hide {
+  from {
+    scale: 1;
+    opacity: 1;
+  }
+  to {
+    scale: 0.85;
+    opacity: 0;
+  }
+}
+
+@keyframes hzc-zero-show {
+  from {
+    scale: 0.85;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+.hzc-zero-hide {
+  animation: hzc-zero-hide 250ms ease-out forwards;
+}
+
+.hzc-zero-show {
+  animation: hzc-zero-show 250ms ease-out forwards;
+}
+
+/* Confetti micro-burst particles */
+@keyframes hzc-confetti-fall {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--hzc-dx), var(--hzc-dy)) rotate(var(--hzc-rot));
+    opacity: 0;
+  }
+}
+
+.hzc-confetti-particle {
+  animation: hzc-confetti-fall 600ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hzc-zero-hide,
+  .hzc-zero-show,
+  .hzc-confetti-particle {
+    animation: none;
+  }
+}

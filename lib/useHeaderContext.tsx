@@ -29,6 +29,8 @@ interface HeaderContextType {
   handleRandomizeCardPosition: () => void
   showZeroCards: boolean
   toggleZeroCards: () => void
+  /** Increments on every hide/show-zeros toggle; drives the celebration animation. */
+  zeroCelebrationKey: number
   showNumberFormsDialog: boolean
   setShowNumberFormsDialog: (value: boolean) => void
   cardsMoved: boolean
@@ -55,6 +57,9 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const [showRandomRange, setShowRandomRange] = useState(false)
   const [isDiceRolling, setIsDiceRolling] = useState(false)
   const [showZeroCards, setShowZeroCards] = useState(true)
+  // Increments on every hide/show-zeros toggle so the card celebration
+  // animation and confetti burst can re-trigger (key change = re-run).
+  const [zeroCelebrationKey, setZeroCelebrationKey] = useState(0)
   const [showNumberFormsDialog, setShowNumberFormsDialog] = useState(false)
   const [cardsMoved, setCardsMoved] = useState(false)
 
@@ -134,6 +139,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
 
   function toggleZeroCards() {
     setShowZeroCards(!showZeroCards)
+    setZeroCelebrationKey((prev) => prev + 1)
   }
 
   useEffect(() => {
@@ -163,6 +169,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         handleRandomizeCardPosition,
         showZeroCards,
         toggleZeroCards,
+        zeroCelebrationKey,
         showNumberFormsDialog,
         setShowNumberFormsDialog,
         cardsMoved,

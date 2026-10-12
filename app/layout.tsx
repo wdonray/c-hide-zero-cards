@@ -7,9 +7,7 @@ import { MobileActionBar } from '@/components/MobileActionBar'
 import { Footer } from '@/components/Footer'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { HeaderProvider } from '@/lib/useHeaderContext'
-import { FirstTimeVisitorProvider } from '@/lib/useFirstTimeVisitor'
 import { HydrationCheck } from '@/components/HydrationCheck'
-import { WelcomeDialog } from '@/components/WelcomeDialog'
 import { Toaster } from '@/components/ui/sonner'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
 import { VersionReloadToast } from '@/components/VersionReloadToast'
@@ -211,18 +209,15 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <HydrationCheck>
-            <FirstTimeVisitorProvider>
-              <HeaderProvider>
-                <Header />
-                <Toolbar />
-                <main className="min-h-screen container m-auto p-8 transition-all duration-300 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
-                  {children}
-                </main>
-                <Footer />
-                <MobileActionBar />
-                <WelcomeDialog />
-              </HeaderProvider>
-            </FirstTimeVisitorProvider>
+            <HeaderProvider>
+              <Header />
+              <Toolbar />
+              <main className="min-h-screen container m-auto p-8 transition-all duration-300 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
+                {children}
+              </main>
+              <Footer />
+              <MobileActionBar />
+            </HeaderProvider>
           </HydrationCheck>
           <Toaster position="bottom-center" richColors />
           <AnalyticsTracker />

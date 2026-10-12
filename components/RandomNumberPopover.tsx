@@ -28,12 +28,16 @@ export function RandomNumberPopover() {
     <Popover open={showRandomRange} onOpenChange={setShowRandomRange}>
       <PopoverTrigger asChild>
         <button
-          className="inline-flex h-[52px] w-[44px] items-center justify-center rounded-l-none rounded-r-full border-2 border-l-0 border-[#2B2118] bg-white text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px]"
-          style={{ boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)' }}
+          className="inline-flex h-[64px] items-center justify-center gap-1 rounded-l-none rounded-r-full border-2 border-l-0 border-[#2B2118] bg-white px-4 text-[15px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px]"
+          style={{
+            boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
+            fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+          }}
           title="Set random number range"
           aria-label="Set random number range"
         >
-          <CaretDown className="h-5 w-5" />
+          Range
+          <CaretDown className="h-4 w-4" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-80">

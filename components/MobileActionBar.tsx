@@ -17,6 +17,7 @@ function BarButton({
   onClick,
   disabled,
   primary,
+  ghost,
   children,
 }: {
   label: string
@@ -24,6 +25,7 @@ function BarButton({
   onClick?: () => void
   disabled?: boolean
   primary?: boolean
+  ghost?: boolean
   children: ReactNode
 }) {
   return (
@@ -34,8 +36,9 @@ function BarButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-transparent px-1 text-[#8A7B6B] transition-all hover:text-[#2B2118] disabled:pointer-events-none disabled:opacity-40',
-        primary && 'border-[#C14E33] bg-[#E76F51] text-white hover:text-white'
+        'flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-transparent px-1 text-[#8A7B6B] transition-all hover:text-[#2B2118] disabled:pointer-events-none disabled:opacity-40',
+        primary && 'border-[#C14E33] bg-[#E76F51] text-white hover:text-white',
+        ghost && 'text-[#8A7B6B]'
       )}
       style={
         primary
@@ -44,7 +47,7 @@ function BarButton({
       }
     >
       {children}
-      <span className="text-[10px] font-semibold leading-none">{label}</span>
+      <span className="text-[11px] font-semibold leading-tight text-center">{label}</span>
     </button>
   )
 }
@@ -91,7 +94,7 @@ export function MobileActionBar() {
 
   return (
     <>
-      <ZeroStateIndicator className="pb-1 text-center" />
+      <ZeroStateIndicator className="sr-only" />
       <nav
         id={MOBILE_ACTION_BAR_ID}
         aria-label="Quick actions"
@@ -108,7 +111,7 @@ export function MobileActionBar() {
             <DiceSix className={cn(ICON_CLASS, isDiceRolling && 'animate-dice-roll')} aria-hidden="true" />
           </BarButton>
           <BarButton
-            label="Zero"
+            label={showZeroCards ? 'Show zeros' : 'Hide zeros'}
             title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
             onClick={toggleZeroCards}
             disabled={!inputNumber}
@@ -140,8 +143,9 @@ export function MobileActionBar() {
             title="Clear input number and reset cards"
             onClick={handleClearInput}
             disabled={!inputNumber}
+            ghost
           >
-            <X className={ICON_CLASS} aria-hidden="true" />
+            <X className={cn(ICON_CLASS, 'text-[#C14E33]')} aria-hidden="true" />
           </BarButton>
           <BarButton
             label="Forms"
@@ -156,7 +160,7 @@ export function MobileActionBar() {
             <Layers className={ICON_CLASS} aria-hidden="true" />
           </BarButton>
           <MobileMoreMenu
-            triggerClassName="flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-muted-foreground transition-colors hover:text-foreground"
+            triggerClassName="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-muted-foreground transition-colors hover:text-foreground"
             iconClassName={ICON_CLASS}
           />
         </div>

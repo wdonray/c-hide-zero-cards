@@ -2,11 +2,16 @@
 
 import { APP_HEADER_ID } from '@/lib/scatterArea'
 import { FullscreenButton } from '@/components/FullscreenButton'
+import { InstructionalGuideDialog } from '@/components/InstructionalGuideDialog'
+import { ThemeToggle } from '@/components/ThemeToggle'
+import { useIsMobile } from '@/lib/useIsMobile'
 import Image from 'next/image'
 import Link from 'next/link'
 import logo from '@/app/logo.png'
 
 export function Header() {
+  const isMobile = useIsMobile()
+
   return (
     <header
       id={APP_HEADER_ID}
@@ -27,7 +32,18 @@ export function Header() {
             Hide <span className="text-[#E76F51]">Zero</span> Cards
           </span>
         </Link>
-        <FullscreenButton />
+        <div className="flex items-center gap-2">
+          {/* Desktop: guide and theme live in the header. On mobile they
+              live in the bottom bar's More menu (single instance per
+              platform in the accessibility tree). */}
+          {!isMobile && (
+            <>
+              <InstructionalGuideDialog />
+              <ThemeToggle />
+            </>
+          )}
+          <FullscreenButton />
+        </div>
       </div>
     </header>
   )

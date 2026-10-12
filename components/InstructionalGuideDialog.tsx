@@ -40,15 +40,15 @@ export function InstructionalGuideDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={`gap-2 ${COARSE_POINTER_TOUCH_TARGET}`}
+        <button
+          type="button"
+          className="inline-flex h-11 items-center gap-2 rounded-full px-4 text-[16px] font-semibold text-[#2B2118] transition-colors hover:bg-[#FFF6EC] focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
           title="Instructional Teachers Guide for Hide Zero Cards"
         >
-          <Question className="h-4 w-4" />
-          <span className="hidden md:inline">How to Use</span>
-        </Button>
+          <Question className="h-5 w-5 text-[#E76F51]" />
+          <span className="hidden md:inline">Guide</span>
+        </button>
       </DialogTrigger>
       <DialogContent
         className="max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[85vh] overflow-y-auto"

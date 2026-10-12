@@ -10,9 +10,12 @@ import { RandomNumberPopover } from './RandomNumberPopover'
 import { APP_TOOLBAR_ID } from '@/lib/scatterArea'
 
 const pillBase =
-  'inline-flex h-[52px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-white px-[22px] text-[17px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
+  'inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-white px-[22px] text-[18px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
 
 const pillShadow = '0 3px 0 rgba(43, 33, 24, 0.15)'
+
+const ghostBase =
+  'inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-transparent bg-transparent px-[22px] text-[18px] font-semibold transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
 
 const baloo = { fontFamily: 'var(--font-baloo), system-ui, sans-serif' } as const
 
@@ -51,17 +54,17 @@ export function Toolbar() {
 
   return (
     <div id={APP_TOOLBAR_ID} className="w-full" style={{ background: '#FFF6EC' }}>
-      <div className="flex flex-wrap items-center justify-center gap-3 px-5 py-[18px]" style={baloo}>
+      <div className="flex flex-wrap items-center justify-center gap-3 px-5 py-5" style={baloo}>
         <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
 
         <button
           onClick={toggleZeroCards}
           disabled={!inputNumber}
           title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
-          className="inline-flex h-[52px] items-center gap-2 rounded-full border-2 border-[#C14E33] bg-[#E76F51] px-[22px] text-[17px] font-semibold text-white transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
-          style={{ ...baloo, boxShadow: '0 3px 0 #C14E33' }}
+          className="inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#C14E33] bg-[#E76F51] px-[22px] text-[18px] font-semibold text-white transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
+          style={{ ...baloo, boxShadow: '0 4px 0 #C14E33' }}
         >
-          {showZeroCards ? <EyeSlash className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          {showZeroCards ? <EyeSlash className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
           {showZeroCards ? 'Show zeros' : 'Hide zeros'}
         </button>
 
@@ -70,10 +73,10 @@ export function Toolbar() {
             onClick={handleRandomNumber}
             disabled={isDiceRolling}
             title="Roll a random number"
-            className="inline-flex h-[52px] items-center gap-2 rounded-l-full rounded-r-none border-2 border-r-0 border-[#2B2118] bg-white px-[22px] text-[17px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
+            className="inline-flex h-[64px] items-center gap-2 rounded-l-full rounded-r-none border-2 border-r-0 border-[#2B2118] bg-white px-[22px] text-[18px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
             style={{ ...baloo, boxShadow: pillShadow }}
           >
-            <DiceSix className={`h-5 w-5 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
+            <DiceSix className={`h-6 w-6 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
             Roll
           </button>
           <RandomNumberPopover />
@@ -86,7 +89,7 @@ export function Toolbar() {
           className={pillBase}
           style={{ ...baloo, boxShadow: pillShadow }}
         >
-          <Shuffle className="h-5 w-5" />
+          <Shuffle className="h-6 w-6" />
           Mix
         </button>
 
@@ -97,7 +100,7 @@ export function Toolbar() {
           className={pillBase}
           style={{ ...baloo, boxShadow: pillShadow }}
         >
-          <ArrowClockwise className="h-5 w-5" />
+          <ArrowClockwise className="h-6 w-6" />
           Reset
         </button>
 
@@ -105,11 +108,11 @@ export function Toolbar() {
           onClick={handleClearInput}
           disabled={!inputNumber}
           title="Clear input number and reset cards"
-          className={pillBase}
-          style={{ ...baloo, boxShadow: pillShadow }}
+          className={ghostBase}
+          style={baloo}
         >
-          <X className="h-5 w-5" />
-          Clear
+          <X className="h-6 w-6 text-[#C14E33]" />
+          <span className="text-[#8A7B6B]">Clear</span>
         </button>
 
         <button
@@ -119,8 +122,8 @@ export function Toolbar() {
           className={pillBase}
           style={{ ...baloo, boxShadow: pillShadow }}
         >
-          <Layers className="h-5 w-5" />
-          Forms
+          <Layers className="h-6 w-6" />
+          Ways to write it
         </button>
       </div>
     </div>
