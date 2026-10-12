@@ -10,7 +10,7 @@ import { RandomNumberPopover } from './RandomNumberPopover'
 import { APP_TOOLBAR_ID } from '@/lib/scatterArea'
 
 const pillBase =
-  'inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-white px-[22px] text-[18px] font-semibold text-[#2B2118] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
+  'inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#2B2118] dark:border-[#5a4a3a] bg-white dark:bg-[#2a2118] px-[22px] text-[18px] font-semibold text-[#2B2118] dark:text-[#FFF6EC] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
 
 const pillShadow = '0 3px 0 rgba(43, 33, 24, 0.15)'
 
@@ -53,7 +53,7 @@ export function Toolbar() {
   if (isMobile) return null
 
   return (
-    <div id={APP_TOOLBAR_ID} className="w-full" style={{ background: '#FFF6EC' }}>
+    <div id={APP_TOOLBAR_ID} className="w-full bg-[#FFF6EC] dark:bg-[#1a1512]">
       <div className="flex flex-wrap items-center justify-center gap-3 px-5 py-5" style={baloo}>
         <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
 
@@ -73,7 +73,7 @@ export function Toolbar() {
             onClick={handleRandomNumber}
             disabled={isDiceRolling}
             title="Roll a random number"
-            className="inline-flex h-[64px] items-center gap-2 rounded-l-full rounded-r-none border-2 border-r-0 border-[#2B2118] bg-white px-[22px] text-[18px] font-semibold text-[#2B2118] transition-colors hover:bg-[#FFF6EC] active:bg-[#FFEED5] disabled:opacity-40 disabled:pointer-events-none"
+            className="inline-flex h-[64px] items-center gap-2 rounded-l-full rounded-r-none border-2 border-r-0 border-[#2B2118] dark:border-[#5a4a3a] bg-white dark:bg-[#2a2118] px-[22px] text-[18px] font-semibold text-[#2B2118] dark:text-[#FFF6EC] transition-colors hover:bg-[#FFF6EC] dark:hover:bg-[#3a2f26] active:bg-[#FFEED5] dark:active:bg-[#4a3a2a] disabled:opacity-40 disabled:pointer-events-none"
             style={{ ...baloo, boxShadow: pillShadow }}
           >
             <DiceSix className={`h-6 w-6 ${isDiceRolling ? 'animate-dice-roll' : ''}`} />
