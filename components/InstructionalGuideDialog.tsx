@@ -10,10 +10,8 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsTrigger, TabsList, TabsContent } from '@/components/ui/tabs'
 import { Question } from '@phosphor-icons/react'
-import { Separator } from './ui/separator'
 import { InstructionalGuideDialogTab } from '@/lib/constants'
 import { COARSE_POINTER_TOUCH_TARGET } from '@/lib/constants'
 import { useIsMobile } from '@/lib/useIsMobile'
@@ -51,15 +49,20 @@ export function InstructionalGuideDialog() {
         </button>
       </DialogTrigger>
       <DialogContent
-        className="max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[85vh] overflow-y-auto"
+        className="max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[85vh] overflow-y-auto bg-[#FFF6EC] rounded-3xl border-2 border-[#2B2118] shadow-[0_8px_0_rgba(43,33,24,0.15)]"
         showCloseButton={true}
       >
         <DialogHeader>
-          <DialogTitle className="text-xl md:text-2xl pr-8">Hide Zero Cards - Teacher&apos;s Guide</DialogTitle>
-          <Separator />
-          <DialogDescription className="text-muted-foreground">
-            Transform how your students understand <strong>place values</strong> with this interactive, hands-on
-            learning tool
+          <DialogTitle
+            className="text-xl md:text-2xl pr-8 text-[#2B2118]"
+            style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
+          >
+            Hide Zero Cards - Teacher&apos;s Guide
+          </DialogTitle>
+          <div className="h-0.5 rounded-full bg-[#2B2118]/10" />
+          <DialogDescription className="text-[#6B5D4F]">
+            Transform how your students understand <strong className="text-[#2B2118]">place values</strong> with this
+            interactive, hands-on learning tool
           </DialogDescription>
         </DialogHeader>
 
@@ -74,33 +77,37 @@ export function InstructionalGuideDialog() {
         ) : (
           <Tabs defaultValue={InstructionalGuideDialogTab.QUICK_START} className="w-full min-w-0">
             <div className="flex flex-col gap-4 items-center">
-              <TabsList className="max-w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12">
+              <TabsList className="max-w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12 bg-white border-2 border-[#2B2118]/10 rounded-full p-1 h-11">
                 <TabsTrigger
                   value={InstructionalGuideDialogTab.QUICK_START}
-                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none rounded-full text-[#6B5D4F] font-semibold data-[state=active]:bg-[#2B2118] data-[state=active]:text-white data-[state=active]:shadow-none`}
+                  style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
                 >
                   Quick Start
                 </TabsTrigger>
                 <TabsTrigger
                   value={InstructionalGuideDialogTab.TOOLBAR_FEATURES}
-                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none rounded-full text-[#6B5D4F] font-semibold data-[state=active]:bg-[#2B2118] data-[state=active]:text-white data-[state=active]:shadow-none`}
+                  style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
                 >
                   Toolbar Features
                 </TabsTrigger>
                 <TabsTrigger
                   value={InstructionalGuideDialogTab.ACTIVITIES}
-                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none rounded-full text-[#6B5D4F] font-semibold data-[state=active]:bg-[#2B2118] data-[state=active]:text-white data-[state=active]:shadow-none`}
+                  style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
                 >
                   Activities
                 </TabsTrigger>
                 <TabsTrigger
                   value={InstructionalGuideDialogTab.ASSESSMENT}
-                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none`}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none rounded-full text-[#6B5D4F] font-semibold data-[state=active]:bg-[#2B2118] data-[state=active]:text-white data-[state=active]:shadow-none`}
+                  style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
                 >
                   Assessment
                 </TabsTrigger>
               </TabsList>
-              <Separator />
+              <div className="h-0.5 w-full rounded-full bg-[#2B2118]/10" />
               <div className="w-full relative">
                 <TabsContent value={InstructionalGuideDialogTab.QUICK_START} className="mt-0">
                   <QuickStartSection />
@@ -120,7 +127,15 @@ export function InstructionalGuideDialog() {
         )}
         <DialogFooter>
           <DialogClose asChild>
-            <Button>Let&apos;s Start Teaching!</Button>
+            <button
+              className="inline-flex h-[56px] items-center justify-center gap-2 rounded-full border-2 border-[#8F3520] bg-[#C14E33] px-[28px] text-[18px] font-semibold text-white transition-all hover:-translate-y-px active:translate-y-[2px]"
+              style={{
+                fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+                boxShadow: '0 4px 0 #8F3520',
+              }}
+            >
+              Let&apos;s Start Teaching!
+            </button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
