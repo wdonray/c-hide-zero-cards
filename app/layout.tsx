@@ -212,7 +212,7 @@ export default function RootLayout({
             <HeaderProvider>
               <Header />
               <Toolbar />
-              <main className="min-h-screen container m-auto p-8 transition-all duration-300 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
+              <main className="container m-auto p-8 transition-all duration-300 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
                 {children}
               </main>
               <Footer />
