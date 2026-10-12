@@ -86,12 +86,14 @@ export function WordForm({ number, className }: WordFormProps) {
   return (
     <Card
       className={cn(
-        'flex flex-col !bg-white !rounded-3xl !border-2 !border-[#2B2118] !shadow-[0_4px_0_rgba(43,33,24,0.1)]',
+        'flex flex-col !bg-white dark:!bg-[#1a1512] !rounded-3xl !border-2 !border-[#2B2118] dark:!border-[#5a4a3a] !shadow-[0_4px_0_rgba(43,33,24,0.1)]',
         className
       )}
     >
       <CardContent className="flex-1 flex items-center justify-center">
-        <p className="w-full text-xl font-semibold text-[#2B2118] leading-relaxed text-center">{wordForm}</p>
+        <p className="w-full text-xl font-semibold text-[#2B2118] dark:text-[#FFF6EC] leading-relaxed text-center">
+          {wordForm}
+        </p>
       </CardContent>
     </Card>
   )
