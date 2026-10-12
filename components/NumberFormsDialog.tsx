@@ -153,16 +153,16 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
               </TabsList>
               <div className="w-full relative">
                 <TabsContent value={NumberFormsDialogTab.EXPANDED} className="mt-0">
-                  <ExpandedForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
+                  <ExpandedForm className="min-h-[200px]" number={number} />
                 </TabsContent>
                 <TabsContent value={NumberFormsDialogTab.STANDARD} className="mt-0">
-                  <StandardForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
+                  <StandardForm className="min-h-[200px]" number={number} />
                 </TabsContent>
                 <TabsContent value={NumberFormsDialogTab.WORD} className="mt-0">
-                  <WordForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
+                  <WordForm className="min-h-[200px]" number={number} />
                 </TabsContent>
                 <TabsContent value={NumberFormsDialogTab.UNIT} className="mt-0">
-                  <UnitForm className="h-[65vh] max-md:h-[42dvh]" number={number} />
+                  <UnitForm className="min-h-[200px]" number={number} />
                 </TabsContent>
               </div>
             </div>
