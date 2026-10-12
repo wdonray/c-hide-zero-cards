@@ -79,13 +79,15 @@
   --toast-bg: oklch(0.98 0.005 85);
   --toast-text: oklch(0.141 0.005 285.823);
   --toast-border: oklch(0.92 0.008 85);
-  /* Kids redesign palette (issue #97) */
+  /* Kids redesign palette (issue #97).
+     Primary and muted tones are darkened so text keeps >= 4.5:1 contrast
+     (a11y CI gate, owner decision 2026-10-05). */
   --kids-cream: #fff6ec;
   --kids-paper: #fffdf7;
   --kids-ink: #2b2118;
-  --kids-muted: #8a7b6b;
-  --kids-primary: #e76f51;
-  --kids-primary-dark: #c14e33;
+  --kids-muted: #6b5d4f;
+  --kids-primary: #c14e33;
+  --kids-primary-dark: #8f3520;
   --kids-border: #e8dcc8;
   --font-baloo: var(--font-baloo);
 }

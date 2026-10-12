@@ -14,6 +14,7 @@ import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { reportError } from '@/lib/report-error'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
+import { NumberInput } from '@/components/NumberInput'
 import { ZeroStateIndicator } from '@/components/ZeroStateIndicator'
 import { ZeroConfetti } from '@/components/ZeroConfetti'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
@@ -29,6 +30,7 @@ export function HomePageClient() {
     showNumberFormsDialog,
     setShowNumberFormsDialog,
     isHeaderCollapsed,
+    numberInputRef,
   } = useHeaderContext()
   const isMobile = useIsMobile()
 
@@ -256,6 +258,11 @@ export function HomePageClient() {
               area. The number input now lives in the toolbar row above.
               Mobile renders its own instance above the bottom action bar. */}
           {!isMobile && <ZeroStateIndicator className="mb-1.5 text-[13px] font-semibold text-[#6B5D4F]" />}
+          {/* Mobile: the desktop toolbar (which holds the number input)
+              unmounts below 768px, so mobile gets its own input instance
+              here, above the play area. Only one instance is ever mounted,
+              so sharing numberInputRef with the toolbar is safe. */}
+          {isMobile && <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />}
         </header>
 
         <main
