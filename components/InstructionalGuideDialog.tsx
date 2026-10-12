@@ -40,7 +40,7 @@ export function InstructionalGuideDialog() {
       <DialogTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-11 items-center gap-2 rounded-full px-4 text-[16px] font-semibold text-[#2B2118] transition-colors hover:bg-[#FFF6EC] focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex h-11 items-center gap-2 rounded-full px-4 text-[16px] font-semibold text-[#2B2118] dark:text-[#FFF6EC] transition-colors hover:bg-[#FFF6EC] dark:hover:bg-[#2a2118] focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
           title="Instructional Teachers Guide for Hide Zero Cards"
         >
@@ -49,7 +49,7 @@ export function InstructionalGuideDialog() {
         </button>
       </DialogTrigger>
       <DialogContent
-        className="max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[85vh] overflow-y-auto bg-[#FFF6EC] rounded-3xl border-2 border-[#2B2118] shadow-[0_8px_0_rgba(43,33,24,0.15)]"
+        className="max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[85vh] overflow-y-auto bg-[#FFF6EC] dark:bg-[#2a2118] rounded-3xl border-2 border-[#2B2118] dark:border-[#5a4a3a] shadow-[0_8px_0_rgba(43,33,24,0.15)]"
         showCloseButton={true}
       >
         <DialogHeader>

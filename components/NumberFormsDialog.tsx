@@ -59,13 +59,13 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!revealCards && <DialogOverlay />}
       <DialogContent
-        className={`max-md:max-h-[calc(100dvh-2rem)] max-md:overflow-y-auto !bg-[#FFF6EC] !rounded-3xl !border-2 !border-[#2B2118] !shadow-[0_8px_0_rgba(43,33,24,0.15)] ${revealCards ? 'md:-left-5 md:top-1 md:translate-x-0 md:translate-y-0' : ''}`}
+        className={`max-md:max-h-[calc(100dvh-2rem)] max-md:overflow-y-auto !bg-[#FFF6EC] dark:!bg-[#2a2118] !rounded-3xl !border-2 !border-[#2B2118] dark:!border-[#5a4a3a] !shadow-[0_8px_0_rgba(43,33,24,0.15)] ${revealCards ? 'md:-left-5 md:top-1 md:translate-x-0 md:translate-y-0' : ''}`}
         showCloseButton={true}
         hideOverlay={revealCards}
       >
         <DialogHeader className="flex flex-col gap-4 max-md:gap-2">
           <DialogTitle
-            className="flex items-center gap-2 text-base md:text-lg max-md:pr-12 max-md:text-lg max-md:leading-normal max-md:py-1 !text-[#2B2118]"
+            className="flex items-center gap-2 text-base md:text-lg max-md:pr-12 max-md:text-lg max-md:leading-normal max-md:py-1 !text-[#2B2118] dark:!text-[#FFF6EC]"
             style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
           >
             <Layers className="h-5 w-5 shrink-0 max-md:hidden text-[#C14E33]" aria-hidden="true" />
@@ -75,16 +75,18 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
               {isMobile ? 'Number Forms' : 'Number Forms & Representations'}
             </span>
           </DialogTitle>
-          <div className="h-0.5 rounded-full bg-[#2B2118]/10" />
+          <div className="h-0.5 rounded-full bg-[#2B2118]/10 dark:bg-[#FFF6EC]/10" />
           {/* Mobile keeps the header lean: subheader text and the reveal
               toggle are hidden, desktop keeps both. */}
-          <DialogDescription className="max-md:hidden !text-[#6B5D4F]">
+          <DialogDescription className="max-md:hidden !text-[#6B5D4F] dark:!text-[#C9BBA8]">
             <span className="flex flex-row flex-wrap items-center gap-x-6 gap-y-3 max-md:gap-x-3 max-md:gap-y-2">
               <span className="min-w-0">Explore different ways to write and understand your number!</span>
               <button
                 onClick={() => setRevealCards(!revealCards)}
                 className={`inline-flex items-center gap-2 rounded-full border-2 border-[#2B2118] px-4 py-2 text-[15px] font-semibold transition-colors ${COARSE_POINTER_TOUCH_TARGET} ${
-                  revealCards ? 'bg-[#2B2118] text-white' : 'bg-white text-[#2B2118] hover:bg-[#FFEED5]'
+                  revealCards
+                    ? 'bg-[#2B2118] dark:bg-[#FFF6EC] text-white dark:text-[#2B2118]'
+                    : 'bg-white dark:bg-[#1a1512] text-[#2B2118] dark:text-[#FFF6EC] hover:bg-[#FFEED5] dark:hover:bg-[#3a2f26]'
                 }`}
                 style={{
                   fontFamily: 'var(--font-baloo), system-ui, sans-serif',
@@ -119,31 +121,31 @@ export function NumberFormsDialog({ open, onOpenChange, number, selectedTab, set
             className="w-full min-w-0"
           >
             <div className="flex flex-col gap-4 max-md:gap-3 items-center w-full min-w-0">
-              <TabsList className="max-md:w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12 !bg-[#2B2118]/5 !rounded-full !p-1 !border-2 !border-[#2B2118]/10">
+              <TabsList className="max-md:w-full max-md:overflow-x-auto max-md:justify-start pointer-coarse:h-12 !bg-[#2B2118]/5 dark:!bg-[#FFF6EC]/5 !rounded-full !p-1 !border-2 !border-[#2B2118]/10 dark:!border-[#FFF6EC]/10">
                 <TabsTrigger
                   value={NumberFormsDialogTab.WORD}
-                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none !rounded-full !text-[#2B2118] data-[state=active]:!bg-[#2B2118] data-[state=active]:!text-white data-[state=active]:!shadow-[0_2px_0_rgba(43,33,24,0.2)]`}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none !rounded-full !text-[#2B2118] dark:!text-[#FFF6EC] data-[state=active]:!bg-[#2B2118] dark:data-[state=active]:!bg-[#FFF6EC] data-[state=active]:!text-white dark:data-[state=active]:!text-[#2B2118] data-[state=active]:!shadow-[0_2px_0_rgba(43,33,24,0.2)]`}
                   style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
                 >
                   Word Form
                 </TabsTrigger>
                 <TabsTrigger
                   value={NumberFormsDialogTab.UNIT}
-                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none !rounded-full !text-[#2B2118] data-[state=active]:!bg-[#2B2118] data-[state=active]:!text-white data-[state=active]:!shadow-[0_2px_0_rgba(43,33,24,0.2)]`}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none !rounded-full !text-[#2B2118] dark:!text-[#FFF6EC] data-[state=active]:!bg-[#2B2118] dark:data-[state=active]:!bg-[#FFF6EC] data-[state=active]:!text-white dark:data-[state=active]:!text-[#2B2118] data-[state=active]:!shadow-[0_2px_0_rgba(43,33,24,0.2)]`}
                   style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
                 >
                   Unit Form
                 </TabsTrigger>
                 <TabsTrigger
                   value={NumberFormsDialogTab.EXPANDED}
-                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none !rounded-full !text-[#2B2118] data-[state=active]:!bg-[#2B2118] data-[state=active]:!text-white data-[state=active]:!shadow-[0_2px_0_rgba(43,33,24,0.2)]`}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none !rounded-full !text-[#2B2118] dark:!text-[#FFF6EC] data-[state=active]:!bg-[#2B2118] dark:data-[state=active]:!bg-[#FFF6EC] data-[state=active]:!text-white dark:data-[state=active]:!text-[#2B2118] data-[state=active]:!shadow-[0_2px_0_rgba(43,33,24,0.2)]`}
                   style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
                 >
                   Expanded Form
                 </TabsTrigger>
                 <TabsTrigger
                   value={NumberFormsDialogTab.STANDARD}
-                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none !rounded-full !text-[#2B2118] data-[state=active]:!bg-[#2B2118] data-[state=active]:!text-white data-[state=active]:!shadow-[0_2px_0_rgba(43,33,24,0.2)]`}
+                  className={`${COARSE_POINTER_TOUCH_TARGET} max-md:flex-none !rounded-full !text-[#2B2118] dark:!text-[#FFF6EC] data-[state=active]:!bg-[#2B2118] dark:data-[state=active]:!bg-[#FFF6EC] data-[state=active]:!text-white dark:data-[state=active]:!text-[#2B2118] data-[state=active]:!shadow-[0_2px_0_rgba(43,33,24,0.2)]`}
                   style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
                 >
                   Standard Form
