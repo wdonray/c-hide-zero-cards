@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Baloo_2 } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/Header'
 import { Toolbar } from '@/components/Toolbar'
@@ -7,9 +7,7 @@ import { MobileActionBar } from '@/components/MobileActionBar'
 import { Footer } from '@/components/Footer'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { HeaderProvider } from '@/lib/useHeaderContext'
-import { FirstTimeVisitorProvider } from '@/lib/useFirstTimeVisitor'
 import { HydrationCheck } from '@/components/HydrationCheck'
-import { WelcomeDialog } from '@/components/WelcomeDialog'
 import { Toaster } from '@/components/ui/sonner'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
 import { VersionReloadToast } from '@/components/VersionReloadToast'
@@ -23,6 +21,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+})
+
+const baloo2 = Baloo_2({
+  variable: '--font-baloo',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
@@ -201,22 +205,19 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background max-md:flex max-md:min-h-dvh max-md:flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${baloo2.variable} antialiased bg-background max-md:flex max-md:min-h-dvh max-md:flex-col`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <HydrationCheck>
-            <FirstTimeVisitorProvider>
-              <HeaderProvider>
-                <Header />
-                <Toolbar />
-                <main className="min-h-screen container m-auto p-8 transition-all duration-300 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
-                  {children}
-                </main>
-                <Footer />
-                <MobileActionBar />
-                <WelcomeDialog />
-              </HeaderProvider>
-            </FirstTimeVisitorProvider>
+            <HeaderProvider>
+              <Header />
+              <Toolbar />
+              <main className="min-h-screen container m-auto p-8 transition-all duration-300 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
+                {children}
+              </main>
+              <Footer />
+              <MobileActionBar />
+            </HeaderProvider>
           </HydrationCheck>
           <Toaster position="bottom-center" richColors />
           <AnalyticsTracker />

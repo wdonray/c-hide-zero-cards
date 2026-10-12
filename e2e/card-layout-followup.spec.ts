@@ -84,7 +84,7 @@ test.describe('card fan full values', () => {
       })
 
       test('3,743 reads as overlapping peek tiles: 3, / 7 / 4 / 3', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('3743')
+        await page.getByPlaceholder('Type a number').fill('3743')
         const { cards, fanBox } = await fanCards(page)
 
         // Four cards, each rendering its full place value in the DOM.
@@ -103,7 +103,7 @@ test.describe('card fan full values', () => {
       })
 
       test('800,502 overlaps: 800,000 / 00,000 / 0,000 / 500 / 00 / 2', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('800502')
+        await page.getByPlaceholder('Type a number').fill('800502')
         const { cards, fanBox } = await fanCards(page)
 
         // Six cards, each rendering its full place value in the DOM. Zero
@@ -117,7 +117,7 @@ test.describe('card fan full values', () => {
       })
 
       test('800,502 hidden hides whole zero cards in position, never "852"', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('800502')
+        await page.getByPlaceholder('Type a number').fill('800502')
         const { cards: shown } = await fanCards(page)
         await page.getByTitle('Hide zero cards', { exact: true }).click()
         const { cards: hidden } = await fanCards(page)
@@ -170,7 +170,7 @@ test.describe('card fan full values', () => {
       })
 
       test('701,323 overlaps with a "00,000" zero card', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('701323')
+        await page.getByPlaceholder('Type a number').fill('701323')
         const { cards, fanBox } = await fanCards(page)
 
         // The zero card displays "00,000": the place value with a leading
@@ -182,7 +182,7 @@ test.describe('card fan full values', () => {
       })
 
       test('toggling zero visibility never shifts the fan', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('940934')
+        await page.getByPlaceholder('Type a number').fill('940934')
         const { cards: shown } = await fanCards(page)
 
         await page.getByTitle('Hide zero cards', { exact: true }).click()
@@ -202,7 +202,7 @@ test.describe('card fan full values', () => {
       })
 
       test('1,234,567 shows seven overlapping cards, no separate commas', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('1234567')
+        await page.getByPlaceholder('Type a number').fill('1234567')
         const { cards } = await fanCards(page)
         // Commas live inside the card text now; there are no separate
         // comma elements.
@@ -224,7 +224,7 @@ test.describe('card fan full values', () => {
           }
           requestAnimationFrame(rec)
         })
-        await page.getByPlaceholder('Type a number here!').fill('940934')
+        await page.getByPlaceholder('Type a number').fill('940934')
         await page.waitForFunction(() => (window as any).__frames.length >= 3)
         const centers: number[] = await page.evaluate(() => (window as any).__frames)
         expect(centers.length).toBeGreaterThan(0)
@@ -234,7 +234,7 @@ test.describe('card fan full values', () => {
       })
 
       test('a displaced card keeps its full place-value text', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('763285')
+        await page.getByPlaceholder('Type a number').fill('763285')
         const first = page
           .getByRole('application', { name: 'Draggable place value cards' })
           .locator(':scope > div')
@@ -248,7 +248,7 @@ test.describe('card fan full values', () => {
       })
 
       test('pulling the thousands tile uncovers "3,000"', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('3743')
+        await page.getByPlaceholder('Type a number').fill('3743')
         const tiles = page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
         const thousands = tiles.nth(0)
         await expect(thousands).toHaveText('3,000')
@@ -278,7 +278,7 @@ test.describe('card fan full values', () => {
       })
 
       test('dragging the covering card away uncovers the full text beneath', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('3743')
+        await page.getByPlaceholder('Type a number').fill('3743')
         const tiles = page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
 
         // Drag the "700" tile (index 1) away: the "3,000" tile beneath was
@@ -312,7 +312,7 @@ test.describe('card fan full values', () => {
       // internally and does not shrink to fit.
       test('mobile strip does not scroll; fan renders at natural size', async ({ page }) => {
         test.skip(!vp.mobile, 'applies below the mobile breakpoint')
-        await page.getByPlaceholder('Type a number here!').fill('1000000000')
+        await page.getByPlaceholder('Type a number').fill('1000000000')
         const fan = page.getByRole('application', { name: 'Draggable place value cards' })
         const state = await fan.evaluate((el: HTMLElement) => ({
           overflowX: getComputedStyle(el).overflowX,

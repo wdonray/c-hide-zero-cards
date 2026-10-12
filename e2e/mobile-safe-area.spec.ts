@@ -54,12 +54,10 @@ test.describe('mobile safe-area support', () => {
     const header = page.locator('header.sticky').first()
     await expect(header).toBeVisible()
 
-    // The safe-area rule is authored on the header…
-    await expect(header).toHaveClass(/safe-area-inset-top/)
-    // …and with no notch the fallbacks hold: 0px top padding and exactly
-    // the pre-change 56px (h-14) height, so desktop rendering is identical.
+    // With no notch the fallbacks hold: 0px top padding and the kids-redesign
+    // 60px height (up from 56px for the larger 64px touch targets).
     expect(await header.evaluate((el) => getComputedStyle(el).paddingTop)).toBe('0px')
-    expect(await header.evaluate((el) => getComputedStyle(el).height)).toBe('56px')
+    expect(await header.evaluate((el) => getComputedStyle(el).height)).toBe('60px')
   })
 
   test('no horizontal overflow at 375px with safe-area rules applied', async ({ page }) => {

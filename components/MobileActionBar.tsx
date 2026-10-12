@@ -17,6 +17,7 @@ function BarButton({
   onClick,
   disabled,
   primary,
+  ghost,
   children,
 }: {
   label: string
@@ -24,6 +25,7 @@ function BarButton({
   onClick?: () => void
   disabled?: boolean
   primary?: boolean
+  ghost?: boolean
   children: ReactNode
 }) {
   return (
@@ -34,12 +36,21 @@ function BarButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40',
-        primary && 'bg-blue-600 text-white hover:bg-blue-700 hover:text-white'
+        'flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-transparent px-1 transition-all hover:text-[#2B2118] dark:hover:text-[#FFF6EC] disabled:pointer-events-none disabled:opacity-40',
+        // Muted label color only when not primary: the primary button keeps
+        // white text in both themes (dark: would otherwise override it).
+        !primary && 'text-[#6B5D4F] dark:text-[#C9BBA8]',
+        primary && 'border-[#8F3520] bg-[#C14E33] text-white hover:text-white',
+        ghost && 'text-[#6B5D4F] dark:text-[#C9BBA8]'
       )}
+      style={
+        primary
+          ? { boxShadow: '0 3px 0 #8F3520', fontFamily: 'var(--font-baloo), system-ui, sans-serif' }
+          : { fontFamily: 'var(--font-baloo), system-ui, sans-serif' }
+      }
     >
       {children}
-      <span className="text-[10px] font-medium leading-none">{label}</span>
+      <span className="text-[11px] font-semibold leading-tight text-center">{label}</span>
     </button>
   )
 }
@@ -86,7 +97,7 @@ export function MobileActionBar() {
 
   return (
     <>
-      <ZeroStateIndicator className="pb-1 text-center" />
+      <ZeroStateIndicator className="sr-only" />
       <nav
         id={MOBILE_ACTION_BAR_ID}
         aria-label="Quick actions"
@@ -103,7 +114,7 @@ export function MobileActionBar() {
             <DiceSix className={cn(ICON_CLASS, isDiceRolling && 'animate-dice-roll')} aria-hidden="true" />
           </BarButton>
           <BarButton
-            label="Zero"
+            label={showZeroCards ? 'Show zeros' : 'Hide zeros'}
             title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
             onClick={toggleZeroCards}
             disabled={!inputNumber}
@@ -135,8 +146,9 @@ export function MobileActionBar() {
             title="Clear input number and reset cards"
             onClick={handleClearInput}
             disabled={!inputNumber}
+            ghost
           >
-            <X className={ICON_CLASS} aria-hidden="true" />
+            <X className={cn(ICON_CLASS, 'text-[#C14E33]')} aria-hidden="true" />
           </BarButton>
           <BarButton
             label="Forms"
@@ -151,7 +163,7 @@ export function MobileActionBar() {
             <Layers className={ICON_CLASS} aria-hidden="true" />
           </BarButton>
           <MobileMoreMenu
-            triggerClassName="flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-muted-foreground transition-colors hover:text-foreground"
+            triggerClassName="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-muted-foreground transition-colors hover:text-foreground"
             iconClassName={ICON_CLASS}
           />
         </div>

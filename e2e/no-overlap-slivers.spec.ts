@@ -43,7 +43,7 @@ for (const input of CASES) {
   test.skip(`no slivers for ${input} at 375px`, async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 })
     await seed(page)
-    await page.getByPlaceholder('Type a number here!').fill(input)
+    await page.getByPlaceholder('Type a number').fill(input)
     // Wait for layout to settle (measure + font correction).
     await page.waitForTimeout(1500)
 
@@ -130,7 +130,7 @@ for (const input of CASES) {
   test.skip(`no slivers for ${input} at 1280px`, async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await seed(page)
-    await page.getByPlaceholder('Type a number here!').fill(input)
+    await page.getByPlaceholder('Type a number').fill(input)
     await page.waitForTimeout(1500)
 
     const slivers = await page.evaluate(() => {

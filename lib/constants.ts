@@ -3,29 +3,50 @@
 // =============================================================================
 
 /**
- * Color mapping for different place value cards
- * Each place value gets a specific background color for visual distinction
+ * Card container paint for each place value (kids redesign, issue #97).
+ *
+ * Paint only: the card geometry (dimensions, fan layout and positioning,
+ * drag physics, hide-zero logic, interior digit/comma spacing) is
+ * untouched. The paint matches the approved prototype tiles: a vertical
+ * gradient, a larger corner radius, and a layered drop shadow plus a soft
+ * text shadow on the digits.
+ *
+ * The gradient runs from the base hue to a 12% darkened stop, so the top
+ * edge is the lightest point and white digits keep >= 4.5:1 contrast over
+ * the whole card (WCAG 2.2 AA, owner decision 2026-10-05). Base hues are
+ * the same darkened palette as before; only the paint treatment is new.
  */
-export const CARD_COLORS: Record<number, string> = {
-  // Ones, tens, hundreds (red shades) — darkened so white digits pass
-  // WCAG 2.2 AA 4.5:1 (red-600 is 4.76:1); hue family unchanged.
-  1: 'bg-red-600',
-  10: 'bg-red-700',
-  100: 'bg-red-800',
+export const CARD_PAINT: Record<number, { from: string; to: string }> = {
+  // Ones, tens, hundreds (red shades)
+  1: { from: '#DC2626', to: '#C22121' },
+  10: { from: '#B91C1C', to: '#A31919' },
+  100: { from: '#991B1B', to: '#871818' },
 
-  // Thousands (yellow shades) — darkened (yellow-700 is 4.92:1)
-  1000: 'bg-yellow-700',
-  10000: 'bg-yellow-800',
-  100000: 'bg-yellow-900',
+  // Thousands (yellow shades)
+  1000: { from: '#A16207', to: '#8E5606' },
+  10000: { from: '#854D0E', to: '#75440C' },
+  100000: { from: '#713F12', to: '#633710' },
 
-  // Millions (green shades) — darkened (green-700 is 4.94:1)
-  1000000: 'bg-green-700',
-  10000000: 'bg-green-800',
-  100000000: 'bg-green-900',
+  // Millions (green shades)
+  1000000: { from: '#15803D', to: '#127136' },
+  10000000: { from: '#166534', to: '#13592E' },
+  100000000: { from: '#14532D', to: '#124928' },
 
-  // Billions (blue shades) — darkened (blue-600 is 5.26:1)
-  1000000000: 'bg-blue-600',
+  // Billions (blue shades)
+  1000000000: { from: '#2563EB', to: '#2157CF' },
 }
+
+/**
+ * Shared paint treatment for every card, from the approved prototype:
+ * 16px corners, a soft warm drop shadow with a darker inset bottom edge
+ * (the "chunky" tile look), and a soft shadow under the white digits.
+ */
+export const CARD_PAINT_STYLE = {
+  borderRadius: '20px',
+  boxShadow:
+    '0 8px 24px rgba(43, 33, 24, 0.25), inset 0 -6px 0 rgba(0, 0, 0, 0.12), inset 0 2px 0 rgba(255, 255, 255, 0.15)',
+  textShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
+} as const
 
 /**
  * Human-readable names for each place value
@@ -127,8 +148,6 @@ export const LOCAL_STORAGE_KEYS = {
   IS_HEADER_COLLAPSED: 'hzc-is-header-collapsed',
   /** Whether the user has seen the first-time toast notification */
   HAS_SEEN_FIRST_TIME_TOAST: 'hzc-has-seen-first-time-toast',
-  /** Whether the user has seen the welcome dialog */
-  HAS_SEEN_WELCOME_DIALOG: 'hzc-has-seen-welcome-dialog',
 } as const
 
 // =============================================================================

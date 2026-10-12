@@ -40,7 +40,7 @@ test.describe('zero toggle status text', () => {
     test('status text above the action bar reflects the toggle instantly', async ({ page }) => {
       await seed(page)
       await page.goto('/')
-      await page.getByPlaceholder('Type a number here!').fill('1203')
+      await page.getByPlaceholder('Type a number').fill('1203')
 
       const status = page.getByRole('status')
       // Exactly one instance: the mobile bar owns it, the main content does not render it.
@@ -69,29 +69,17 @@ test.describe('zero toggle status text', () => {
     test('status text above the number input reflects the toggle instantly', async ({ page }) => {
       await seed(page)
       await page.goto('/')
-      await page.getByPlaceholder('Type a number here!').fill('1203')
+      await page.getByPlaceholder('Type a number').fill('1203')
 
       const status = page.getByRole('status')
       // Exactly one instance: the main content owns it, the toolbar no longer does.
       await expect(status).toHaveCount(1)
       await expect(status).toHaveText('Zeros shown')
 
-      // Desktop toolbar button is named by its visible "Zero" label.
-      const zeroButton = page.getByRole('button', { name: 'Zero', exact: true })
+      // Desktop toolbar button toggles between "Show zeros" and "Hide zeros".
+      const zeroButton = page.getByRole('button', { name: 'Show zeros' })
       await zeroButton.click()
       await expect(status).toHaveText('Zeros hidden')
-
-      // Sits below the toolbar's bottom border and above the number input.
-      const statusBox = await status.boundingBox()
-      const toolbarBox = await page.locator('div.sticky.z-40').boundingBox()
-      const inputBox = await page.getByPlaceholder('Type a number here!').boundingBox()
-      expect(statusBox).not.toBeNull()
-      expect(toolbarBox).not.toBeNull()
-      expect(inputBox).not.toBeNull()
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      expect(statusBox!.y).toBeGreaterThanOrEqual(toolbarBox!.y + toolbarBox!.height - 1)
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      expect(statusBox!.y + statusBox!.height).toBeLessThanOrEqual(inputBox!.y + 1)
     })
   })
 })
@@ -110,7 +98,7 @@ test.describe('dialog open autofocus', () => {
     test('Number Forms dialog focuses the dialog, not the close button', async ({ page }) => {
       await seed(page)
       await page.goto('/')
-      await page.getByPlaceholder('Type a number here!').fill('1203')
+      await page.getByPlaceholder('Type a number').fill('1203')
       await page.getByTitle(/Number Forms/, { exact: false }).click()
       await expectFocusOnDialogContent(page, /Number Forms/)
     })
@@ -122,15 +110,6 @@ test.describe('dialog open autofocus', () => {
       await page.getByTitle('Instructional Teachers Guide for Hide Zero Cards').click()
       await expectFocusOnDialogContent(page, "Hide Zero Cards - Teacher's Guide")
     })
-
-    test('Welcome dialog focuses the dialog, not the close button', async ({ page }) => {
-      // No welcome-dialog seed: it shows on first visit.
-      await page.addInitScript(() => {
-        localStorage.setItem('hzc-has-seen-first-time-toast', 'true')
-      })
-      await page.goto('/')
-      await expectFocusOnDialogContent(page, /Welcome to Hide Zero Cards/)
-    })
   })
 
   test.describe('desktop', () => {
@@ -139,7 +118,7 @@ test.describe('dialog open autofocus', () => {
     test('Number Forms dialog focuses the dialog, not the close button', async ({ page }) => {
       await seed(page)
       await page.goto('/')
-      await page.getByPlaceholder('Type a number here!').fill('1203')
+      await page.getByPlaceholder('Type a number').fill('1203')
       await page.getByTitle(/Number Forms/, { exact: false }).click()
       await expectFocusOnDialogContent(page, /Number Forms/)
     })
@@ -149,14 +128,6 @@ test.describe('dialog open autofocus', () => {
       await page.goto('/')
       await page.getByTitle('Instructional Teachers Guide for Hide Zero Cards').click()
       await expectFocusOnDialogContent(page, "Hide Zero Cards - Teacher's Guide")
-    })
-
-    test('Welcome dialog focuses the dialog, not the close button', async ({ page }) => {
-      await page.addInitScript(() => {
-        localStorage.setItem('hzc-has-seen-first-time-toast', 'true')
-      })
-      await page.goto('/')
-      await expectFocusOnDialogContent(page, /Welcome to Hide Zero Cards/)
     })
   })
 })

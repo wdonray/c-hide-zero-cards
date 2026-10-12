@@ -70,7 +70,7 @@ async function cardPos(card: Locator): Promise<{ x: number; y: number }> {
 }
 
 async function cardCenter(page: Page): Promise<{ card: Locator; x: number; y: number }> {
-  await page.getByPlaceholder('Type a number here!').fill('1234')
+  await page.getByPlaceholder('Type a number').fill('1234')
   const cards = page.getByRole('application', { name: 'Draggable place value cards' })
   // The last card sits on top of the fan: its center is never covered by
   // the cascading overlap, so the pointer reliably hits it.

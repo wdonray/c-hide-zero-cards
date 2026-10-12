@@ -1,15 +1,8 @@
 'use client'
 
 import { useLayoutEffect, useMemo, useEffect, useRef, useState } from 'react'
-import { NumberInput } from '@/components/NumberInput'
 import { DraggableCard } from '@/components/DraggableCard'
-import {
-  PLACE_VALUES,
-  LOCAL_STORAGE_KEYS,
-  FIRST_TIME_TOAST_DURATION,
-  FIRST_TIME_TOAST_STYLE,
-  NumberFormsDialogTab,
-} from '@/lib/constants'
+import { PLACE_VALUES, NumberFormsDialogTab } from '@/lib/constants'
 import {
   getMobileCardMetrics,
   getPeekText,
@@ -21,10 +14,10 @@ import { useHeaderContext } from '@/lib/useHeaderContext'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { reportError } from '@/lib/report-error'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
+import { NumberInput } from '@/components/NumberInput'
 import { ZeroStateIndicator } from '@/components/ZeroStateIndicator'
+import { ZeroConfetti } from '@/components/ZeroConfetti'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
-import { toast } from 'sonner'
-import { FirstTimeToast } from '@/components/FirstTimeToast'
 
 export function HomePageClient() {
   const {
@@ -241,14 +234,8 @@ export function HomePageClient() {
     window.scrollTo(0, 0)
   }, [])
 
-  // One-time toast: guarded by localStorage directly, so the effect only
-  // touches external systems (storage + the toast library) and never state.
-  useEffect(() => {
-    if (cards.length > 1 && localStorage.getItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST) === null) {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.HAS_SEEN_FIRST_TIME_TOAST, JSON.stringify(true))
-      toast(<FirstTimeToast />, { duration: FIRST_TIME_TOAST_DURATION, style: FIRST_TIME_TOAST_STYLE })
-    }
-  }, [cards])
+  // First-time toast removed per owner decision 2026-10-11 (kids redesign):
+  // the "Great job!" popover no longer appears.
 
   return (
     <>
@@ -259,6 +246,7 @@ export function HomePageClient() {
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
       />
+      <ZeroConfetti />
       {/* <BuyMeACoffeeWidget /> */}
 
       <section
@@ -266,53 +254,72 @@ export function HomePageClient() {
         aria-label="Interactive Place Value Cards"
       >
         <header className="flex flex-col items-center max-md:w-full">
-          {/* Desktop: the zero-state readout lives here, above the number
-              input and below the toolbar's bottom border. Mobile renders its
-              own instance above the bottom action bar instead. */}
-          {!isMobile && <ZeroStateIndicator className="mb-1.5" />}
-          <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
+          {/* Desktop: the zero-state readout lives here, above the play
+              area. The number input now lives in the toolbar row above.
+              Mobile renders its own instance above the bottom action bar. */}
+          {!isMobile && (
+            <ZeroStateIndicator className="mb-1.5 text-[13px] font-semibold text-[#6B5D4F] dark:text-[#C9BBA8]" />
+          )}
+          {/* Mobile: the desktop toolbar (which holds the number input)
+              unmounts below 768px, so mobile gets its own input instance
+              here, above the play area. Only one instance is ever mounted,
+              so sharing numberInputRef with the toolbar is safe. */}
+          {isMobile && <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />}
         </header>
 
         <main
-          className={`w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} max-md:h-auto max-md:min-h-[280px] max-md:flex-1 transition-[height] duration-300 flex items-center justify-center relative`}
           aria-label="Place value cards workspace"
+          className="relative mx-7 flex min-h-[560px] flex-1 items-center justify-center overflow-hidden px-5 py-10 max-md:mx-3 max-md:min-h-[420px]"
         >
+          {/* Subtle dot texture */}
           <div
-            ref={fanRef}
-            role="application"
-            aria-label="Draggable place value cards"
-            className="relative shrink-0"
-            style={
-              layout
-                ? {
-                    width: layout.extent,
-                    height: layout.height,
-                    // No scrolling, no max-width: the fan renders at its
-                    // natural size always. Compacting cards to fit the
-                    // viewport (or allowing the strip to scroll) causes
-                    // cards to reveal their real size on drag. (Owner
-                    // 2026-10-08: scrolling in the card container is wrong.)
-                    overflowX: 'visible',
-                  }
-                : undefined
-            }
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(43, 33, 24, 0.05) 1.5px, transparent 1.5px)',
+              backgroundSize: '28px 28px',
+            }}
+          />
+          <div
+            className={`relative w-full ${isHeaderCollapsed ? 'h-128' : 'h-120'} max-md:h-auto max-md:min-h-[280px] max-md:flex-1 transition-[height] duration-300 flex items-center justify-center`}
           >
-            {cards.map((card, i) => (
-              <DraggableCard
-                key={`${card.firstDigit}-${card.placeValue}-${i}`}
-                firstDigit={card.firstDigit}
-                placeValue={card.placeValue}
-                index={i}
-                totalCards={cards.length}
-                fanX={layout ? layout.itemX[i] : 0}
-                mobileMetrics={mobileMetrics}
-                naturalWidth={layout ? layout.naturals[i] : undefined}
-                hiddenZero={card.firstDigit === 0 && !showZeroCards}
-                resetTrigger={resetTrigger}
-                randomizeTrigger={randomizeTrigger}
-                scatterArea={scatterArea}
-              />
-            ))}
+            <div
+              ref={fanRef}
+              role="application"
+              aria-label="Draggable place value cards"
+              className="relative shrink-0"
+              style={
+                layout
+                  ? {
+                      width: layout.extent,
+                      height: layout.height,
+                      // No scrolling, no max-width: the fan renders at its
+                      // natural size always. Compacting cards to fit the
+                      // viewport (or allowing the strip to scroll) causes
+                      // cards to reveal their real size on drag. (Owner
+                      // 2026-10-08: scrolling in the card container is wrong.)
+                      overflowX: 'visible',
+                    }
+                  : undefined
+              }
+            >
+              {cards.map((card, i) => (
+                <DraggableCard
+                  key={`${card.firstDigit}-${card.placeValue}-${i}`}
+                  firstDigit={card.firstDigit}
+                  placeValue={card.placeValue}
+                  index={i}
+                  totalCards={cards.length}
+                  fanX={layout ? layout.itemX[i] : 0}
+                  mobileMetrics={mobileMetrics}
+                  naturalWidth={layout ? layout.naturals[i] : undefined}
+                  hiddenZero={card.firstDigit === 0 && !showZeroCards}
+                  resetTrigger={resetTrigger}
+                  randomizeTrigger={randomizeTrigger}
+                  scatterArea={scatterArea}
+                />
+              ))}
+            </div>
           </div>
         </main>
       </section>
