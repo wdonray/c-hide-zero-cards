@@ -155,17 +155,22 @@ export default function VersionInfo({
   return (
     <div className="w-full max-w-xl space-y-8">
       <div className="space-y-2">
-        <div className="h-1 w-10 rounded-full bg-primary" aria-hidden="true" />
-        <h1 className="text-3xl font-bold tracking-tight">Version</h1>
-        <p className="text-muted-foreground">Every release of Hide Zero Cards, most recent first.</p>
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="h-1.5 w-12 rounded-full bg-[#C14E33]" aria-hidden="true" />
+        <h1
+          className="text-3xl font-bold tracking-tight text-[#2B2118]"
+          style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
+        >
+          Version
+        </h1>
+        <p className="text-[#6B5D4F]">Every release of Hide Zero Cards, most recent first.</p>
+        <p className="flex items-center gap-2 text-sm text-[#6B5D4F]">
           <span className="relative flex size-2" aria-hidden="true">
             {unreachable ? (
-              <span className="relative inline-flex size-2 rounded-full bg-muted-foreground" />
+              <span className="relative inline-flex size-2 rounded-full bg-[#6B5D4F]" />
             ) : (
               <>
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C14E33] opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-[#C14E33]" />
               </>
             )}
           </span>
@@ -174,9 +179,9 @@ export default function VersionInfo({
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between gap-4 rounded-lg border px-4 py-3">
-          <span className="text-sm text-muted-foreground">This build</span>
-          <span className="font-mono text-lg font-semibold">v{currentVersion}</span>
+        <div className="flex items-center justify-between gap-4 rounded-2xl border-2 border-[#2B2118] bg-white px-4 py-3 shadow-[0_4px_0_rgba(43,33,24,0.1)]">
+          <span className="text-sm text-[#6B5D4F]">This build</span>
+          <span className="font-mono text-lg font-semibold text-[#2B2118]">v{currentVersion}</span>
         </div>
       </div>
 
@@ -187,30 +192,36 @@ export default function VersionInfo({
               const relative = timeAgo(release.publishedAt, now)
               const isCurrentBuild = compareVersions(currentVersion, release.version) === 0
               return (
-                <li key={release.version || index} className="rounded-lg border p-4">
+                <li
+                  key={release.version || index}
+                  className="rounded-2xl border-2 border-[#2B2118] bg-white p-4 shadow-[0_4px_0_rgba(43,33,24,0.1)]"
+                >
                   <div className="flex flex-wrap items-center gap-2">
                     <a
                       href={release.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-xl font-bold tracking-tight transition-colors hover:text-primary"
+                      className="font-mono text-xl font-bold tracking-tight text-[#2B2118] transition-colors hover:text-[#C14E33]"
                     >
                       v{release.version}
                     </a>
                     {index === 0 && (
-                      <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-semibold">
+                      <span
+                        className="inline-flex items-center rounded-full bg-[#C14E33] px-2.5 py-0.5 text-xs font-semibold text-white"
+                        style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
+                      >
                         Latest
                       </span>
                     )}
                     {isCurrentBuild && (
-                      <span className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                      <span className="inline-flex items-center rounded-full border-2 border-[#2B2118]/20 px-2.5 py-0.5 text-xs font-semibold text-[#6B5D4F]">
                         This build
                       </span>
                     )}
                   </div>
-                  {release.summary && <p className="mt-1.5 text-sm text-muted-foreground">{release.summary}</p>}
+                  {release.summary && <p className="mt-1.5 text-sm text-[#6B5D4F]">{release.summary}</p>}
                   {release.publishedAt && (
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <p className="mt-1.5 text-xs text-[#6B5D4F]">
                       {formatDate(release.publishedAt)}
                       {relative ? ` · ${relative}` : ''}
                     </p>
@@ -220,7 +231,7 @@ export default function VersionInfo({
             })}
           </ol>
         ) : (
-          <p className="rounded-lg border px-4 py-6 text-center text-sm text-muted-foreground">
+          <p className="rounded-2xl border-2 border-[#2B2118] bg-white px-4 py-6 text-center text-sm text-[#6B5D4F] shadow-[0_4px_0_rgba(43,33,24,0.1)]">
             {unreachable ? "Couldn't reach GitHub to load releases." : 'No releases found.'}
           </p>
         )}
