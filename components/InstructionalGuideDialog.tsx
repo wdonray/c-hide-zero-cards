@@ -44,7 +44,7 @@ export function InstructionalGuideDialog() {
           style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
           title="Instructional Teachers Guide for Hide Zero Cards"
         >
-          <Question className="h-5 w-5 text-[#C14E33]" />
+          <Question className="h-5 w-5 text-[#C14E33] dark:text-[#FF8A6B]" />
           <span className="hidden md:inline">Guide</span>
         </button>
       </DialogTrigger>
