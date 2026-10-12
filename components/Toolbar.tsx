@@ -85,7 +85,7 @@ export function Toolbar() {
         <button
           onClick={handleRandomizeCardPosition}
           disabled={!inputNumber}
-          title="Mix: scatter cards to random positions"
+          title="Randomize card position"
           className={pillBase}
           style={{ ...baloo, boxShadow: pillShadow }}
         >
@@ -96,7 +96,7 @@ export function Toolbar() {
         <button
           onClick={handleResetCardPosition}
           disabled={!inputNumber || !cardsMoved}
-          title="Reset cards to fan position"
+          title="Reset cards to original position"
           className={pillBase}
           style={{ ...baloo, boxShadow: pillShadow }}
         >
