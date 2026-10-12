@@ -12,7 +12,7 @@ export function ThemeToggle() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#2B2118] transition-colors hover:bg-[#FFF6EC] focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="cursor-pointer inline-flex h-11 w-11 items-center justify-center rounded-full text-[#2B2118] transition-colors hover:bg-[#FFF6EC] focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
           title="Toggle light/dark mode"
         >
