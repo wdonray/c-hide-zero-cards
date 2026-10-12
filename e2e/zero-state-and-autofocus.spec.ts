@@ -80,6 +80,20 @@ test.describe('zero toggle status text', () => {
       const zeroButton = page.getByRole('button', { name: 'Show zeros' })
       await zeroButton.click()
       await expect(status).toHaveText('Zeros hidden')
+
+      // Sits below the toolbar's bottom border and above the card workspace
+      // (the number input lives in the toolbar row since the kids redesign,
+      // so the status now sits below it, not above it).
+      const statusBox = await status.boundingBox()
+      const toolbarBox = await page.locator('#app-toolbar').boundingBox()
+      const workspaceBox = await page.locator('main[aria-label="Place value cards workspace"]').boundingBox()
+      expect(statusBox).not.toBeNull()
+      expect(toolbarBox).not.toBeNull()
+      expect(workspaceBox).not.toBeNull()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      expect(statusBox!.y).toBeGreaterThanOrEqual(toolbarBox!.y + toolbarBox!.height - 1)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      expect(statusBox!.y + statusBox!.height).toBeLessThanOrEqual(workspaceBox!.y + 1)
     })
   })
 })

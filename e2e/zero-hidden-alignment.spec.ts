@@ -33,7 +33,7 @@ const CASES: Array<{ input: string; shownTexts: string[] }> = [
   { input: '101325', shownTexts: ['100,000', '00,000', '1,000', '300', '20', '5'] },
   { input: '1001', shownTexts: ['1,000', '000', '00', '1'] },
   { input: '120', shownTexts: ['100', '20', '0'] },
-  // 1000000 removed: 7-card fan overflows on mobile, causing misalignment (pre-existing layout limit, not a regression).
+  { input: '1000000', shownTexts: ['1,000,000', '000,000', '00,000', '0,000', '000', '00', '0'] },
   // No-zero control: hiding zeros must not change this fan at all.
   { input: '12345', shownTexts: ['10,000', '2,000', '300', '40', '5'] },
 ]
@@ -109,6 +109,13 @@ test.describe('zero-hidden fan alignment', () => {
         viewport: { width: vp.width, height: vp.height },
         hasTouch: vp.mobile,
         isMobile: vp.mobile,
+        // The hide-zeros micro-celebration transiently scales zero cards on
+        // toggle, which moves their measured rects for ~430ms (a fixed sleep
+        // races the stagger and the worst case exceeds it). This spec asserts
+        // the settled fan layout, so it runs in the app's own reduced-motion
+        // path (celebration skipped) for deterministic measurement; the
+        // layout code under test is identical.
+        reducedMotion: 'reduce',
       })
 
       test.beforeEach(async ({ page }) => {
@@ -133,9 +140,6 @@ test.describe('zero-hidden fan alignment', () => {
           const shownLefts = data.cards.map((c) => c.left)
 
           await page.getByTitle('Hide zero cards', { exact: true }).click()
-
-          // Wait for hide-zeros micro-celebration animation (250ms + 30ms stagger per zero) to complete.
-          await page.waitForTimeout(700)
 
           // No card is removed: the count never changes.
           await expect(cardEls).toHaveCount(input.length)
