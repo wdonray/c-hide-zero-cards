@@ -10,12 +10,12 @@ import { RandomNumberPopover } from './RandomNumberPopover'
 import { APP_TOOLBAR_ID } from '@/lib/scatterArea'
 
 const pillBase =
-  'inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#2B2118] dark:border-[#5a4a3a] bg-white dark:bg-[#2a2118] px-[22px] text-[18px] font-semibold text-[#2B2118] dark:text-[#FFF6EC] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
+  'cursor-pointer inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#2B2118] dark:border-[#5a4a3a] bg-white dark:bg-[#2a2118] px-[22px] text-[18px] font-semibold text-[#2B2118] dark:text-[#FFF6EC] transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
 
 const pillShadow = '0 3px 0 rgba(43, 33, 24, 0.15)'
 
 const ghostBase =
-  'inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-transparent bg-transparent px-[22px] text-[18px] font-semibold transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
+  'cursor-pointer inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-transparent bg-transparent px-[22px] text-[18px] font-semibold transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none'
 
 const baloo = { fontFamily: 'var(--font-baloo), system-ui, sans-serif' } as const
 
