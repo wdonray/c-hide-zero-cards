@@ -34,14 +34,30 @@ jobs:
             echo "skip=true" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/checkout@v6
+      # Never hand the agent a fork's files with a write-capable token.
+      # Fork PRs are read-only for the responder: no checkout of untrusted
+      # code, no GH_TOKEN in the agent's environment. Runs before checkout
+      # and loop protection so neither touches a fork PR.
+      - name: Fork guard
+        id: forkguard
         if: steps.keycheck.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
+          if [ "$(gh pr view "$PR_NUMBER" --json isCrossRepository --jq '.isCrossRepository')" = "true" ]; then
+            echo "PR #$PR_NUMBER is from a fork; skipping responder run."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/checkout@v6
+        if: steps.keycheck.outputs.skip != 'true' && steps.forkguard.outputs.skip != 'true'
         with:
           fetch-depth: 0
 
       - name: Loop protection
         id: loop
-        if: steps.keycheck.outputs.skip != 'true'
+        if: steps.keycheck.outputs.skip != 'true' && steps.forkguard.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -79,21 +95,6 @@ jobs:
               gh pr comment "$PR_NUMBER" --body "The CodeRabbit responder has run $COUNT times on this PR without fully resolving all threads. This needs Donray's eyes."
               gh pr edit "$PR_NUMBER" --add-label "needs-donray"
             fi
-          fi
-
-      # Never hand the agent a fork's files with a write-capable token.
-      # Fork PRs are read-only for the responder: no checkout of untrusted
-      # code, no GH_TOKEN in the agent's environment.
-      - name: Fork guard
-        id: forkguard
-        if: steps.keycheck.outputs.skip != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
-          if [ "$(gh pr view "$PR_NUMBER" --json isCrossRepository --jq '.isCrossRepository')" = "true" ]; then
-            echo "PR #$PR_NUMBER is from a fork; skipping responder run."
-            echo "skip=true" >> $GITHUB_OUTPUT
           fi
 
       # The anomalyco/opencode/github action only supports issue_comment and
