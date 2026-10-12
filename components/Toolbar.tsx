@@ -112,7 +112,7 @@ export function Toolbar() {
           style={baloo}
         >
           <X className="h-6 w-6 text-[#C14E33]" />
-          <span className="text-[#6B5D4F]">Clear</span>
+          <span className="text-[#6B5D4F] dark:text-[#FFF6EC]">Clear</span>
         </button>
 
         <button
