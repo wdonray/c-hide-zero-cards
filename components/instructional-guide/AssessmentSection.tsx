@@ -14,10 +14,10 @@ export function AssessmentSection() {
     <div className="space-y-6">
       {/* Assessment & Learning Checks */}
       <section>
-        <h3 className="font-bold text-lg text-[#2B2118] mb-3" style={baloo}>
+        <h3 className="font-bold text-lg text-[#2B2118] dark:text-[#FFF6EC] mb-3" style={baloo}>
           Assessment & Learning Checks
         </h3>
-        <div className="bg-white p-4 rounded-2xl space-y-3 border-2 border-[#2B2118]/10">
+        <div className="bg-white dark:bg-[#1a1512] p-4 rounded-2xl space-y-3 border-2 border-[#2B2118]/10 dark:border-[#FFF6EC]/10">
           {checks.map((check) => (
             <div key={check.title} className="grid grid-cols-[20px_minmax(0,1fr)] items-start gap-4">
               <div
@@ -26,7 +26,7 @@ export function AssessmentSection() {
               >
                 ✓
               </div>
-              <div className="text-[#2B2118]">
+              <div className="text-[#2B2118] dark:text-[#FFF6EC]">
                 <strong>{check.title}</strong> {check.text}
               </div>
             </div>
