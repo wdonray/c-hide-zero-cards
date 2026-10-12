@@ -90,7 +90,7 @@ export function WordForm({ number, className }: WordFormProps) {
         className
       )}
     >
-      <CardContent className="flex flex-1 items-center justify-center py-8">
+      <CardContent className="flex items-center justify-center py-8">
         <p className="w-full text-xl font-semibold text-[#2B2118] dark:text-[#FFF6EC] leading-relaxed text-center">
           {wordForm}
         </p>
