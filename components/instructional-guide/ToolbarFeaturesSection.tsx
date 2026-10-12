@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import { CaretDown, DiceSix, ArrowClockwise, Shuffle, X, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Layers } from 'lucide-react'
 
@@ -23,14 +22,26 @@ export function ToolbarFeaturesSection() {
                 </p>
               </div>
               <div className="flex flex-col gap-2 flex-shrink-0">
-                <div className="flex rounded-md shadow-sm" role="group">
-                  <Button size="sm" className="rounded-r-none">
-                    <DiceSix className="h-4 w-4" />
+                <div className="inline-flex items-center" role="group" aria-label="Roll random number demo">
+                  <span
+                    className="inline-flex h-[48px] items-center gap-2 rounded-l-full rounded-r-none border-2 border-r-0 border-[#2B2118] bg-white px-4 text-[16px] font-semibold text-[#2B2118]"
+                    style={{
+                      fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+                      boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
+                    }}
+                  >
+                    <DiceSix className="h-5 w-5" />
                     <span className="hidden md:block">Roll</span>
-                  </Button>
-                  <Button size="sm" className="rounded-l-none text-sm px-2">
+                  </span>
+                  <span
+                    className="inline-flex h-[48px] items-center justify-center rounded-l-none rounded-r-full border-2 border-l-0 border-[#2B2118] bg-white px-3 text-[#2B2118]"
+                    style={{
+                      fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+                      boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
+                    }}
+                  >
                     <CaretDown className="h-4 w-4" />
-                  </Button>
+                  </span>
                 </div>
               </div>
             </div>
@@ -70,10 +81,13 @@ export function ToolbarFeaturesSection() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <Button variant="outline" size="sm">
-                <X className="h-4 w-4 text-red-600" />
+              <span
+                className="inline-flex h-[48px] items-center gap-2 rounded-full border-2 border-transparent px-4 text-[16px] font-semibold text-[#6B5D4F]"
+                style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
+              >
+                <X className="h-5 w-5 text-[#C14E33]" />
                 <span className="hidden md:block">Clear</span>
-              </Button>
+              </span>
             </div>
           </div>
         </div>
@@ -88,14 +102,26 @@ export function ToolbarFeaturesSection() {
               </p>
             </div>
             <div className="flex flex-col gap-2 flex-shrink-0">
-              <Button variant="outline" size="sm">
-                <Eye className="h-4 w-4 text-slate-600" />
-                <span className="hidden md:block">Zero</span>
-              </Button>
-              <Button variant="outline" size="sm">
-                <EyeSlash className="h-4 w-4 text-slate-600" />
-                <span className="hidden md:block">Zero</span>
-              </Button>
+              <span
+                className="inline-flex h-[48px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-[#C14E33] px-4 text-[16px] font-semibold text-white"
+                style={{
+                  fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+                  boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
+                }}
+              >
+                <Eye className="h-5 w-5" />
+                <span className="hidden md:block">Show zeros</span>
+              </span>
+              <span
+                className="inline-flex h-[48px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-[#C14E33] px-4 text-[16px] font-semibold text-white"
+                style={{
+                  fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+                  boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
+                }}
+              >
+                <EyeSlash className="h-5 w-5" />
+                <span className="hidden md:block">Hide zeros</span>
+              </span>
             </div>
           </div>
         </div>
@@ -109,10 +135,16 @@ export function ToolbarFeaturesSection() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <Button size="sm" variant="outline">
-                <Shuffle className="h-4 w-4 text-purple-600" />
+              <span
+                className="inline-flex h-[48px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-white px-4 text-[16px] font-semibold text-[#2B2118]"
+                style={{
+                  fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+                  boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
+                }}
+              >
+                <Shuffle className="h-5 w-5" />
                 <span className="hidden md:block">Mix</span>
-              </Button>
+              </span>
             </div>
           </div>
         </div>
@@ -126,10 +158,16 @@ export function ToolbarFeaturesSection() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <Button variant="outline" size="sm">
-                <ArrowClockwise className="h-4 w-4 text-green-600" />
+              <span
+                className="inline-flex h-[48px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-white px-4 text-[16px] font-semibold text-[#2B2118]"
+                style={{
+                  fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+                  boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
+                }}
+              >
+                <ArrowClockwise className="h-5 w-5" />
                 <span className="hidden md:block">Reset</span>
-              </Button>
+              </span>
             </div>
           </div>
         </div>
@@ -147,10 +185,16 @@ export function ToolbarFeaturesSection() {
                   </p>
                 </div>
                 <div className="flex-shrink-0">
-                  <Button variant="outline" size="sm">
-                    <Layers className="h-4 w-4 text-blue-600" />
-                    <span className="hidden md:block">Number Forms</span>
-                  </Button>
+                  <span
+                    className="inline-flex h-[48px] items-center gap-2 rounded-full border-2 border-[#2B2118] bg-white px-4 text-[16px] font-semibold text-[#2B2118]"
+                    style={{
+                      fontFamily: 'var(--font-baloo), system-ui, sans-serif',
+                      boxShadow: '0 3px 0 rgba(43, 33, 24, 0.15)',
+                    }}
+                  >
+                    <Layers className="h-5 w-5" />
+                    <span className="hidden md:block">Ways to write it</span>
+                  </span>
                 </div>
               </div>
 
