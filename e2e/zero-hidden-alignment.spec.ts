@@ -117,7 +117,7 @@ test.describe('zero-hidden fan alignment', () => {
 
       for (const { input, shownTexts } of CASES) {
         test(`${input}: zeros hidden in place, fan stays aligned`, async ({ page }) => {
-          await page.getByPlaceholder('Type a number here!').fill(input)
+          await page.getByPlaceholder('Type a number').fill(input)
           const cardEls = cards(page)
           await expect(cardEls).toHaveCount(input.length)
 
@@ -177,7 +177,7 @@ test.describe('zero-hidden fan alignment', () => {
       }
 
       test('800,502 hidden reads "800,000",<gap>,<gap>,"500",<gap>,"2", never "852"', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('800502')
+        await page.getByPlaceholder('Type a number').fill('800502')
         await page.getByTitle('Hide zero cards', { exact: true }).click()
 
         // Six cards present (not three): the fan cannot collapse to "852".
@@ -208,7 +208,7 @@ test.describe('zero-hidden fan alignment', () => {
         // tens card; nothing covers the "600" card anymore, so its full
         // text shows (physical arrow cards: remove the cover, see the
         // zeros). No clip-path backstop.
-        await page.getByPlaceholder('Type a number here!').fill('2609')
+        await page.getByPlaceholder('Type a number').fill('2609')
         await page.getByTitle('Hide zero cards', { exact: true }).click()
 
         const data = await cardData(page)
@@ -235,12 +235,12 @@ test.describe('zero-hidden fan alignment', () => {
       })
 
       test('hidden zero cards are skipped in tab order', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('800502')
+        await page.getByPlaceholder('Type a number').fill('800502')
         await page.getByTitle('Hide zero cards', { exact: true }).click()
         await expect(cards(page)).toHaveCount(6)
 
         // Tab through the page: focus must never land on a hidden card.
-        await page.getByPlaceholder('Type a number here!').focus()
+        await page.getByPlaceholder('Type a number').focus()
         const focusedHidden: string[] = []
         for (let i = 0; i < 40; i++) {
           await page.keyboard.press('Tab')
@@ -258,7 +258,7 @@ test.describe('zero-hidden fan alignment', () => {
       test('typing 0 is rejected (input keeps its value)', async ({ page }) => {
         // Auto-roll on load gives the input a value; typing 0 is invalid and
         // must not change it or break the fan.
-        const input = page.getByPlaceholder('Type a number here!')
+        const input = page.getByPlaceholder('Type a number')
         const before = await input.inputValue()
         expect(before).not.toBe('')
         await input.fill('0')
@@ -268,7 +268,7 @@ test.describe('zero-hidden fan alignment', () => {
       })
 
       test('Mix reveals hidden zero cards (displaced cards are never hidden)', async ({ page }) => {
-        await page.getByPlaceholder('Type a number here!').fill('85055')
+        await page.getByPlaceholder('Type a number').fill('85055')
         // Hide zeros: the hundreds zero card goes invisible in the fan.
         await page.getByTitle('Hide zero cards', { exact: true }).click()
         const zeroCard = cards(page).filter({ hasText: /^0+$/ })

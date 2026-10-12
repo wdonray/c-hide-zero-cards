@@ -40,7 +40,7 @@ test.describe('zero toggle status text', () => {
     test('status text above the action bar reflects the toggle instantly', async ({ page }) => {
       await seed(page)
       await page.goto('/')
-      await page.getByPlaceholder('Type a number here!').fill('1203')
+      await page.getByPlaceholder('Type a number').fill('1203')
 
       const status = page.getByRole('status')
       // Exactly one instance: the mobile bar owns it, the main content does not render it.
@@ -69,7 +69,7 @@ test.describe('zero toggle status text', () => {
     test('status text above the number input reflects the toggle instantly', async ({ page }) => {
       await seed(page)
       await page.goto('/')
-      await page.getByPlaceholder('Type a number here!').fill('1203')
+      await page.getByPlaceholder('Type a number').fill('1203')
 
       const status = page.getByRole('status')
       // Exactly one instance: the main content owns it, the toolbar no longer does.
@@ -84,7 +84,7 @@ test.describe('zero toggle status text', () => {
       // Sits below the toolbar's bottom border and above the number input.
       const statusBox = await status.boundingBox()
       const toolbarBox = await page.locator('div.sticky.z-40').boundingBox()
-      const inputBox = await page.getByPlaceholder('Type a number here!').boundingBox()
+      const inputBox = await page.getByPlaceholder('Type a number').boundingBox()
       expect(statusBox).not.toBeNull()
       expect(toolbarBox).not.toBeNull()
       expect(inputBox).not.toBeNull()
@@ -110,7 +110,7 @@ test.describe('dialog open autofocus', () => {
     test('Number Forms dialog focuses the dialog, not the close button', async ({ page }) => {
       await seed(page)
       await page.goto('/')
-      await page.getByPlaceholder('Type a number here!').fill('1203')
+      await page.getByPlaceholder('Type a number').fill('1203')
       await page.getByTitle(/Number Forms/, { exact: false }).click()
       await expectFocusOnDialogContent(page, /Number Forms/)
     })
@@ -139,7 +139,7 @@ test.describe('dialog open autofocus', () => {
     test('Number Forms dialog focuses the dialog, not the close button', async ({ page }) => {
       await seed(page)
       await page.goto('/')
-      await page.getByPlaceholder('Type a number here!').fill('1203')
+      await page.getByPlaceholder('Type a number').fill('1203')
       await page.getByTitle(/Number Forms/, { exact: false }).click()
       await expectFocusOnDialogContent(page, /Number Forms/)
     })

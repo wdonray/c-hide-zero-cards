@@ -1,19 +1,10 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('first visit', () => {
-  test('shows the welcome dialog and dismisses it', async ({ page }) => {
-    await page.goto('/')
-
-    await expect(page.getByRole('heading', { name: 'Welcome to Hide Zero Cards!' })).toBeVisible()
-    await page.getByRole('button', { name: "Let's Get Started!" }).click()
-    await expect(page.getByRole('heading', { name: 'Welcome to Hide Zero Cards!' })).toBeHidden()
-  })
-
   test('shows the first-time toast after the first number', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: "Let's Get Started!" }).click()
 
-    await page.getByPlaceholder('Type a number here!').fill('42')
+    await page.getByPlaceholder('Type a number').fill('42')
 
     await expect(page.getByText('Great job! You made your first number!')).toBeVisible()
   })
@@ -22,11 +13,10 @@ test.describe('first visit', () => {
 test.describe('number input and cards', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: "Let's Get Started!" }).click()
   })
 
   test('renders one card per digit with place values', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
     await input.fill('1023')
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
@@ -46,7 +36,7 @@ test.describe('number input and cards', () => {
   })
 
   test('hides and shows zero cards', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
     await input.fill('1023')
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
@@ -67,8 +57,7 @@ test.describe('number input and cards', () => {
 test.describe('toolbar actions', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: "Let's Get Started!" }).click()
-    await page.getByPlaceholder('Type a number here!').fill('1234')
+    await page.getByPlaceholder('Type a number').fill('1234')
   })
 
   test('mixes and resets card positions', async ({ page }) => {
@@ -105,7 +94,7 @@ test.describe('toolbar actions', () => {
   test('clears the input and the cards', async ({ page }) => {
     await page.getByTitle('Clear input number and reset cards', { exact: true }).click()
 
-    await expect(page.getByPlaceholder('Type a number here!')).toHaveValue('')
+    await expect(page.getByPlaceholder('Type a number')).toHaveValue('')
     // Clearing is intentional (not a fresh load), so no auto-roll: the
     // workspace is empty and the old instructional empty state is gone.
     await expect(page.getByText('Type a number above to see your cards!')).toHaveCount(0)
@@ -118,11 +107,10 @@ test.describe('toolbar actions', () => {
 test.describe('roll and random range', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: "Let's Get Started!" }).click()
   })
 
   test('rolls a random number and shows its cards', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
     await page.getByRole('button', { name: 'Roll' }).click()
 
     await expect(input).not.toHaveValue('')
@@ -131,7 +119,7 @@ test.describe('roll and random range', () => {
   })
 
   test('limits rolls to the selected range', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
     const rollButton = page.getByRole('button', { name: 'Roll' })
 
     await page.getByTitle('Set random number range', { exact: true }).click()
@@ -149,7 +137,7 @@ test.describe('roll and random range', () => {
   })
 
   test('zero focus rolls keep producing numbers containing a zero', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
     const rollButton = page.getByRole('button', { name: 'Roll' })
 
     await page.getByTitle('Set random number range', { exact: true }).click()
@@ -166,8 +154,7 @@ test.describe('roll and random range', () => {
 test.describe('number forms dialog', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: "Let's Get Started!" }).click()
-    await page.getByPlaceholder('Type a number here!').fill('1234')
+    await page.getByPlaceholder('Type a number').fill('1234')
     await page.getByRole('button', { name: 'Number Forms' }).click()
   })
 
@@ -202,7 +189,6 @@ test.describe('number forms dialog', () => {
 test.describe("teacher's guide", () => {
   test('opens the guide and switches tabs', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: "Let's Get Started!" }).click()
 
     await page.getByRole('button', { name: 'How to Use' }).click()
     const dialog = page.getByRole('dialog', { name: "Hide Zero Cards - Teacher's Guide" })
@@ -218,7 +204,6 @@ test.describe("teacher's guide", () => {
 test.describe('theme toggle', () => {
   test('switches between light and dark mode', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: "Let's Get Started!" }).click()
 
     const html = page.locator('html')
     await page.getByTitle('Toggle light/dark mode', { exact: true }).click()

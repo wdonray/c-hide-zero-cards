@@ -52,7 +52,7 @@ test.describe('accessibility', () => {
             await page.goto('/')
 
             if (withCards) {
-              await page.getByPlaceholder('Type a number here!').fill('1234')
+              await page.getByPlaceholder('Type a number').fill('1234')
               await expect(
                 page.getByRole('application', { name: 'Draggable place value cards' }).locator(':scope > div')
               ).toHaveCount(4)
@@ -204,7 +204,7 @@ test.describe('keyboard operability', () => {
       localStorage.setItem('hzc-has-seen-welcome-dialog', 'true')
     })
     await page.goto('/')
-    await page.getByPlaceholder('Type a number here!').fill('1234')
+    await page.getByPlaceholder('Type a number').fill('1234')
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     const firstCard = cards.locator(':scope > div').first()

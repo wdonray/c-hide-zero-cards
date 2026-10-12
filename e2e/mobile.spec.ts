@@ -41,7 +41,7 @@ async function touchDrag(page: Page, fromX: number, fromY: number, toX: number, 
 
 test.describe('mobile core flows', () => {
   test('enters a number via the mobile-friendly input and generates cards', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
 
     // Mobile keyboard hints: numeric keypad with a Done key. The 1..1B
     // range and comma formatting behavior are unchanged.
@@ -61,7 +61,7 @@ test.describe('mobile core flows', () => {
   })
 
   test('drags a card with touch without scrolling the page', async ({ page }) => {
-    await page.getByPlaceholder('Type a number here!').fill('1234')
+    await page.getByPlaceholder('Type a number').fill('1234')
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     // Cards sit side by side in a strip, so the last card's center is
@@ -84,7 +84,7 @@ test.describe('mobile core flows', () => {
   })
 
   test('hides and shows zero cards', async ({ page }) => {
-    await page.getByPlaceholder('Type a number here!').fill('1023')
+    await page.getByPlaceholder('Type a number').fill('1023')
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     await expect(cards.locator(':scope > div')).toHaveCount(4)
@@ -101,7 +101,7 @@ test.describe('mobile core flows', () => {
   })
 
   test('rolls a random number and shows its cards', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
     await page.getByRole('button', { name: 'Roll a random number' }).click()
 
     await expect(input).not.toHaveValue('')
@@ -110,7 +110,7 @@ test.describe('mobile core flows', () => {
   })
 
   test('sets the random range from the More menu', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
     const rollButton = page.getByRole('button', { name: 'Roll a random number' })
 
     // Range settings live in the More sheet on mobile now.
@@ -136,7 +136,7 @@ test.describe('mobile core flows', () => {
   })
 
   test('mixes and resets card positions', async ({ page }) => {
-    await page.getByPlaceholder('Type a number here!').fill('1234')
+    await page.getByPlaceholder('Type a number').fill('1234')
 
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     const cardDivs = cards.locator(':scope > div')
@@ -167,15 +167,15 @@ test.describe('mobile core flows', () => {
   })
 
   test('clears the input and the cards', async ({ page }) => {
-    await page.getByPlaceholder('Type a number here!').fill('1234')
+    await page.getByPlaceholder('Type a number').fill('1234')
     await page.getByTitle('Clear input number and reset cards', { exact: true }).click()
 
-    await expect(page.getByPlaceholder('Type a number here!')).toHaveValue('')
+    await expect(page.getByPlaceholder('Type a number')).toHaveValue('')
     await expect(page.getByText('Type a number above to see your cards!')).toHaveCount(0)
   })
 
   test('opens number forms showing all forms as stacked sections', async ({ page }) => {
-    await page.getByPlaceholder('Type a number here!').fill('1234')
+    await page.getByPlaceholder('Type a number').fill('1234')
     await page.getByTitle(/Number Forms/, { exact: false }).click()
 
     const dialog = page.getByRole('dialog', { name: /Number Forms/ })
@@ -214,11 +214,11 @@ test.describe('mobile core flows', () => {
 test.describe('mobile layout', () => {
   test('shows no mobile warning dialog; the app is directly usable', async ({ page }) => {
     await expect(page.getByRole('alertdialog')).toHaveCount(0)
-    await expect(page.getByPlaceholder('Type a number here!')).toBeEnabled()
+    await expect(page.getByPlaceholder('Type a number')).toBeEnabled()
   })
 
   test('has no horizontal overflow with the widest supported number', async ({ page }) => {
-    await page.getByPlaceholder('Type a number here!').fill('1000000000')
+    await page.getByPlaceholder('Type a number').fill('1000000000')
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
     await expect(cards.locator(':scope > div')).toHaveCount(10)
 
@@ -293,7 +293,7 @@ test.describe('mobile layout', () => {
   })
 
   test('cards are the hero: fixed 60px font on mobile, vertically centered in the workspace', async ({ page }) => {
-    const input = page.getByPlaceholder('Type a number here!')
+    const input = page.getByPlaceholder('Type a number')
     const cards = page.getByRole('application', { name: 'Draggable place value cards' })
 
     await input.fill('123')

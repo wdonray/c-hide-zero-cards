@@ -41,7 +41,7 @@ async function cardBoxes(page: Page, count: number): Promise<Box[]> {
 }
 
 async function mix(page: Page) {
-  await page.getByPlaceholder('Type a number here!').fill('691193')
+  await page.getByPlaceholder('Type a number').fill('691193')
   await expect(cards(page)).toHaveCount(6)
   await page.getByTitle('Randomize card position').click()
 }
@@ -86,7 +86,7 @@ async function chromeBoxes(page: Page): Promise<{ label: string; box: Box }[]> {
   const out: { label: string; box: Box }[] = []
   const candidates: { label: string; locator: Locator }[] = [
     { label: 'header', locator: page.getByRole('banner') },
-    { label: 'number input', locator: page.getByPlaceholder('Type a number here!') },
+    { label: 'number input', locator: page.getByPlaceholder('Type a number') },
     { label: 'action bar', locator: page.getByLabel('Quick actions') },
     { label: 'footer', locator: page.getByRole('contentinfo') },
   ]
@@ -139,7 +139,7 @@ test.describe('mobile mix scatter (375px)', () => {
   })
 
   test('the card area has no dashed border', async ({ page }) => {
-    await page.getByPlaceholder('Type a number here!').fill('691193')
+    await page.getByPlaceholder('Type a number').fill('691193')
     await expect(cards(page)).toHaveCount(6)
     const borderStyle = await page
       .getByLabel('Place value cards workspace')
@@ -185,7 +185,7 @@ test.describe('desktop mix scatter (1280px)', () => {
   })
 
   test('the card area has no dashed border', async ({ page }) => {
-    await page.getByPlaceholder('Type a number here!').fill('691193')
+    await page.getByPlaceholder('Type a number').fill('691193')
     await expect(cards(page)).toHaveCount(6)
     const borderStyle = await page
       .getByLabel('Place value cards workspace')
