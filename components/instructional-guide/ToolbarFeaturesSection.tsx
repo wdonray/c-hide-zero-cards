@@ -3,10 +3,10 @@ import { Layers } from 'lucide-react'
 
 const baloo = { fontFamily: 'var(--font-baloo), system-ui, sans-serif' } as const
 
-function DemoPill({ children }: { children: React.ReactNode }) {
+function DemoPill({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <span
-      className="inline-flex h-10 items-center gap-1.5 rounded-full border-2 border-[#2B2118] dark:border-[#5a4a3a] bg-white dark:bg-[#1a1512] px-4 text-[14px] font-semibold text-[#2B2118] dark:text-[#FFF6EC]"
+      className={`inline-flex h-10 items-center gap-1.5 rounded-full border-2 border-[#2B2118] dark:border-[#5a4a3a] bg-white dark:bg-[#1a1512] px-4 text-[14px] font-semibold text-[#2B2118] dark:text-[#FFF6EC] ${className}`}
       style={baloo}
     >
       {children}
@@ -36,7 +36,7 @@ export function ToolbarFeaturesSection() {
               </div>
               <div className="flex flex-col gap-2 flex-shrink-0">
                 <div className="flex" role="group">
-                  <DemoPill>
+                  <DemoPill className="rounded-r-none border-r-0">
                     <DiceSix className="h-4 w-4" />
                     <span className="hidden md:block">Roll</span>
                   </DemoPill>
