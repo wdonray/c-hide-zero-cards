@@ -1,6 +1,6 @@
 {
   "name": "c-hide-zero-cards",
-  "version": "0.19.88",
+  "version": "0.19.89",
   "private": true,
   "type": "module",
   "scripts": {
