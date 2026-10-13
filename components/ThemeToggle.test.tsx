@@ -16,30 +16,53 @@ beforeEach(() => {
 })
 
 describe('ThemeToggle', () => {
-  function openMenu() {
-    // Radix menu triggers open on pointerdown, not click.
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Toggle theme' }))
+  function clickToggle() {
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle theme' }))
   }
 
-  it('opens the theme menu from the trigger', () => {
+  it('renders a single toggle button with no menu', () => {
     render(<ThemeToggle />)
-    openMenu()
-    expect(screen.getByRole('menu')).toBeInTheDocument()
-    expect(screen.getByText('Light')).toBeInTheDocument()
-    expect(screen.getByText('Dark')).toBeInTheDocument()
-    expect(screen.getByText('System')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Toggle theme' })).toBeInTheDocument()
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
-  it.each([
-    ['Light', 'light'],
-    ['Dark', 'dark'],
-    ['System', 'system'],
-  ])('sets the %s theme when chosen', (label, theme) => {
+  it('switches to light when the theme is dark', () => {
     const setTheme = vi.fn()
-    mockUseTheme.mockReturnValue({ setTheme } as unknown as ReturnType<typeof useTheme>)
+    mockUseTheme.mockReturnValue({ theme: 'dark', setTheme } as unknown as ReturnType<typeof useTheme>)
     render(<ThemeToggle />)
-    openMenu()
-    fireEvent.click(screen.getByText(label))
-    expect(setTheme).toHaveBeenCalledWith(theme)
+    clickToggle()
+    expect(setTheme).toHaveBeenCalledWith('light')
+  })
+
+  it('switches to light when the system theme resolves to dark', () => {
+    const setTheme = vi.fn()
+    mockUseTheme.mockReturnValue({
+      theme: 'system',
+      resolvedTheme: 'dark',
+      setTheme,
+    } as unknown as ReturnType<typeof useTheme>)
+    render(<ThemeToggle />)
+    clickToggle()
+    expect(setTheme).toHaveBeenCalledWith('light')
+  })
+
+  it('switches to dark when the system theme resolves to light', () => {
+    const setTheme = vi.fn()
+    mockUseTheme.mockReturnValue({
+      theme: 'system',
+      resolvedTheme: 'light',
+      setTheme,
+    } as unknown as ReturnType<typeof useTheme>)
+    render(<ThemeToggle />)
+    clickToggle()
+    expect(setTheme).toHaveBeenCalledWith('dark')
+  })
+
+  it('switches to dark when the theme is light', () => {
+    const setTheme = vi.fn()
+    mockUseTheme.mockReturnValue({ theme: 'light', setTheme } as unknown as ReturnType<typeof useTheme>)
+    render(<ThemeToggle />)
+    clickToggle()
+    expect(setTheme).toHaveBeenCalledWith('dark')
   })
 })
