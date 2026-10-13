@@ -9,7 +9,8 @@ import type { ErrorEvent, Exception } from '@sentry/nextjs'
 // stack trace and no in-app frame, just the extension's RPC-layer wording.
 // Drop that noise class at the source. The match is deliberately narrow:
 // other non-Error rejections still report.
-const EXTENSION_OBJECT_NOT_FOUND_REJECTION = /Object Not Found Matching Id:\d+, MethodName:update, ParamCount:\d+/
+const EXTENSION_OBJECT_NOT_FOUND_REJECTION =
+  /^(?:Non-Error promise rejection captured with value: )?Object Not Found Matching Id:\d+, MethodName:update, ParamCount:\d+$/
 
 function isExtensionNoiseRejection(value: Exception): boolean {
   return (

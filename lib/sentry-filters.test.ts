@@ -42,6 +42,27 @@ describe('shouldDropSentryEvent', () => {
     ).toBe(false)
   })
 
+  it('keeps the signature with trailing text (possible app failure)', () => {
+    expect(
+      shouldDropSentryEvent(
+        rejectionEvent({
+          value: `${NOISE_VALUE} -- update failed`,
+        })
+      )
+    ).toBe(false)
+  })
+
+  it('keeps partial ParamCount matches', () => {
+    expect(
+      shouldDropSentryEvent(
+        rejectionEvent({
+          value:
+            'Non-Error promise rejection captured with value: Object Not Found Matching Id:2, MethodName:update, ParamCount:4extra',
+        })
+      )
+    ).toBe(false)
+  })
+
   it('keeps the signature when a stack trace is present (real app bug)', () => {
     expect(
       shouldDropSentryEvent(
