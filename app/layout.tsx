@@ -205,14 +205,14 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${baloo2.variable} antialiased bg-background max-md:flex max-md:min-h-dvh max-md:flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${baloo2.variable} antialiased bg-background max-md:flex max-md:min-h-dvh max-md:flex-col md:flex md:min-h-screen md:flex-col`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <HydrationCheck>
             <HeaderProvider>
               <Header />
               <Toolbar />
-              <main className="container m-auto p-8 transition-all duration-300 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
+              <main className="container m-auto p-8 transition-all duration-300 md:flex-1 max-md:m-0 max-md:flex max-md:min-h-0 max-md:max-w-full max-md:flex-1 max-md:flex-col max-md:px-4 max-md:py-3">
                 {children}
               </main>
               <Footer />
