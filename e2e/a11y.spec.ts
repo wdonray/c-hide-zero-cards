@@ -22,21 +22,21 @@ test.describe('accessibility', () => {
     test.describe(`viewport: ${viewport.name}`, () => {
       test.use(viewport.use)
 
-      /** On mobile the theme toggle lives in the More sheet; on desktop it is in the header. */
+      /** On mobile the theme toggle lives in the More sheet; on desktop it is in the header.
+       * The toggle is a direct light/dark switch (no menu): the scan starts
+       * from a seeded light theme, so one click reaches dark mode. */
       async function switchToDarkTheme(page: import('@playwright/test').Page) {
         if (viewport.name === 'mobile') {
           await page.getByRole('button', { name: 'More actions' }).click()
           const sheet = page.getByRole('dialog', { name: 'More actions' })
           await sheet.getByTitle('Toggle light/dark mode', { exact: true }).click()
-          await page.getByRole('menuitem', { name: 'Dark' }).click()
-          await expect(page.getByRole('menu')).toBeHidden()
+          await expect(page.locator('html')).toHaveClass(/dark/)
           // Close the sheet so the scan sees the normal page, not a modal.
           await page.keyboard.press('Escape')
           await expect(sheet).toBeHidden()
         } else {
           await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
-          await page.getByRole('menuitem', { name: 'Dark' }).click()
-          await expect(page.getByRole('menu')).toBeHidden()
+          await expect(page.locator('html')).toHaveClass(/dark/)
         }
       }
 
@@ -46,8 +46,10 @@ test.describe('accessibility', () => {
             page,
           }) => {
             // Suppress the welcome dialog; scan the main app surface.
+            // Seed a light theme so the direct toggle reaches dark in one click.
             await page.addInitScript(() => {
               localStorage.setItem('hzc-has-seen-welcome-dialog', 'true')
+              localStorage.setItem('theme', 'light')
             })
             await page.goto('/')
 

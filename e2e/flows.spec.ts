@@ -193,17 +193,20 @@ test.describe("teacher's guide", () => {
 
 test.describe('theme toggle', () => {
   test('switches between light and dark mode', async ({ page }) => {
+    // Start from a known theme so the direct toggle is deterministic.
+    await page.addInitScript(() => {
+      localStorage.setItem('theme', 'light')
+    })
     await page.goto('/')
 
     const html = page.locator('html')
-    await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
-    await page.getByRole('menuitem', { name: 'Dark' }).click()
-    await expect(html).toHaveClass(/dark/)
-    // Wait for the menu's close animation before reopening it.
-    await expect(page.getByRole('menu')).toBeHidden()
+    // The toggle is a direct light/dark switch: no menu opens.
+    await expect(page.getByRole('menu')).toHaveCount(0)
 
     await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
-    await page.getByRole('menuitem', { name: 'Light' }).click()
+    await expect(html).toHaveClass(/dark/)
+
+    await page.getByTitle('Toggle light/dark mode', { exact: true }).click()
     await expect(html).toHaveClass(/light/)
   })
 })
