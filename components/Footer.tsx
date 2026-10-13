@@ -12,7 +12,7 @@ export function Footer() {
       className="w-full border-t border-[#E8DCC8] bg-white/80 dark:border-[#3a2f26] dark:bg-[#171310]/95 max-md:hidden"
       style={{ fontFamily: 'var(--font-baloo), system-ui, sans-serif' }}
     >
-      <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-2 px-4 py-5 max-md:gap-1 max-md:py-3">
+      <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-1 px-4 py-3">
         <p className="text-[14px] font-medium text-[#6B5D4F] dark:text-[#C9BBA8] max-md:hidden">
           Free for classrooms. No login, no ads.
         </p>
