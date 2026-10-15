@@ -39,7 +39,7 @@ export function VersionReloadToast() {
         type="button"
         onClick={() => window.location.reload()}
         className={cn(
-          'shrink-0 rounded-md bg-blue-600 px-3 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-white/70 focus:outline-hidden',
+          'shrink-0 rounded-md bg-[#C14E33] px-3 py-2 font-medium text-white transition-colors hover:bg-[#a83f28] focus:ring-2 focus:ring-white/70 focus:outline-hidden',
           COARSE_POINTER_TOUCH_TARGET
         )}
       >
