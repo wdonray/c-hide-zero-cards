@@ -65,6 +65,13 @@ describe('reportError', () => {
     expect(mocks.captureException).not.toHaveBeenCalled()
   })
 
+  it('ignores Safari network failures (TypeError: Load failed)', () => {
+    reportError(new TypeError('Load failed'), { location: 'Test.here' })
+
+    expect(mocks.withScope).not.toHaveBeenCalled()
+    expect(mocks.captureException).not.toHaveBeenCalled()
+  })
+
   it('reports other TypeErrors', () => {
     const error = new TypeError('cannot read property of undefined')
     reportError(error, { location: 'Test.here' })
