@@ -20,8 +20,12 @@ export function reportError(error: unknown, options: ReportErrorOptions = {}): v
   if (error instanceof DOMException && error.name === 'AbortError') return
   // Network failures are the client's network, not the app: a user going
   // offline, a flaky connection, a dropped request. Nothing to fix, so
-  // never report them. Every browser throws this as a TypeError.
-  if (error instanceof TypeError && error.message === 'Failed to fetch') return
+  // never report them. Every browser throws this as a TypeError, but the
+  // message differs per browser: Chrome/Firefox/Edge use "Failed to fetch"
+  // while Safari uses "Load failed".
+  const isNetworkFailure =
+    error instanceof TypeError && (error.message === 'Failed to fetch' || error.message === 'Load failed')
+  if (isNetworkFailure) return
   // Preserve Error and DOMException as-is so Sentry keeps their real names
   // and stacks; normalize anything else into an Error.
   const err = error instanceof Error || error instanceof DOMException ? error : new Error(String(error))
