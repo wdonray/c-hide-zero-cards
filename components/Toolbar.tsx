@@ -42,10 +42,16 @@ export function Toolbar() {
     focusNumberInput()
   }
 
-  // The /version, /analytics, /privacy, and /terms pages are informational;
+  // The /version, /analytics, /privacy, /terms, and /about pages are informational;
   // the card actions are meaningless there, so the toolbar unmounts
   // entirely (same pattern as the mobile action bar).
-  if (pathname === '/version' || pathname === '/analytics' || pathname === '/privacy' || pathname === '/terms')
+  if (
+    pathname === '/version' ||
+    pathname === '/analytics' ||
+    pathname === '/privacy' ||
+    pathname === '/terms' ||
+    pathname === '/about'
+  )
     return null
 
   // On mobile the top toolbar is superseded by the bottom action bar
@@ -57,10 +63,21 @@ export function Toolbar() {
       <div className="flex flex-wrap items-center justify-center gap-3 px-5 py-5" style={baloo}>
         <NumberInput ref={numberInputRef} value={inputNumber} onChange={setInputNumber} />
 
+        {/* Hide zeros is a fan-home-only control (owner decision 2026-10-16,
+            issue #141): with cards scattered the toggle would be a visual
+            no-op (displacing a zero card reveals it), so it is disabled with
+            a tooltip explaining why. The preference itself persists and
+            auto-restores when the cards return home. */}
         <button
           onClick={toggleZeroCards}
-          disabled={!inputNumber}
-          title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
+          disabled={!inputNumber || cardsMoved}
+          title={
+            cardsMoved && inputNumber
+              ? 'Return cards to the fan to hide zeros'
+              : showZeroCards
+                ? 'Hide zero cards'
+                : 'Show zero cards'
+          }
           className="inline-flex h-[64px] items-center gap-2 rounded-full border-2 border-[#8F3520] bg-[#C14E33] px-[22px] text-[18px] font-semibold text-white transition-all hover:-translate-y-px active:translate-y-[2px] disabled:opacity-40 disabled:pointer-events-none"
           style={{ ...baloo, boxShadow: '0 4px 0 #8F3520' }}
         >

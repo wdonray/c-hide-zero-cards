@@ -170,4 +170,33 @@ describe('MobileActionBar', () => {
     expect(rollButton).toBeDisabled()
     expect(rollButton.querySelector('svg')).toHaveClass('animate-dice-roll')
   })
+
+  // Owner decision 2026-10-16 (issue #141): the hide-zeros toggle is a
+  // fan-home-only control. Scattered cards always reveal zeros (displacing
+  // reveals), so the toggle would be a visual no-op there and is disabled
+  // with an explanatory title. The preference itself is untouched and
+  // auto-restores on Reset.
+  it('disables the hide-zeros toggle while cards are scattered', () => {
+    const toggleZeroCards = vi.fn()
+    mockContext({ cardsMoved: true, toggleZeroCards })
+    render(<MobileActionBar />)
+
+    const button = screen.getByRole('button', { name: 'Return cards to the fan to hide zeros' })
+    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('title', 'Return cards to the fan to hide zeros')
+    // Clicking a disabled button must not toggle.
+    fireEvent.click(button)
+    expect(toggleZeroCards).not.toHaveBeenCalled()
+  })
+
+  it('keeps the action title when scattered but no number is set', () => {
+    mockContext({ cardsMoved: true, inputNumber: null })
+    render(<MobileActionBar />)
+    expect(screen.getByRole('button', { name: 'Hide zero cards' })).toBeDisabled()
+  })
+
+  it('keeps the hide-zeros toggle enabled at fan home', () => {
+    render(<MobileActionBar />)
+    expect(screen.getByRole('button', { name: 'Hide zero cards' })).toBeEnabled()
+  })
 })

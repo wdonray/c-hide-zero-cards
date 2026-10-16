@@ -83,6 +83,27 @@ test.describe('zero toggle status text', () => {
       await zeroButton.click()
       await expect(page.getByRole('button', { name: 'Hide zeros' })).toBeVisible()
     })
+
+    test('hide-zeros toggle is disabled while cards are mixed (issue #141)', async ({ page }) => {
+      await seed(page)
+      await page.goto('/')
+      await page.getByPlaceholder('Type a number').fill('800502')
+
+      // At fan home the toggle works and is enabled.
+      await page.getByRole('button', { name: 'Show zeros' }).click()
+      await expect(page.getByRole('button', { name: 'Hide zeros' })).toBeEnabled()
+
+      // Mixed: displacing reveals zeros, so the toggle would be a visual
+      // no-op. It is disabled with an explanatory title instead.
+      await page.getByRole('button', { name: 'Mix' }).click()
+      const scatteredToggle = page.getByTitle('Return cards to the fan to hide zeros')
+      await expect(scatteredToggle).toBeDisabled()
+
+      // Reset returns the cards home and the hide-zeros preference
+      // auto-restores: the toggle is enabled again, zeros still hidden.
+      await page.getByRole('button', { name: 'Reset' }).click()
+      await expect(page.getByRole('button', { name: 'Hide zeros' })).toBeEnabled()
+    })
   })
 })
 
