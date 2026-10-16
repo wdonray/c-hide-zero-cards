@@ -18,6 +18,15 @@ export const metadata: Metadata = {
     siteName: 'Hide Zero Cards',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: '/logo.png',
+        width: 493,
+        height: 506,
+        alt: 'Hide Zero Cards - Place Value Teaching Tool',
+        type: 'image/png',
+      },
+    ],
   },
 }
 
