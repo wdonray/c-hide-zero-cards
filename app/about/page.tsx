@@ -10,6 +10,24 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/about',
   },
+  openGraph: {
+    title: 'About | Hide Zero Cards',
+    description:
+      'Hide Zero Cards is a free place-value tool for elementary classrooms. Roll a number, hide the zeros, and let students explore how numbers are built.',
+    url: '/about',
+    siteName: 'Hide Zero Cards',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/logo.png',
+        width: 493,
+        height: 506,
+        alt: 'Hide Zero Cards - Place Value Teaching Tool',
+        type: 'image/png',
+      },
+    ],
+  },
 }
 
 const baloo = { fontFamily: 'var(--font-baloo), system-ui, sans-serif' } as const
