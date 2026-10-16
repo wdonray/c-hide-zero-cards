@@ -104,6 +104,75 @@ test.describe('zero toggle status text', () => {
       await page.getByRole('button', { name: 'Reset' }).click()
       await expect(page.getByRole('button', { name: 'Hide zeros' })).toBeEnabled()
     })
+
+    test('show-zeros reveal never flashes cards fully visible first (issue #148)', async ({ page }) => {
+      await seed(page)
+      await page.goto('/')
+      await page.getByPlaceholder('Type a number').fill('800502')
+
+      // Hide zeros first: the zero cards go visibility:hidden.
+      await page.getByRole('button', { name: 'Show zeros' }).click()
+      const zeroCard = page.locator('[aria-label="00,000 place value card. Use arrow keys to move it."]')
+      await expect(zeroCard).toBeHidden()
+
+      // Show zeros again and watch the first frames: the card must never
+      // paint fully visible before the reveal animation class is applied.
+      // (The old code applied the class in a post-paint effect, so the card
+      // flashed visible, then snapped to opacity 0 when the animation
+      // started: the double blink.)
+      const flashedBeforeAnimation = await page.evaluate(async () => {
+        const card = [...document.querySelectorAll('[aria-label*="place value card"]')].find(
+          (c) => c.textContent === '00,000'
+        ) as HTMLElement | undefined
+        if (!card) return 'no-card'
+        const btn = [...document.querySelectorAll('button')].find((b) => b.textContent?.includes('Hide zeros')) as
+          HTMLElement | undefined
+        if (!btn) return 'no-button'
+        let flashed = false
+        let animationStarted = false
+        btn.click()
+        await new Promise<void>((resolve) => {
+          const t0 = performance.now()
+          function frame() {
+            if (card!.className.includes('hzc-zero-show')) animationStarted = true
+            if (!animationStarted) {
+              const cs = getComputedStyle(card!)
+              if (cs.visibility !== 'hidden' && parseFloat(cs.opacity) > 0.99) flashed = true
+            }
+            if (performance.now() - t0 < 600) requestAnimationFrame(frame)
+            else resolve()
+          }
+          requestAnimationFrame(frame)
+        })
+        return flashed ? 'flashed' : 'clean'
+      })
+      expect(flashedBeforeAnimation).toBe('clean')
+
+      // Mid-stagger the later cards hold the from-keyframe (invisible),
+      // not the fully-visible base style. Hide and re-show, then check the
+      // tens zero card (index 4, 120ms stagger delay) 60ms into the reveal.
+      await page.getByRole('button', { name: 'Show zeros' }).click()
+      await expect(zeroCard).toBeHidden()
+      await page.getByRole('button', { name: 'Hide zeros' }).click()
+      await page.waitForTimeout(60)
+      const midStagger = await page.evaluate(() => {
+        const card = [...document.querySelectorAll('[aria-label*="place value card"]')].find(
+          (c) => c.textContent === '00'
+        ) as HTMLElement | undefined
+        if (!card) return null
+        const cs = getComputedStyle(card)
+        return {
+          hasClass: card.className.includes('hzc-zero-show'),
+          opacity: parseFloat(cs.opacity),
+        }
+      })
+      expect(midStagger).not.toBeNull()
+      expect(midStagger!.hasClass).toBe(true)
+      expect(midStagger!.opacity).toBe(0)
+
+      // The reveal completes: all zero cards end fully visible.
+      await expect(zeroCard).toBeVisible()
+    })
   })
 })
 
