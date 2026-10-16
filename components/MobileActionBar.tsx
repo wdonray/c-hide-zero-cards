@@ -85,9 +85,15 @@ export function MobileActionBar() {
   // only instance of these controls in the DOM and accessibility tree.
   if (!isMobile) return null
 
-  // The /version, /analytics, /privacy, and /terms pages are informational;
+  // The /version, /analytics, /privacy, /terms, and /about pages are informational;
   // the card actions are meaningless there, so the bar stays out of the way.
-  if (pathname === '/version' || pathname === '/analytics' || pathname === '/privacy' || pathname === '/terms')
+  if (
+    pathname === '/version' ||
+    pathname === '/analytics' ||
+    pathname === '/privacy' ||
+    pathname === '/terms' ||
+    pathname === '/about'
+  )
     return null
 
   function handleClearInput() {
@@ -113,11 +119,20 @@ export function MobileActionBar() {
           >
             <DiceSix className={cn(ICON_CLASS, isDiceRolling && 'animate-dice-roll')} aria-hidden="true" />
           </BarButton>
+          {/* Fan-home-only control (owner decision 2026-10-16, issue #141):
+              disabled while cards are scattered, when the toggle would be a
+              visual no-op. */}
           <BarButton
             label={showZeroCards ? 'Show zeros' : 'Hide zeros'}
-            title={showZeroCards ? 'Hide zero cards' : 'Show zero cards'}
+            title={
+              cardsMoved && inputNumber
+                ? 'Return cards to the fan to hide zeros'
+                : showZeroCards
+                  ? 'Hide zero cards'
+                  : 'Show zero cards'
+            }
             onClick={toggleZeroCards}
-            disabled={!inputNumber}
+            disabled={!inputNumber || cardsMoved}
           >
             {showZeroCards ? (
               <EyeSlash className={ICON_CLASS} aria-hidden="true" />
