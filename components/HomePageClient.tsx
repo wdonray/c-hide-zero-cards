@@ -59,13 +59,18 @@ export function HomePageClient() {
     if (!inputNumber) return []
     const numberString = inputNumber.toString()
     const digits = numberString.split('')
+    // toReversed() is ES2023 (missing on Safari < 16 and other older
+    // classroom browsers): use slice().reverse() instead so the same
+    // copied-array semantics work everywhere.
     return digits
-      .toReversed()
+      .slice()
+      .reverse()
       .map((digit, index) => ({
         firstDigit: parseInt(digit) || 0,
         placeValue: PLACE_VALUES[index],
       }))
-      .toReversed()
+      .slice()
+      .reverse()
   }, [inputNumber])
 
   // Peek text per card: the visible strip at fan home ("3,", "7", "4",
