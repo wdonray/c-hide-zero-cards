@@ -38,6 +38,13 @@ export function Footer() {
           <BuyMeACoffeeButton variant="ghost" size="sm" />
           <span className="text-[13px] text-[#6B5D4F] dark:text-[#C9BBA8]">© {CURRENT_YEAR} Donray Williams</span>
           <Link
+            href="/about"
+            className="text-[13px] text-[#6B5D4F] dark:text-[#C9BBA8] transition-colors hover:text-[#2B2118] dark:hover:text-[#FFF6EC]"
+            title="What is Hide Zero Cards?"
+          >
+            About
+          </Link>
+          <Link
             href="/analytics"
             className="text-[13px] text-[#6B5D4F] dark:text-[#C9BBA8] transition-colors hover:text-[#2B2118] dark:hover:text-[#FFF6EC]"
             title="Public traffic statistics"
