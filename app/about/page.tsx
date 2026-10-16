@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import EnablePageScroll from '@/components/EnablePageScroll'
+import { StaticFan } from '@/components/StaticFan'
 
 export const metadata: Metadata = {
   title: 'About | Hide Zero Cards',
@@ -55,38 +56,6 @@ const FEATURES = [
   },
 ]
 
-function FanVisual() {
-  // Static illustration of the card fan as the tool renders it: narrow peek
-  // tiles ("3,", "7", "4") with the ones card fully visible. Tiles overlap
-  // slightly like the real fan's 4px overlap fudge.
-  const tiles = [
-    { text: '3,', from: '#A16207', to: '#8E5606', width: 'w-[4.5rem] md:w-20' },
-    { text: '7', from: '#991B1B', to: '#871818', width: 'w-12 md:w-14' },
-    { text: '4', from: '#B91C1C', to: '#A31919', width: 'w-12 md:w-14' },
-    { text: '3', from: '#DC2626', to: '#C22121', width: 'w-28 md:w-32' },
-  ]
-  return (
-    <div className="flex items-center justify-center overflow-hidden py-6" aria-hidden="true">
-      <div className="flex items-stretch">
-        {tiles.map((tile, i) => (
-          <div
-            key={`${tile.text}-${i}`}
-            className={`flex h-40 items-center justify-center rounded-2xl border-2 border-black/10 text-5xl font-bold text-white shadow-[0_10px_20px_rgba(43,33,24,0.3)] first:ml-0 -ml-1 md:h-48 md:text-6xl ${tile.width}`}
-            style={{
-              background: `linear-gradient(180deg, ${tile.from} 0%, ${tile.to} 100%)`,
-              zIndex: i + 1,
-              textShadow: '0 2px 8px rgba(0,0,0,0.35)',
-              ...baloo,
-            }}
-          >
-            {tile.text}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export default function AboutPage() {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-12 px-4 pb-16 pt-6 md:px-8 md:pt-8">
@@ -114,7 +83,7 @@ export default function AboutPage() {
             Open the tool
           </Link>
         </div>
-        <FanVisual />
+        <StaticFan />
       </div>
 
       {/* How it works */}
