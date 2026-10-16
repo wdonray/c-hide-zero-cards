@@ -56,6 +56,9 @@ const FEATURES = [
 ]
 
 function FanVisual() {
+  // Static approximation of the real card fan: cards overlap heavily so only
+  // a peek strip of each card shows ("3,", "7", "4"), with the ones card
+  // fully visible. Cards in front align to the right edge of cards behind.
   const cards = [
     { text: '3,000', from: '#A16207', to: '#8E5606' },
     { text: '700', from: '#991B1B', to: '#871818' },
@@ -63,15 +66,14 @@ function FanVisual() {
     { text: '3', from: '#DC2626', to: '#C22121' },
   ]
   return (
-    <div className="flex items-center justify-center py-6" aria-hidden="true">
+    <div className="flex items-center justify-center overflow-hidden py-6" aria-hidden="true">
       <div className="flex items-stretch">
         {cards.map((card, i) => (
           <div
             key={card.text}
-            className="flex h-28 w-36 items-center justify-center rounded-2xl border-2 border-black/10 px-3 text-2xl font-bold text-white shadow-[0_4px_0_rgba(43,33,24,0.2)] md:h-32 md:w-40 md:text-3xl"
+            className="flex h-32 w-28 items-center justify-start rounded-2xl border-2 border-black/10 pl-2 text-2xl font-bold text-white shadow-[0_4px_0_rgba(43,33,24,0.2)] first:ml-0 -ml-20 md:h-36 md:w-32 md:-ml-24 md:pl-3 md:text-3xl"
             style={{
               background: `linear-gradient(180deg, ${card.from} 0%, ${card.to} 100%)`,
-              marginLeft: i === 0 ? 0 : '-2.5rem',
               zIndex: i + 1,
               ...baloo,
             }}
