@@ -23,18 +23,18 @@ export function RandomNumberPopover() {
   const randomNumberRangeKeys = Object.values(PLACE_VALUES).filter((value) => !excludedPlaceValues.includes(value))
 
   const presetLabel = (value: number) => value.toLocaleString()
-  // Labels of 10+ characters ("10,000,000" and up) don't fit the 83px
-  // 3-column buttons at 15px. Shrinking the text would hurt readability and
-  // clipping a digit shows a wrong number, so they get wider cells instead.
-  const shortPresets = randomNumberRangeKeys.filter((value) => presetLabel(value).length < 10)
-  const longPresets = randomNumberRangeKeys.filter((value) => presetLabel(value).length >= 10)
+  // Every preset gets a full-width row in one uniform single-column grid.
+  // The 3-column layout could not fit the longest labels ("10,000,000" and
+  // up) without clipping a digit, which shows a wrong number, and splitting
+  // short/long labels into two grids produced uneven rows (issue #156).
+  // One column keeps every button the same size and every label intact.
 
-  const renderPreset = (value: number, className = '') => (
+  const renderPreset = (value: number) => (
     <button
       key={value}
       onClick={() => handleRandomNumberRange([randomNumberRange[0], value])}
       title={`Set random number range to ${presetLabel(value)}`}
-      className={`rounded-2xl border-2 px-3 py-2 text-[15px] font-semibold transition-all ${className} ${
+      className={`rounded-2xl border-2 px-3 py-2 text-[15px] font-semibold transition-all ${
         randomNumberRange[1] === value
           ? 'border-[#2B2118] dark:border-[#5a4a3a] bg-[#2B2118] dark:bg-[#FFF6EC] text-white dark:text-[#2B2118] shadow-[0_3px_0_rgba(43,33,24,0.3)]'
           : 'border-[#2B2118]/20 dark:border-[#5a4a3a]/30 bg-white dark:bg-[#1a1512] text-[#2B2118] dark:text-[#FFF6EC] hover:border-[#2B2118] dark:hover:border-[#5a4a3a] hover:bg-white dark:hover:bg-[#2a2118]'
@@ -73,12 +73,7 @@ export function RandomNumberPopover() {
           <div className="h-0.5 rounded-full bg-[#2B2118]/10 dark:bg-[#FFF6EC]/10" />
 
           <div className="grid gap-2">
-            <div className="grid grid-cols-3 gap-2">{shortPresets.map((value) => renderPreset(value))}</div>
-            <div className="grid grid-cols-2 gap-2">
-              {longPresets.map((value, index) =>
-                renderPreset(value, index === longPresets.length - 1 ? 'col-span-2' : '')
-              )}
-            </div>
+            <div className="grid grid-cols-1 gap-2">{randomNumberRangeKeys.map((value) => renderPreset(value))}</div>
 
             <div className="h-0.5 rounded-full bg-[#2B2118]/10 dark:bg-[#FFF6EC]/10" />
 
