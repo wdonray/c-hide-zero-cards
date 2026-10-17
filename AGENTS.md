@@ -126,6 +126,10 @@ naturalWidth)` in `lib/cardLayout.ts`) that the flex workspace centers
   with `invisible` so its width still counts; the cell sizes to the wider
   label and toggling never reflows the toolbar (2026-10-17, issue #152).
   Fixed `min-width` values are font-fragile; the stacked approach is not.
+- **Never clip or ellipsis-truncate a numeric label.** A cut-off digit is a
+  wrong number, not a cosmetic blemish. When long numbers outgrow their
+  cells, give them wider cells (fewer grid columns, `col-span-2`) instead of
+  smaller text or `overflow-hidden` (2026-10-17, issue #154).
 - **No em dashes in user-facing copy.** Use commas, colons, or split the
   sentence instead.
 - **Copy must stay truthful.** Don't invent metrics, testimonials, or
