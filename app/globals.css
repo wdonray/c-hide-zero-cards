@@ -277,26 +277,9 @@
   animation: hzc-zero-show 250ms ease-out both;
 }
 
-/* Confetti micro-burst particles */
-@keyframes hzc-confetti-fall {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--hzc-dx), var(--hzc-dy)) rotate(var(--hzc-rot));
-    opacity: 0;
-  }
-}
-
-.hzc-confetti-particle {
-  animation: hzc-confetti-fall 600ms ease-out forwards;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .hzc-zero-hide,
-  .hzc-zero-show,
-  .hzc-confetti-particle {
+  .hzc-zero-show {
     animation: none;
   }
 }

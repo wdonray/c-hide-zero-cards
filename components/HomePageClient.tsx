@@ -15,7 +15,6 @@ import { useIsMobile } from '@/lib/useIsMobile'
 import { reportError } from '@/lib/report-error'
 import { NumberFormsDialog } from '@/components/NumberFormsDialog'
 import { NumberInput } from '@/components/NumberInput'
-import { ZeroConfetti } from '@/components/ZeroConfetti'
 // import { BuyMeACoffeeWidget } from '@/components/BuyMeACoffeeWidget'
 
 export function HomePageClient() {
@@ -250,7 +249,6 @@ export function HomePageClient() {
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
       />
-      <ZeroConfetti />
       {/* <BuyMeACoffeeWidget /> */}
 
       <section
