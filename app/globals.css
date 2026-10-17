@@ -90,10 +90,13 @@
   --kids-primary-dark: #8f3520;
   --kids-border: #e8dcc8;
   --font-baloo: var(--font-baloo);
+  /* Workspace dot texture: subtle in light mode, warm cream in dark mode */
+  --workspace-dot-color: rgba(43, 33, 24, 0.05);
 }
 
 .dark {
   --background: oklch(0.15 0.02 65);
+  --workspace-dot-color: rgba(255, 246, 236, 0.07);
   --foreground: oklch(0.98 0.015 75);
   --card: oklch(0.2 0.02 65);
   --card-foreground: oklch(0.98 0.015 75);
@@ -284,6 +287,14 @@
   .hzc-confetti-particle {
     animation: none;
   }
+}
+
+/* Workspace dot texture: covers the full card scatter area. Dot color is
+   theme-aware via --workspace-dot-color (dark brown on light, warm cream
+   on dark). */
+.workspace-dots {
+  background-image: radial-gradient(var(--workspace-dot-color) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
 }
 
 /* Ensure all buttons show pointer cursor (Tailwind v4 changed default) */
