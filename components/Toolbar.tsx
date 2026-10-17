@@ -65,7 +65,24 @@ export function Toolbar() {
           style={{ ...baloo, boxShadow: '0 4px 0 #8F3520' }}
         >
           {showZeroCards ? <EyeSlash className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
-          {showZeroCards ? 'Show zeros' : 'Hide zeros'}
+          {/* Both labels share one grid cell, sized to the wider one, so the
+              button keeps a constant width across toggles and the centered
+              toolbar never reflows (issue #152). The hidden label is invisible
+              (not unmounted) so its width still counts. */}
+          <span className="grid items-center">
+            <span
+              aria-hidden={!showZeroCards}
+              className={`[grid-area:1/1] whitespace-nowrap ${showZeroCards ? '' : 'invisible'}`}
+            >
+              Show zeros
+            </span>
+            <span
+              aria-hidden={showZeroCards}
+              className={`[grid-area:1/1] whitespace-nowrap ${showZeroCards ? 'invisible' : ''}`}
+            >
+              Hide zeros
+            </span>
+          </span>
         </button>
 
         <div className="inline-flex items-center" role="group" aria-label="Roll random number">

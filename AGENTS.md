@@ -121,6 +121,11 @@ naturalWidth)` in `lib/cardLayout.ts`) that the flex workspace centers
   the correct size (no flash, and spawned numbers are centered from the
   first frame).
 
+- **Toggle buttons with changing labels keep a constant width.** Stack both
+  label spans in one grid cell (`[grid-area:1/1]`), hiding the inactive one
+  with `invisible` so its width still counts; the cell sizes to the wider
+  label and toggling never reflows the toolbar (2026-10-17, issue #152).
+  Fixed `min-width` values are font-fragile; the stacked approach is not.
 - **No em dashes in user-facing copy.** Use commas, colons, or split the
   sentence instead.
 - **Copy must stay truthful.** Don't invent metrics, testimonials, or
