@@ -247,7 +247,17 @@
 }
 
 @keyframes hzc-zero-show {
+  /* The delay holds this keyframe (fill `both`): opacity 0 so the card
+     never flashes fully visible before its stagger slot, and scale 1 so
+     the card's measured box stays true while it waits (issue #148). */
   from {
+    scale: 1;
+    opacity: 0;
+  }
+  /* The scale dip happens while still fully transparent, so the snap from
+     1 to 0.85 is never painted; the visible motion is the smooth
+     0.85 -> 1 grow below. */
+  8% {
     scale: 0.85;
     opacity: 0;
   }
@@ -258,33 +268,21 @@
 }
 
 .hzc-zero-hide {
-  animation: hzc-zero-hide 250ms ease-out forwards;
+  /* `both`: the from-keyframe also covers the stagger delay, so a card
+     never paints at full visibility before its slot (issue #148). */
+  animation: hzc-zero-hide 250ms ease-out both;
 }
 
 .hzc-zero-show {
-  animation: hzc-zero-show 250ms ease-out forwards;
-}
-
-/* Confetti micro-burst particles */
-@keyframes hzc-confetti-fall {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--hzc-dx), var(--hzc-dy)) rotate(var(--hzc-rot));
-    opacity: 0;
-  }
-}
-
-.hzc-confetti-particle {
-  animation: hzc-confetti-fall 600ms ease-out forwards;
+  /* `both`: during the 30ms-per-card stagger delay the card holds the
+     from-keyframe (opacity 0) instead of flashing fully visible and then
+     snapping back to 0 when the animation starts (issue #148). */
+  animation: hzc-zero-show 250ms ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hzc-zero-hide,
-  .hzc-zero-show,
-  .hzc-confetti-particle {
+  .hzc-zero-show {
     animation: none;
   }
 }

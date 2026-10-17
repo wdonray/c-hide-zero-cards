@@ -3,7 +3,7 @@ import { CARD_PAINT, CARD_PAINT_STYLE, CARD_Y_OFFSET } from '@/lib/constants'
 import type { ScatterArea } from '@/lib/useHeaderContext'
 import type { MobileCardMetrics } from '@/lib/cardLayout'
 import { formatCardValue } from '@/lib/cardLayout'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 interface DraggableCardProps {
   firstDigit: number
@@ -111,14 +111,19 @@ export function DraggableCard({
   // Uses the independent `scale` CSS property so it never fights the inline
   // `transform: translate(...)` used for drag positioning. Skipped entirely
   // under prefers-reduced-motion.
+  //
+  // The celebration class is derived during render (not in an effect) so it
+  // lands in the same commit as the visibility change: otherwise the card
+  // paints one fully-visible frame before the animation starts, then snaps
+  // to opacity 0 when the class applies (issue #148 double-blink).
   const [celebrate, setCelebrate] = useState<'hide' | 'show' | null>(null)
-  const prevHiddenRef = useRef(isHidden)
-  useEffect(() => {
-    if (prevHiddenRef.current === isHidden) return
-    prevHiddenRef.current = isHidden
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    setCelebrate(isHidden ? 'hide' : 'show')
-  }, [isHidden])
+  const [prevHidden, setPrevHidden] = useState(isHidden)
+  if (prevHidden !== isHidden) {
+    setPrevHidden(isHidden)
+    if (typeof window !== 'undefined' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCelebrate(isHidden ? 'hide' : 'show')
+    }
+  }
 
   return (
     <div
