@@ -161,6 +161,16 @@ naturalWidth)` in `lib/cardLayout.ts`) that the flex workspace centers
 - Never `pkill -f` with a pattern that can match your own command line
   (e.g. `pkill -f next-server` from a shell whose command contains it).
   Kill test servers by exact PID from `ps aux | grep "[n]ext-server"`.
+- **Server components must never import values from a `'use client'`
+  module.** Next.js replaces every non-component export of a client module
+  with a throwing proxy in the server bundle, so the server gets
+  `function(){throw Error("Attempted to call X() from the server...")}`
+  instead of the value. `app/version/page.tsx` imported `RELEASES_API`
+  this way and `fetch()` stringified the proxy into "Failed to parse URL
+  from function(){...}" (Sentry HIDE-ZERO-CARDS-5, issue #159, fixed
+  2026-10-23 by moving shared constants/helpers to server-safe
+  `lib/releases.ts`). Keep server-needed values in a plain lib module;
+  the client component imports from there too.
 
 ## Testing
 
