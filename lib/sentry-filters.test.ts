@@ -91,6 +91,45 @@ describe('shouldDropSentryEvent', () => {
     expect(shouldDropSentryEvent({ type: undefined, exception: { values: [] } } as ErrorEvent)).toBe(false)
   })
 
+  it('drops the extension runtime.sendMessage tab-not-found error (issue #162 shape)', () => {
+    expect(
+      shouldDropSentryEvent({
+        type: undefined,
+        exception: {
+          values: [{ type: 'Error', value: 'Invalid call to runtime.sendMessage(). Tab not found.' }],
+        },
+      } as ErrorEvent)
+    ).toBe(true)
+  })
+
+  it('keeps the runtime.sendMessage error when a stack trace is present (real app bug)', () => {
+    expect(
+      shouldDropSentryEvent({
+        type: undefined,
+        exception: {
+          values: [
+            {
+              type: 'Error',
+              value: 'Invalid call to runtime.sendMessage(). Tab not found.',
+              stacktrace: { frames: [{ filename: 'app/page.tsx', lineno: 42 }] },
+            },
+          ],
+        },
+      } as ErrorEvent)
+    ).toBe(false)
+  })
+
+  it('keeps the runtime.sendMessage signature with trailing text (possible app failure)', () => {
+    expect(
+      shouldDropSentryEvent({
+        type: undefined,
+        exception: {
+          values: [{ type: 'Error', value: 'Invalid call to runtime.sendMessage(). Tab not found. Retrying' }],
+        },
+      } as ErrorEvent)
+    ).toBe(false)
+  })
+
   it('keeps mixed events where only some values are noise', () => {
     expect(
       shouldDropSentryEvent({
