@@ -78,6 +78,9 @@
     "*.{json,css,md,html}": "prettier --write"
   },
   "overrides": {
+    "@sentry/bundler-plugins": {
+      "glob": "^14.0.2"
+    },
     "postcss": "^8.5.28",
     "sharp": "^0.35.5",
     "source-map-js": "^1.2.2"
