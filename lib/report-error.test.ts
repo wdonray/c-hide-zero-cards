@@ -65,8 +65,39 @@ describe('reportError', () => {
     expect(mocks.captureException).not.toHaveBeenCalled()
   })
 
+  it('ignores network failures with the host Sentry appends to the message', () => {
+    // Sentry's fetch instrumentation (enhanceFetchErrorMessages, on by
+    // default) rewrites a fetch TypeError before re-throwing it, appending
+    // the request host: "Failed to fetch (hidezerocards.org)". The filter
+    // must still recognize it as a network failure (Sentry issue
+    // HIDE-ZERO-CARDS-7, GitHub #165).
+    reportError(new TypeError('Failed to fetch (hidezerocards.org)'), { location: 'Test.here' })
+
+    expect(mocks.withScope).not.toHaveBeenCalled()
+    expect(mocks.captureException).not.toHaveBeenCalled()
+  })
+
   it('ignores Safari network failures (TypeError: Load failed)', () => {
     reportError(new TypeError('Load failed'), { location: 'Test.here' })
+
+    expect(mocks.withScope).not.toHaveBeenCalled()
+    expect(mocks.captureException).not.toHaveBeenCalled()
+  })
+
+  it('ignores Safari network failures with the host Sentry appends', () => {
+    reportError(new TypeError('Load failed (hidezerocards.org)'), { location: 'Test.here' })
+
+    expect(mocks.withScope).not.toHaveBeenCalled()
+    expect(mocks.captureException).not.toHaveBeenCalled()
+  })
+
+  it('ignores Firefox network failures, with or without the appended host', () => {
+    reportError(new TypeError('NetworkError when attempting to fetch resource.'), {
+      location: 'Test.here',
+    })
+    reportError(new TypeError('NetworkError when attempting to fetch resource. (api.github.com)'), {
+      location: 'Test.here',
+    })
 
     expect(mocks.withScope).not.toHaveBeenCalled()
     expect(mocks.captureException).not.toHaveBeenCalled()
