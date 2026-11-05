@@ -161,6 +161,14 @@ naturalWidth)` in `lib/cardLayout.ts`) that the flex workspace centers
 - Never `pkill -f` with a pattern that can match your own command line
   (e.g. `pkill -f next-server` from a shell whose command contains it).
   Kill test servers by exact PID from `ps aux | grep "[n]ext-server"`.
+- **Sentry rewrites fetch error messages before re-throwing (2026-11-05,
+  issue #165).** The SDK's fetch instrumentation
+  (`enhanceFetchErrorMessages`, on by default) appends the request host
+  to a fetch `TypeError` — `Failed to fetch` becomes `Failed to fetch
+(hidezerocards.org)` — before the rejection reaches app code. Any
+  message-based filter (like `reportError`'s network-failure filter) must
+  tolerate that optional ` (host)` suffix, or the noise it was built to
+  drop gets reported anyway.
 - **Server components must never import values from a `'use client'`
   module.** Next.js replaces every non-component export of a client module
   with a throwing proxy in the server bundle, so the server gets
