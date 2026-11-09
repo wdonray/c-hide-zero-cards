@@ -112,6 +112,15 @@ document: [docs/kids-redesign-research.md](docs/kids-redesign-research.md).
 It covers the target age range, design precedents, UX guidance, and the
 recommended direction, and it grows as new research lands.
 
+## Teacher Feedback
+
+Real classroom feedback is tracked in
+[docs/teacher-outreach.md](docs/teacher-outreach.md): the outreach
+plan, the email template in
+[docs/teacher-outreach/email-to-teachers.md](docs/teacher-outreach/email-to-teachers.md),
+and the running log in
+[docs/teacher-outreach/feedback-log.md](docs/teacher-outreach/feedback-log.md).
+
 ## License
 
 Educational use only.
