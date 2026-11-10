@@ -37,10 +37,9 @@ Other TpT rules that matter, checked Nov 10, 2026:
 
 - Main file: `hide-zero-cards-place-value-lesson.pdf`, one page,
   US Letter. Built from `tpt-lesson.md` in this folder.
-- Preview: the same PDF is the preview. TpT also asks for a
-  cover image and thumbnails. No cover image has been made yet.
-  Do not list without one, or TpT will auto-generate thumbnails
-  from the file.
+- Cover image: `tpt-cover.png`, 1080x1080, made Nov 10, 2026.
+  Title, grades 3-4, FREE badge, place value cards for 3,743,
+  hidezerocards.org. Use it as the cover and as the thumbnails.
 
 ## Listing copy
 
@@ -97,6 +96,7 @@ and what confused students.
    file.
 4. Paste the title, description, grades, subjects, and resource
    type above. Set the price to Free.
-5. Upload a cover image and thumbnails. Make the listing active.
+5. Upload `tpt-cover.png` as the cover image and thumbnails.
+   Make the listing active.
 6. Log the listing URL in `feedback-log.md`, with the date it
    went live.
