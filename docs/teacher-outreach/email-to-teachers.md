@@ -10,16 +10,16 @@ add anyone to a list, and do not send this as a bulk email.
 Pick one:
 
 - Will you try a free place value tool with your class?
-- A free place value tool I built for my wife's classroom
+- A free place value tool I built for my wife, a teacher
 - 10 minutes to try Hide Zero Cards with your students?
 
 ## Body
 
 Hi [First name],
 
-I built a free place value tool for my wife Chaley, who teaches at
-home, and I am looking for a few real teachers to try it in a real
-lesson and tell me what actually happens.
+I built a free place value tool for my wife Chaley, a teacher, and I
+am looking for a few real teachers to try it in a real lesson and
+tell me what actually happens.
 
 It is called Hide Zero Cards, at https://hidezerocards.org
 
