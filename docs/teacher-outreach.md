@@ -27,47 +27,64 @@ general opinion into a fixable issue.
 
 ## Path forward
 
-### Phase 1: Pilot with Chaley and her trusted circle
+Chaley does not actively teach at a school, and there are no teachers
+to reach through her. So there is no warm list to start from. The
+path below replaces the old Chaley-network pilot. Chaley still tries
+the current build first as a sanity check, because she is a teacher
+and the tool was built for her, but she is not the source of testers.
+The full channel plan, with rules checked and ready copy, is in
+`docs/teacher-outreach/marketing-plan.md`.
 
-Start here. Do not skip to a public post.
+### Phase 1: Be findable where teachers already look
 
-- Chaley tries the current build in a real lesson first. She is the
-  primary user this was built for, and her read on what is classroom
-  ready is the gate for wider outreach.
-- Then Chaley names 2 to 4 teachers she knows and trusts who teach
-  place value. Donray emails each one personally from
-  donrayxwilliams@gmail.com, using the template in
-  `docs/teacher-outreach/email-to-teachers.md`.
-- Ask for 10 minutes of use, then a reply to the same email. Offer a
-  15 minute call only if they ask for one. Do not chase more than
-  once.
-- Target: 5 teachers tried it, 3 replies back. If fewer reply, the
-  pilot is still useful, but do not widen it until the replies we do
-  have are logged and triaged.
+Do these first, one at a time, so results stay attributable.
 
-### Phase 2: Warm expansion, one introduction at a time
+- Submit Hide Zero Cards for a Common Sense Education review. They
+  accept developer requests, review about 150 new tools a year, and
+  never take payment for a review. Low odds and a long lead, but a
+  listing there is where teachers already search.
+- Publish a free one page place value lesson on Teachers Pay
+  Teachers, priced Free, that uses the tool in class. Teachers search
+  TpT for free place value lessons. This needs Donray to open a TpT
+  seller account, which is his call.
+- Post a short demo from Donray's own accounts, not in a group: a
+  30 second screen recording showing Roll, Hide zeros, and pulling
+  the 3 out to show 3,000 in 3,743, with a link to
+  https://hidezerocards.org/about and an invitation to email
+  donrayxwilliams@gmail.com. No post goes out without Donray
+  approving the exact copy, account, and time first.
 
-- Ask each pilot teacher who replies if they know one colleague who
+### Phase 2: Communities where posting is allowed, mods first
+
+- r/matheducation allows creator posts on Saturdays only. One post,
+  on a Saturday, disclosed as the builder, on topic.
+- r/homeschool usually limits promotion to a recurring thread. Use
+  that thread if it exists that week, disclosed, or do not post.
+- Do not post in r/Teachers. Its rules prohibit self-promotion,
+  including links to a product and requests for feedback, and posts
+  are removed. Answer place value questions there without a link
+  instead, and share the link only if someone asks for it.
+- Facebook homeschool groups vary. Many ban self-promotion even for
+  free resources. Read the rules on the day, use an admin sharing
+  thread if there is one, or ask the admins first. Never send an
+  unsolicited direct message to work around a ban.
+- Keep each post to one community at a time, days apart, so we know
+  which one brought a reply.
+
+### Phase 3: Ask one teacher creator at a time
+
+- Once a few teachers have tried it and replied, ask one teacher
+  creator or blogger who already shares free math tools if they will
+  try it and give an honest read. Personal email, no payment, no
+  script. One at a time.
+- Ask each teacher who replies if they know one colleague who
   teaches place value and might try it. A named introduction beats a
   cold email every time.
-- Donray also reaches out to any teacher contacts of his own, one
-  personal email at a time. No purchased list, no scraped addresses,
-  no bulk send.
-- Keep each batch small, 3 to 5 teachers at a time, so every reply
-  gets a real answer and a logged follow up.
+- No purchased list, no scraped addresses, no bulk send, ever.
 
-### Phase 3: Public opt in, only after the pilot
-
-Only start this phase if Phase 1 shows teachers can use it in a real
-lesson without Donray in the room.
-
-- Post in teacher communities Donray already belongs to, or that
-  Chaley recommends, with a link to https://hidezerocards.org/about
-  and an invitation to email Donray.
-- Do not post the same message in many groups at once, and do not
-  send cold direct messages to teachers who did not ask for it.
-- Judge this phase by emailed replies and repeat classroom use, not
-  by clicks or views.
+Target for the whole plan: 5 teachers tried it in a real lesson, 3
+emailed replies back. Judge every channel by emailed replies and
+repeat classroom use, not by clicks or views.
 
 ## How to run a 10 minute test
 
@@ -129,3 +146,5 @@ The pilot has worked when we have:
 - `email-to-teachers.md`: the email template Donray sends.
 - `feedback-log.md`: the running log of what teachers told us, what
   we changed, and what we learned.
+- `marketing-plan.md`: the channel plan, with rules checked and
+  ready copy, for reaching teachers without a warm list.
