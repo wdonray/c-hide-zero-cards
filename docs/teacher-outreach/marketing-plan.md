@@ -59,14 +59,22 @@ it" and log the answer.
   lessons, and a free listing puts the tool in that search.
 - Why: TpT is a marketplace where educators share original
   resources, and free resources can be listed at no price.
-- Cost: free to list. Owner: Donray opens a TpT seller account and
-  uploads the lesson. That account is his call.
+- Cost: the lesson is priced Free, but a TpT seller account costs
+  $29 one time for Basic membership, or $59.95 a year for
+  Exclusive, per TPT's own help page, checked Nov 10, 2026.
+  Owner: Donray opens a TpT seller account and uploads the lesson.
+  That account, and the $29, is his call. Do not open it or pay
+  anything without his explicit yes.
 - Lesson outline, one page: title, grade range (elementary place
   value), 10 minute plan (Roll a number, Hide zeros, ask what each
   digit is worth, pull the 3 out to show 3,000 in 3,743, Mix and
   rebuild), link to https://hidezerocards.org, and a note to email
   donrayxwilliams@gmail.com with what worked.
-- Status: lesson not written yet. Do not list the tool itself on
+- Status: lesson written Nov 10, 2026: `tpt-lesson.md` (source),
+  `hide-zero-cards-place-value-lesson.pdf` (one page, US Letter),
+  and `tpt-listing.md` (title, description, grades, subjects,
+  resource type, and steps to list). Not listed yet. No cover
+  image made yet. Do not list the tool itself on
   TpT. TpT lists resources, not websites, so the lesson is the
   listing and the tool is inside it.
 
