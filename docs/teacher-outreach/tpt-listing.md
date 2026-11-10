@@ -43,8 +43,13 @@ Other TpT rules that matter, checked Nov 10, 2026:
   not a redraw: the first cover drew fake white cards and Donray
   said it did not look like the landing page, so it was rebuilt
   Nov 10 from the real fan, with its real card paint and
-  right-aligned overlap. Use it as the cover and as the
-  thumbnails.
+  right-aligned overlap. The cast shadow behind the cards was
+  removed for the cover only, Nov 10: the screenshot was taken
+  with the cards' drop shadow turned off, keeping the inset
+  bottom edge and top highlight that make the chunky tile look.
+  The fan box and every card width were measured identical
+  before and after, so the cards did not move. Use it as the
+  cover and as the thumbnails.
 
 ## Listing copy
 
