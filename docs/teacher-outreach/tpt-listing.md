@@ -1,7 +1,20 @@
 # Teachers Pay Teachers listing: Hide the Zeros place value lesson
 
-Status: lesson written, PDF built, not listed yet. Listing needs
-a TpT seller account, which only Donray can open.
+Status: LISTED and live Nov 10, 2026. Store: Hide Zero Cards,
+https://www.teacherspayteachers.com/store/hide-zero-cards.
+Listing: https://www.teacherspayteachers.com/Product/Hide-the-Zeros-A-10-Minute-Place-Value-Lesson-with-a-Free-Digital-Tool-18278487
+(Product ID 18278487). Seller account opened the same day by
+Donray (Basic, $29 one time, Transaction Id
+7MJ50714X9101942T). Store bio is one verified sentence only.
+Listing is Free, Active, 1 page, grades 3rd-4th, subjects Place
+Value (TpT's form lists Math as a group heading, not a
+selectable subject), tags Activities, Internet Activities,
+Lessons (no Lesson Plan or Interactive Whiteboard tag exists),
+Teaching Duration N/A (no 10-minute option). Caveat Nov 10:
+the direct product page is live and verified, but about 8
+minutes after publishing the store grid showed "No resources
+found" and TpT search did not surface it yet — search indexing
+lag for a new listing; recheck the store page later.
 
 ## The cost, corrected
 

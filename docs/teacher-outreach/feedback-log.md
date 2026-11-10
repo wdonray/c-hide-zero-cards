@@ -19,9 +19,13 @@ what we learned. Update this file the same week a reply arrives.
 
 ## Log
 
-| Date                                                                       | Teacher (first name, grade) | Device | What they tried | What they said | Triage | Issue or PR | Follow up sent |
-| -------------------------------------------------------------------------- | --------------------------- | ------ | --------------- | -------------- | ------ | ----------- | -------------- |
-| _No entries yet. The pilot in `../teacher-outreach.md` is the first test._ |                             |        |                 |                |        |             |                |
+| Date       | Teacher (first name, grade)      | Device | What they tried                                                                                                                                                                                                                           | What they said | Triage | Issue or PR | Follow up sent |
+| ---------- | -------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------ | ----------- | -------------- |
+| 2026-11-10 | — (listing, not a teacher reply) | —      | TpT listing went live: https://www.teacherspayteachers.com/Product/Hide-the-Zeros-A-10-Minute-Place-Value-Lesson-with-a-Free-Digital-Tool-18278487 (Product ID 18278487), store https://www.teacherspayteachers.com/store/hide-zero-cards | —              | —      | —           | —              |
+
+No teacher replies yet. The TpT listing and the Common Sense
+Education review request (submitted Nov 10, 2026) are the first
+channels live.
 
 ## Lessons learned
 
