@@ -37,9 +37,14 @@ Other TpT rules that matter, checked Nov 10, 2026:
 
 - Main file: `hide-zero-cards-place-value-lesson.pdf`, one page,
   US Letter. Built from `tpt-lesson.md` in this folder.
-- Cover image: `tpt-cover.png`, 1080x1080, made Nov 10, 2026.
-  Title, grades 3-4, FREE badge, place value cards for 3,743,
-  hidezerocards.org. Use it as the cover and as the thumbnails.
+- Cover image: `tpt-cover.png`, 1080x1080. Title, grades 3-4, FREE
+  badge, hidezerocards.org. The fan in the middle is a screenshot
+  of the real fan from the app's /about page (StaticFan, 3,743),
+  not a redraw: the first cover drew fake white cards and Donray
+  said it did not look like the landing page, so it was rebuilt
+  Nov 10 from the real fan, with its real card paint and
+  right-aligned overlap. Use it as the cover and as the
+  thumbnails.
 
 ## Listing copy
 
