@@ -41,7 +41,16 @@ it" and log the answer.
   and drag cards out to show their full place value. No login, no
   ads, no student accounts. Works on projectors, smartboards,
   tablets, and Chromebooks."
-- Status: not submitted yet.
+- Status: submitted Nov 10, 2026 at 7:03 AM EST. The form required
+  a Google sign-in, so Donray signed in himself in the browser and
+  the request was then submitted. Confirmation: "We've received
+  your completed form. Thank you for your interest in Common Sense
+  Education!" Submitted as Developer, Hide Zero Cards,
+  https://hidezerocards.org, platform Web, subject Math, contact
+  Donray Williams, donrayxwilliams@gmail.com. Common Sense
+  considers every request but cannot respond to all of them, so
+  there is no reply to chase. If a review is published, log it in
+  `feedback-log.md`.
 
 ### 2. Free lesson on Teachers Pay Teachers
 
