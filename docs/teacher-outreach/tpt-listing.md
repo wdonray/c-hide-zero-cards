@@ -108,12 +108,15 @@ the original lesson PDF), and zipped as
   is 41 px wide, a tens card 103 px, so tens are 2.5x ones, and
   the digits sit on a fixed pitch of 36.5 px, about 0.89x the ones
   width, centered as a group in the card. Widths run 1 : 2.5 : 4 :
-  5.5 for ones, tens, hundreds, thousands. That spacing is what
-  makes the cards cover: slide the next card over the trailing
-  zero until the digits line up, and the zero hides fully while
-  the leading digit stays whole. Values are plain digits with no
-  comma ("1000", not "1,000"): a comma cannot survive being
-  covered by the next card.
+  5.5 for ones, tens, hundreds, thousands, scaled to the largest
+  size that fits US Letter (a ones card of 1.33 in; a
+  playing-card-sized ones card would make the thousands card 14
+  in wide). Six pages: ones 1, tens 1, hundreds 2, thousands 2.
+  That spacing is what makes the cards cover: slide the next card
+  over the trailing zero until the digits line up, and the zero
+  hides fully while the leading digit stays whole. Values are
+  plain digits with no comma ("1000", not "1,000"): a comma
+  cannot survive being covered by the next card.
 - `03-Print-and-Cut-Cards-Color.pdf` (4 pages): the same 40
   arrow cards in the app's production card colors from
   `lib/constants.ts` CARD_PAINT (ones #DC2626, tens #B91C1C,

@@ -21,7 +21,13 @@ Chaley sent (270x350 px): a ones card is 41 px wide, a tens card
 103 px, so tens are 2.5x ones, and the digits sit on a fixed pitch
 of 36.5 px, about 0.89x the ones width, centered as a group in the
 card. Widths extend linearly, 1 : 2.5 : 4 : 5.5 for ones, tens,
-hundreds, thousands. That spacing is what makes the cards cover:
+hundreds, thousands, scaled to the largest size that fits US
+Letter: a ones card of 96 pt (1.33 in) puts the thousands card at
+528 pt, just inside the 540 pt usable width, and the card files
+run 6 pages (ones 1, tens 1, hundreds 2, thousands 2). A
+playing-card-sized ones card (180 pt) would make the thousands
+card 990 pt wide, so this is the max. That spacing is what makes
+the cards cover:
 slide the next card over the trailing zero until the digits line
 up, and the zero hides fully while the leading digit stays whole.
 The previous version used normal text spacing, which leaves only
@@ -341,21 +347,26 @@ FOOTER_H = 30
 
 # Card widths in points, measured from Chaley's photo: ones 41 px,
 # tens 103 px, a 1 : 2.5 ratio, extended linearly to hundreds 4x
-# and thousands 5.5x the ones width.
-CARD_W = {1: 40, 10: 100, 100: 160, 1000: 220}
+# and thousands 5.5x the ones width. Scaled to the largest size
+# that fits US Letter: a ones card of 96 pt (1.33 in) puts the
+# thousands card at 528 pt, just inside the 540 pt usable width.
+# A playing-card-sized ones card (180 pt) would make the thousands
+# card 990 pt wide, so this is the max.
+CARD_W = {1: 96, 10: 240, 100: 384, 1000: 528}
 # Fixed pitch between digit centers, also from the photo: 36.5 px
 # on a 41 px ones card, about 0.89x the ones width.
-PITCH = 35.4
-CARD_H = 54
+PITCH = 85
+CARD_H = 126
+FONT_SIZE = 100
 
 # Digits per place.
 NUM_DIGITS = {1: 1, 10: 2, 100: 3, 1000: 4}
 
-# Cards per row, so each place forms one tight grid: ones 5 across
-# (last row 4 plus an empty cell, like the photo Donray sent), tens
-# 5 across, hundreds 3 across (last row 1 plus 2 empty cells),
-# thousands 2 across.
-PER_ROW = {1: 5, 10: 5, 100: 3, 1000: 2}
+# Cards per row, so each place forms one tight grid: ones 5 across,
+# tens 2 across, hundreds 1 across, thousands 1 across. Hundreds
+# and thousands span two pages each, so the card files are 6 pages:
+# ones 1, tens 1, hundreds 2, thousands 2.
+PER_ROW = {1: 5, 10: 2, 100: 1, 1000: 1}
 
 
 def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
@@ -394,7 +405,7 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
     # apart that the covering card hides the zero without clipping
     # the leading digit.
     c.setFillColor(text_color)
-    font_size = 44
+    font_size = FONT_SIZE
     c.setFont("Helvetica-Bold", font_size)
     n = len(value)
     for i, ch in enumerate(value):
@@ -432,11 +443,21 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
     top_y = PAGE_H - MARGIN - HEADER_H
 
     places = [1, 10, 100, 1000]
-    page = 0
-    total_pages = len(places)
-
+    rows_per_page = int(usable_h // card_h)  # 5 at the max size
+    # Chunk each place's ten cards into pages. Ones and tens fit on
+    # one page each; hundreds and thousands take two.
+    chunks = []  # (place, [digits on this page])
     for place in places:
-        page += 1
+        per_row = PER_ROW[place]
+        rows = (10 + per_row - 1) // per_row
+        for start in range(0, rows, rows_per_page):
+            chunk_rows = min(rows_per_page, rows - start)
+            first = start * per_row
+            last = min(10, first + chunk_rows * per_row)
+            chunks.append((place, list(range(first, last))))
+    total_pages = len(chunks)
+
+    for page, (place, digits) in enumerate(chunks, start=1):
         # Header
         c.setFillColor(INK)
         c.setFont("Helvetica-Bold", 15)
@@ -454,17 +475,17 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
         c.setLineWidth(1.2)
         c.line(MARGIN, PAGE_H - MARGIN - 40, PAGE_W - MARGIN, PAGE_H - MARGIN - 40)
 
-        # Ten arrow cards: digits 0-9 for this place. Cards touch on
-        # a straight-edged grid, one shared cut line between neighbors.
+        # Arrow cards for this page. Cards touch on a straight-edged
+        # grid, one shared cut line between neighbors.
         card_w = CARD_W[place]
         per_row = PER_ROW[place]
-        rows = (10 + per_row - 1) // per_row
+        rows = (len(digits) + per_row - 1) // per_row
         block_w = per_row * card_w
         block_h = rows * card_h
         # Center the block on the page.
         block_x = MARGIN + (usable_w - block_w) / 2
         grid_top = top_y - (usable_h - block_h) / 2
-        for i, digit in enumerate(range(10)):
+        for i, digit in enumerate(digits):
             col = i % per_row
             row = i // per_row
             x = block_x + col * card_w
