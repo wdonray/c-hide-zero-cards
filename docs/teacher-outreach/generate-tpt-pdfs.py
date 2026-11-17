@@ -14,7 +14,15 @@ Requires: reportlab (pip install reportlab)
 Style matches the original one-page lesson PDF (ReportLab, Helvetica,
 rust-red section headings, footer attribution). Card colors are the
 app's production place-value paint from lib/constants.ts CARD_PAINT;
-nothing here invents a new color. Card values follow the app's
+nothing here invents a new color.
+
+The cards are place value arrow cards, like the photo Donray sent:
+each card is as wide as its place has digits, so a tens card is twice
+as wide as a ones card, a hundreds card three times as wide, and a
+thousands card four times as wide, and the digits read as a normal
+number, centered in the card. Lay the widest card down first, then
+slide the next card over its trailing zero until the digits line up:
+20 with a 3 over the 0 reads 23. Card values follow the app's
 formatCardValue() in lib/cardLayout.ts, including the leading-zero
 form of zero cards ("00", "000", "0,000").
 
@@ -288,10 +296,12 @@ def build_instructions(path: Path) -> None:
         [
             p(
                 "Print file 02 or 03 on US Letter paper, one set per group, and cut "
-                "along the dashed lines. Each card is labelled with its place (ones, "
-                "tens, hundreds, thousands), so the black and white set works without "
-                "color. Line the cards up in place value order to build a number, then "
-                "pull one card out to show what its digit is worth, just like the tool."
+                "along the dashed lines. The cards are arrow cards: wider for bigger "
+                "places, so the width tells you the place and the black and white set "
+                "works without color. Lay the widest card down first, then slide the "
+                "next card over its trailing zero until the digits line up: 20 with a "
+                "3 over the 0 reads 23. Pull one card out to show what its digit is "
+                "worth, just like the tool."
             )
         ],
     )
@@ -316,18 +326,27 @@ def build_instructions(path: Path) -> None:
 # Docs 2 and 3: Print and cut cards
 # ---------------------------------------------------------------------------
 
-CARD_COLS = 2
-CARD_ROWS = 5
-GAP_X = 18
-GAP_Y = 12
+UNIT_W = 60  # one digit of width; an arrow card is as many units wide as its place has digits
+CARD_H = 84
+GAP_X = 12
+GAP_Y = 16
 MARGIN = 0.5 * inch
 HEADER_H = 52
 FOOTER_H = 30
 
+# Digits per place, for the card width: ones 1, tens 2, hundreds 3,
+# thousands 4.
+NUM_DIGITS = {1: 1, 10: 2, 100: 3, 1000: 4}
+
 
 def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
               value: str, place: int, color: bool) -> None:
-    """Draw one card. (x, y) is the lower-left corner of the card face."""
+    """Draw one arrow card. (x, y) is the lower-left corner of the card face.
+
+    The value reads as a normal number, centered in the card. No place
+    label: the width is the place, like the physical cards teachers
+    already use.
+    """
     cut = 4  # dashed cut line sits outside the card face
     c.saveState()
     if color:
@@ -349,24 +368,16 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
             )
             c.rect(x, y + h - (i + 1) * band_h, w, band_h + 0.5, stroke=0, fill=1)
         text_color = HexColor("#FFFFFF")
-        label_color = HexColor("#FFFFFF")
     else:
         c.setFillColor(HexColor("#FFFFFF"))
         c.setStrokeColor(HexColor("#BBBBBB"))
         c.setLineWidth(0.75)
         c.roundRect(x, y, w, h, 14, stroke=1, fill=1)
         text_color = HexColor("#1A1A1A")
-        label_color = HexColor("#555555")
 
-    # Place label, small caps at the top of the card.
-    label = PLACE_NAMES[place].upper()
-    c.setFillColor(label_color)
-    c.setFont("Helvetica-Bold", 11)
-    c.drawCentredString(x + w / 2, y + h - 24, label)
-
-    # Card value, large and centered.
+    # Card value, large and centered, reading as a normal number.
     c.setFillColor(text_color)
-    font_size = 44 if len(value) <= 4 else 36
+    font_size = 44
     c.setFont("Helvetica-Bold", font_size)
     c.drawCentredString(x + w / 2, y + h / 2 - font_size * 0.36, value)
     c.restoreState()
@@ -387,8 +398,7 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
 
     usable_w = PAGE_W - 2 * MARGIN
     usable_h = PAGE_H - MARGIN - HEADER_H - FOOTER_H - MARGIN
-    card_w = (usable_w - (CARD_COLS - 1) * GAP_X) / CARD_COLS
-    card_h = (usable_h - (CARD_ROWS - 1) * GAP_Y) / CARD_ROWS
+    card_h = CARD_H
     top_y = PAGE_H - MARGIN - HEADER_H
 
     places = [1, 10, 100, 1000]
@@ -414,12 +424,19 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
         c.setLineWidth(1.2)
         c.line(MARGIN, PAGE_H - MARGIN - 40, PAGE_W - MARGIN, PAGE_H - MARGIN - 40)
 
-        # Ten cards: digits 0-9 for this place.
+        # Ten arrow cards: digits 0-9 for this place. Card width is
+        # one unit per digit of the place, so rows hold as many as fit.
+        card_w = UNIT_W * NUM_DIGITS[place]
+        per_row = int((usable_w + GAP_X) // (card_w + GAP_X))
+        rows = (10 + per_row - 1) // per_row
+        block_h = rows * card_h + (rows - 1) * GAP_Y
+        # Center short grids vertically in the usable area.
+        grid_top = top_y - (usable_h - block_h) / 2
         for i, digit in enumerate(range(10)):
-            col = i % CARD_COLS
-            row = i // CARD_COLS
+            col = i % per_row
+            row = i // per_row
             x = MARGIN + col * (card_w + GAP_X)
-            y_top = top_y - row * (card_h + GAP_Y)
+            y_top = grid_top - row * (card_h + GAP_Y)
             draw_card(c, x, y_top - card_h, card_w, card_h,
                       format_card_value(digit, place), place, color)
 
