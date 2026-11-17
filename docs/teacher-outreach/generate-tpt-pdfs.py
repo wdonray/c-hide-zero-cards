@@ -16,17 +16,21 @@ rust-red section headings, footer attribution). Card colors are the
 app's production place-value paint from lib/constants.ts CARD_PAINT;
 nothing here invents a new color.
 
-The cards are place value arrow cards, like the photo Donray sent:
-each card is as wide as its place has digits, so a tens card is twice
-as wide as a ones card, a hundreds card three times as wide, and a
-thousands card four times as wide, and the digits read as a normal
-number, centered in the card. Cards touch on a straight-edged grid
-with one shared cut line between neighbors, so each cut separates
-two cards. Lay the widest card down first, then slide the next card
-over its trailing zero until the digits line up: 20 with a 3 over
-the 0 reads 23. Card values follow the app's
-formatCardValue() in lib/cardLayout.ts, including the leading-zero
-form of zero cards ("00", "000", "0,000").
+The cards are place value arrow cards, measured from the photo
+Chaley sent (270x350 px): a ones card is 41 px wide, a tens card
+103 px, so tens are 2.5x ones, and the digits sit on a fixed pitch
+of 36.5 px, about 0.89x the ones width, centered as a group in the
+card. Widths extend linearly, 1 : 2.5 : 4 : 5.5 for ones, tens,
+hundreds, thousands. That spacing is what makes the cards cover:
+slide the next card over the trailing zero until the digits line
+up, and the zero hides fully while the leading digit stays whole.
+The previous version used normal text spacing, which leaves only
+about a 4 pt window to place the card without clipping the leading
+digit or leaving a sliver of the zero; this spacing leaves about
+15 pt. Card values are plain digits with no comma: a comma on a
+thousands card cannot survive being covered by the next card, and
+the value is the same without it. Zero cards are "0", "00", "000",
+"0000".
 
 No em dashes in any user-facing copy.
 """
@@ -91,10 +95,13 @@ PAGE_W, PAGE_H = LETTER
 
 
 def format_card_value(digit: int, place: int) -> str:
-    """Mirror lib/cardLayout.ts formatCardValue()."""
+    """Plain digits, no comma. The app's formatCardValue() in
+    lib/cardLayout.ts writes "1,000", but a comma on a printed
+    thousands card cannot survive being covered by the next card,
+    so the printed set writes "1000". Zero cards are all zeros."""
     if digit == 0:
-        return f"{place:,}".replace("1", "0", 1) if place > 1 else "0"
-    return f"{digit * place:,}"
+        return "0" * NUM_DIGITS[place]
+    return str(digit * place)
 
 
 def hex_to_rgb(hex_color: str) -> tuple[float, float, float]:
@@ -328,14 +335,20 @@ def build_instructions(path: Path) -> None:
 # Docs 2 and 3: Print and cut cards
 # ---------------------------------------------------------------------------
 
-UNIT_W = 50  # one digit of width; an arrow card is as many units wide as its place has digits
-CARD_H = 72
 MARGIN = 0.5 * inch
 HEADER_H = 52
 FOOTER_H = 30
 
-# Digits per place, for the card width: ones 1, tens 2, hundreds 3,
-# thousands 4.
+# Card widths in points, measured from Chaley's photo: ones 41 px,
+# tens 103 px, a 1 : 2.5 ratio, extended linearly to hundreds 4x
+# and thousands 5.5x the ones width.
+CARD_W = {1: 40, 10: 100, 100: 160, 1000: 220}
+# Fixed pitch between digit centers, also from the photo: 36.5 px
+# on a 41 px ones card, about 0.89x the ones width.
+PITCH = 35.4
+CARD_H = 54
+
+# Digits per place.
 NUM_DIGITS = {1: 1, 10: 2, 100: 3, 1000: 4}
 
 # Cards per row, so each place forms one tight grid: ones 5 across
@@ -375,11 +388,18 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
     else:
         text_color = HexColor("#1A1A1A")
 
-    # Card value, large and centered, reading as a normal number.
+    # Card value, one digit at a time on the fixed pitch, the group
+    # centered in the card. This is the spacing that lets a narrower
+    # card cover the trailing zero exactly: the digits sit far enough
+    # apart that the covering card hides the zero without clipping
+    # the leading digit.
     c.setFillColor(text_color)
     font_size = 44
     c.setFont("Helvetica-Bold", font_size)
-    c.drawCentredString(x + w / 2, y + h / 2 - font_size * 0.36, value)
+    n = len(value)
+    for i, ch in enumerate(value):
+        cx = x + w / 2 + (i - (n - 1) / 2) * PITCH
+        c.drawCentredString(cx, y + h / 2 - font_size * 0.36, ch)
     c.restoreState()
 
 
@@ -436,7 +456,7 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
 
         # Ten arrow cards: digits 0-9 for this place. Cards touch on
         # a straight-edged grid, one shared cut line between neighbors.
-        card_w = UNIT_W * NUM_DIGITS[place]
+        card_w = CARD_W[place]
         per_row = PER_ROW[place]
         rows = (10 + per_row - 1) // per_row
         block_w = per_row * card_w

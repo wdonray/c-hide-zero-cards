@@ -104,13 +104,16 @@ the original lesson PDF), and zipped as
 - `02-Print-and-Cut-Cards-Black-and-White.pdf` (4 pages):
   Hide Zero Cards to 1,000, ones, tens, hundreds, thousands,
   digits 0-9, 40 cards. Grayscale throughout. The cards are
-  arrow cards: a tens card is twice as wide as a ones card, a
-  hundreds card three times as wide, and a thousands card four
-  times as wide, so the width tells you the place and the set
-  works without color. Cards touch on a straight-edged grid, so
-  one cut separates two cards. Lay the widest card down first,
-  then slide the next card over its trailing zero until the
-  digits line up: 20 with a 3 over the 0 reads 23.
+  arrow cards, measured from the photo Chaley sent: a ones card
+  is 41 px wide, a tens card 103 px, so tens are 2.5x ones, and
+  the digits sit on a fixed pitch of 36.5 px, about 0.89x the ones
+  width, centered as a group in the card. Widths run 1 : 2.5 : 4 :
+  5.5 for ones, tens, hundreds, thousands. That spacing is what
+  makes the cards cover: slide the next card over the trailing
+  zero until the digits line up, and the zero hides fully while
+  the leading digit stays whole. Values are plain digits with no
+  comma ("1000", not "1,000"): a comma cannot survive being
+  covered by the next card.
 - `03-Print-and-Cut-Cards-Color.pdf` (4 pages): the same 40
   arrow cards in the app's production card colors from
   `lib/constants.ts` CARD_PAINT (ones #DC2626, tens #B91C1C,
