@@ -20,9 +20,11 @@ The cards are place value arrow cards, like the photo Donray sent:
 each card is as wide as its place has digits, so a tens card is twice
 as wide as a ones card, a hundreds card three times as wide, and a
 thousands card four times as wide, and the digits read as a normal
-number, centered in the card. Lay the widest card down first, then
-slide the next card over its trailing zero until the digits line up:
-20 with a 3 over the 0 reads 23. Card values follow the app's
+number, centered in the card. Cards touch on a straight-edged grid
+with one shared cut line between neighbors, so each cut separates
+two cards. Lay the widest card down first, then slide the next card
+over its trailing zero until the digits line up: 20 with a 3 over
+the 0 reads 23. Card values follow the app's
 formatCardValue() in lib/cardLayout.ts, including the leading-zero
 form of zero cards ("00", "000", "0,000").
 
@@ -296,12 +298,12 @@ def build_instructions(path: Path) -> None:
         [
             p(
                 "Print file 02 or 03 on US Letter paper, one set per group, and cut "
-                "along the dashed lines. The cards are arrow cards: wider for bigger "
-                "places, so the width tells you the place and the black and white set "
-                "works without color. Lay the widest card down first, then slide the "
-                "next card over its trailing zero until the digits line up: 20 with a "
-                "3 over the 0 reads 23. Pull one card out to show what its digit is "
-                "worth, just like the tool."
+                "along the grid lines. The cards touch, so each cut separates two "
+                "cards. The cards are arrow cards: wider for bigger places, so the "
+                "width tells you the place and the black and white set works without "
+                "color. Lay the widest card down first, then slide the next card over "
+                "its trailing zero until the digits line up: 20 with a 3 over the 0 "
+                "reads 23."
             )
         ],
     )
@@ -326,10 +328,8 @@ def build_instructions(path: Path) -> None:
 # Docs 2 and 3: Print and cut cards
 # ---------------------------------------------------------------------------
 
-UNIT_W = 60  # one digit of width; an arrow card is as many units wide as its place has digits
-CARD_H = 84
-GAP_X = 12
-GAP_Y = 16
+UNIT_W = 50  # one digit of width; an arrow card is as many units wide as its place has digits
+CARD_H = 72
 MARGIN = 0.5 * inch
 HEADER_H = 52
 FOOTER_H = 30
@@ -338,16 +338,23 @@ FOOTER_H = 30
 # thousands 4.
 NUM_DIGITS = {1: 1, 10: 2, 100: 3, 1000: 4}
 
+# Cards per row, so each place forms one tight grid: ones 5 across
+# (last row 4 plus an empty cell, like the photo Donray sent), tens
+# 5 across, hundreds 3 across (last row 1 plus 2 empty cells),
+# thousands 2 across.
+PER_ROW = {1: 5, 10: 5, 100: 3, 1000: 2}
+
 
 def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
               value: str, place: int, color: bool) -> None:
-    """Draw one arrow card. (x, y) is the lower-left corner of the card face.
+    """Draw one arrow card face. (x, y) is the lower-left corner.
 
-    The value reads as a normal number, centered in the card. No place
-    label: the width is the place, like the physical cards teachers
-    already use.
+    Square corners, no stroke, no gap to the next card: the grid lines
+    drawn over the block are the shared cut lines, so one cut
+    separates two cards. The value reads as a normal number, centered
+    in the card. No place label: the width is the place, like the
+    physical cards teachers already use.
     """
-    cut = 4  # dashed cut line sits outside the card face
     c.saveState()
     if color:
         top = hex_to_rgb(CARD_PAINT[place][0])
@@ -356,9 +363,6 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
         # matching the app's card paint.
         bands = 48
         band_h = h / bands
-        path = c.beginPath()
-        path.roundRect(x, y, w, h, 14)
-        c.clipPath(path, stroke=0, fill=0)
         for i in range(bands):
             t = i / (bands - 1)
             c.setFillColorRGB(
@@ -369,10 +373,6 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
             c.rect(x, y + h - (i + 1) * band_h, w, band_h + 0.5, stroke=0, fill=1)
         text_color = HexColor("#FFFFFF")
     else:
-        c.setFillColor(HexColor("#FFFFFF"))
-        c.setStrokeColor(HexColor("#BBBBBB"))
-        c.setLineWidth(0.75)
-        c.roundRect(x, y, w, h, 14, stroke=1, fill=1)
         text_color = HexColor("#1A1A1A")
 
     # Card value, large and centered, reading as a normal number.
@@ -382,12 +382,22 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
     c.drawCentredString(x + w / 2, y + h / 2 - font_size * 0.36, value)
     c.restoreState()
 
-    # Dashed cut line around the card face.
+
+def draw_grid(c: canvas.Canvas, x: float, y: float, w: float, h: float,
+              cols: int, rows: int) -> None:
+    """Straight-edged grid over a card block: one shared cut line
+    between neighbors, outer border included. Empty cells get borders
+    too, so the block stays a clean rectangle."""
     c.saveState()
-    c.setStrokeColor(HexColor("#666666"))
-    c.setLineWidth(0.75)
-    c.setDash(6, 4)
-    c.roundRect(x - cut, y - cut, w + 2 * cut, h + 2 * cut, 16, stroke=1, fill=0)
+    c.setStrokeColor(INK)
+    c.setLineWidth(1)
+    c.rect(x, y, w, h, stroke=1, fill=0)
+    for i in range(1, cols):
+        vx = x + i * w / cols
+        c.line(vx, y, vx, y + h)
+    for j in range(1, rows):
+        hy = y + j * h / rows
+        c.line(x, hy, x + w, hy)
     c.restoreState()
 
 
@@ -416,7 +426,7 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
         c.setFont("Helvetica", 10.5)
         c.drawString(
             MARGIN, PAGE_H - MARGIN - 32,
-            "Hide Zero Cards to 1,000  -  Print on US Letter paper, then cut along the dashed lines.",
+            "Hide Zero Cards to 1,000  -  Print on US Letter paper, then cut along the grid lines.",
         )
         c.setFont("Helvetica", 10.5)
         c.drawRightString(PAGE_W - MARGIN, PAGE_H - MARGIN - 16, f"Page {page} of {total_pages}")
@@ -424,21 +434,25 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
         c.setLineWidth(1.2)
         c.line(MARGIN, PAGE_H - MARGIN - 40, PAGE_W - MARGIN, PAGE_H - MARGIN - 40)
 
-        # Ten arrow cards: digits 0-9 for this place. Card width is
-        # one unit per digit of the place, so rows hold as many as fit.
+        # Ten arrow cards: digits 0-9 for this place. Cards touch on
+        # a straight-edged grid, one shared cut line between neighbors.
         card_w = UNIT_W * NUM_DIGITS[place]
-        per_row = int((usable_w + GAP_X) // (card_w + GAP_X))
+        per_row = PER_ROW[place]
         rows = (10 + per_row - 1) // per_row
-        block_h = rows * card_h + (rows - 1) * GAP_Y
-        # Center short grids vertically in the usable area.
+        block_w = per_row * card_w
+        block_h = rows * card_h
+        # Center the block on the page.
+        block_x = MARGIN + (usable_w - block_w) / 2
         grid_top = top_y - (usable_h - block_h) / 2
         for i, digit in enumerate(range(10)):
             col = i % per_row
             row = i // per_row
-            x = MARGIN + col * (card_w + GAP_X)
-            y_top = grid_top - row * (card_h + GAP_Y)
+            x = block_x + col * card_w
+            y_top = grid_top - row * card_h
             draw_card(c, x, y_top - card_h, card_w, card_h,
                       format_card_value(digit, place), place, color)
+        draw_grid(c, block_x, grid_top - block_h, block_w, block_h,
+                  per_row, rows)
 
         # Footer
         c.setStrokeColor(FOOTER_RULE)

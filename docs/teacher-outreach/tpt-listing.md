@@ -107,9 +107,10 @@ the original lesson PDF), and zipped as
   arrow cards: a tens card is twice as wide as a ones card, a
   hundreds card three times as wide, and a thousands card four
   times as wide, so the width tells you the place and the set
-  works without color. Lay the widest card down first, then
-  slide the next card over its trailing zero until the digits
-  line up: 20 with a 3 over the 0 reads 23.
+  works without color. Cards touch on a straight-edged grid, so
+  one cut separates two cards. Lay the widest card down first,
+  then slide the next card over its trailing zero until the
+  digits line up: 20 with a 3 over the 0 reads 23.
 - `03-Print-and-Cut-Cards-Color.pdf` (4 pages): the same 40
   arrow cards in the app's production card colors from
   `lib/constants.ts` CARD_PAINT (ones #DC2626, tens #B91C1C,
