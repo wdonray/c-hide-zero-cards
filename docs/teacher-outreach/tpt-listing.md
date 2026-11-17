@@ -1,20 +1,35 @@
 # Teachers Pay Teachers listing: Hide the Zeros place value lesson
 
-Status: LISTED and live Nov 10, 2026. Store: Hide Zero Cards,
-https://www.teacherspayteachers.com/store/hide-zero-cards.
-Listing: https://www.teacherspayteachers.com/Product/Hide-the-Zeros-A-10-Minute-Place-Value-Lesson-with-a-Free-Digital-Tool-18278487
-(Product ID 18278487). Seller account opened the same day by
+Status: LISTED and live Nov 10, 2026. Store: Donray Williams,
+https://www.teacherspayteachers.com/store/donray-williams
+(renamed Nov 17, 2026 from Hide Zero Cards; one account has one
+store).
+Listing: https://www.teacherspayteachers.com/Product/3rd-4th-Grade-Place-Value-Lesson-Hide-the-Zeros-A-10-Minute-Lesson-18278487
+(Product ID 18278487). Seller account opened Nov 10, 2026 by
 Donray (Basic, $29 one time, Transaction Id
-7MJ50714X9101942T). Store bio is one verified sentence only.
-Listing is Free, Active, 1 page, grades 3rd-4th, subjects Place
-Value (TpT's form lists Math as a group heading, not a
-selectable subject), tags Activities, Internet Activities,
+7MJ50714X9101942T). Payout method set up via Hyperwallet Nov 17,
+2026 (Donray set up a transfer method himself).
+Listing is Free, Active, grades 3rd-4th, subjects Place Value
+(TpT's form lists Math as a group heading, not a selectable
+subject), tags Activities, Centers, Internet Activities,
 Lessons (no Lesson Plan or Interactive Whiteboard tag exists),
-Teaching Duration N/A (no 10-minute option). Caveat Nov 10:
-the direct product page is live and verified, but about 8
-minutes after publishing the store grid showed "No resources
-found" and TpT search did not surface it yet — search indexing
-lag for a new listing; recheck the store page later.
+Teaching Duration N/A (no 10-minute option), custom category
+Place Value, featured. Main file is the folder zip (see below),
+uploaded Nov 17, 2026, 28.08 kB on TpT. Previews: cover,
+teacher instructions page, color cards page.
+Store profile: banner and profile photo set. About bio names
+both free tools (hidezerocards.org and patternspell.org).
+Experience and Teaching style sections filled Nov 17, 2026;
+Awards and Education history left hidden.
+Caveat Nov 10: the direct product page is live and verified,
+but about 8 minutes after publishing the store grid showed "No
+resources found" and TpT search did not surface it yet,
+search indexing lag for a new listing. Recheck Nov 17, 10:17 AM
+EST: "Featured resources" on the store page shows both
+products, but "All resources" still shows only this product
+("Showing 1-1 of 1 results"). TpT says allow up to one hour
+for edited products to appear in store listings. Recheck the
+store page later.
 
 ## The cost, corrected
 
@@ -36,8 +51,9 @@ Other TpT rules that matter, checked Nov 10, 2026:
   teacher guide and About page. Donray should read it, edit it
   in his own voice, and list it as his own work only if he is
   comfortable doing so.
-- A resource must be accessible directly from TpT. This PDF is
-  the resource: a complete one-page lesson. The link to
+- A resource must be accessible directly from TpT. This folder
+  zip is the resource: teacher instructions plus print-and-cut
+  cards, a complete lesson. The link to
   hidezerocards.org is a supplement, not a gate. The tool is
   free with no login, no ads, and no student accounts, so nothing
   else is required to use it.
@@ -48,8 +64,11 @@ Other TpT rules that matter, checked Nov 10, 2026:
 
 ## Files to upload
 
-- Main file: `hide-zero-cards-place-value-lesson.pdf`, one page,
-  US Letter. Built from `tpt-lesson.md` in this folder.
+- Main file: `hide-zero-cards-tpt-folder.zip`, 28.08 kB on TpT,
+  uploaded Nov 17, 2026. One zip holding the three US Letter
+  PDFs in "Folder version" below. The single-page
+  `hide-zero-cards-place-value-lesson.pdf` it replaced is still
+  in this folder, superseded; it was built from `tpt-lesson.md`.
 - Cover image: `tpt-cover.png`, 1080x1080. Title, grades 3-4, FREE
   badge, hidezerocards.org. The fan in the middle is a screenshot
   of the real fan from the app's /about page (StaticFan, 3,743),
@@ -62,16 +81,20 @@ Other TpT rules that matter, checked Nov 10, 2026:
   bottom edge and top highlight that make the chunky tile look.
   The fan box and every card width were measured identical
   before and after, so the cards did not move. Use it as the
-  cover and as the thumbnails.
+  cover. The preview thumbnails are the cover, the teacher
+  instructions page, and the color cards page (rendered from
+  the PDFs; the PNGs are not committed in this repo).
 
-## Folder version (in progress, not uploaded yet)
+## Folder version (live Nov 17, 2026)
 
 Chaley suggested TpT resources should be a folder: instructions
-first, then printable versions. The folder replaces the single
-one-page PDF above when Donray approves it. All three PDFs are
-US Letter, built by `generate-tpt-pdfs.py` in this folder
-(ReportLab, same style as the original lesson PDF), and zipped
-as `hide-zero-cards-tpt-folder.zip` for upload.
+first, then printable versions. The folder replaced the single
+one-page PDF above when Donray approved it Nov 17, 2026, and
+was uploaded as the main file the same day, 10:13 AM EST,
+28.08 kB on TpT. All three PDFs are US Letter, built by
+`generate-tpt-pdfs.py` in this folder (ReportLab, same style as
+the original lesson PDF), and zipped as
+`hide-zero-cards-tpt-folder.zip` for upload.
 
 - `01-Teacher-Instructions-Hide-Zero-Cards.pdf` (1 page):
   the lesson reworked website-first. Leads with
@@ -91,12 +114,12 @@ as `hide-zero-cards-tpt-folder.zip` for upload.
   `formatCardValue()`, including the leading-zero form of zero
   cards ("00", "000", "0,000").
 
-Upload the zip as the main file when the folder goes live, and
-update the listing description to name the three files inside.
+The listing description names the three files inside (see
+Listing copy below).
 
 ## Listing copy
 
-Title: Hide the Zeros: A 10-Minute Place Value Lesson with a Free Digital Tool
+Title: 3rd & 4th Grade Place Value Lesson - Hide the Zeros: A 10-Minute Lesson
 
 Price: Free
 
@@ -105,14 +128,25 @@ Roll range.
 
 Subjects: Math, Place Value
 
+Tags: Activities, Centers, Internet Activities, Lessons
+
+Custom category: Place Value. Featured.
+
 Resource type: Lesson Plan, Activities, Interactive Whiteboard
 Activity
 
 Description:
 
+Place Value Made Fun with Hide Zero Cards
+
+A free, engaging online tool
+
+Try it live: https://hidezerocards.org
+
 A free 10-minute place value lesson for elementary classrooms,
-built around Hide Zero Cards, a free digital tool at
-https://hidezerocards.org.
+built around Hide Zero Cards. This folder has the lesson plus
+print-and-cut cards to 1,000, so you can use the free tool on
+screen or the cards in small groups and centers.
 
 Roll or type a number, and it fans out as color coded place
 value cards. Tap Hide zeros and the zero cards hide in place,
@@ -121,7 +155,12 @@ each digit is worth. Pull the 3 card out and it shows 3,000.
 
 What is inside:
 
-- A 10-minute lesson plan, no printing required
+- 01 Teacher Instructions: the 10-minute lesson plan, website
+  first, no printing required
+- 02 Print and Cut Cards, Black and White: cards to 1,000 for
+  any printer, 4 pages
+- 03 Print and Cut Cards, Color: the same cards in the app
+  colors, 4 pages
 - Steps for Roll, Hide zeros, Mix and rebuild, and Number Forms
 - Three numbers to try: 3,743, 2,609, and 180,736
 - Talk prompts for the class
@@ -137,19 +176,22 @@ If you try it, the builder would love to hear what happened.
 Email donrayxwilliams@gmail.com with the grade, what worked,
 and what confused students.
 
+Follow my store for more free lessons built around free
+classroom tools.
+
 ## Steps to list it
 
 1. Donray opens a TpT seller account at
    teacherspayteachers.com and picks Basic ($29 one time) or
-   Exclusive ($59.95 a year). He will need a payout account
-   through Hyperwallet.
+   Exclusive ($59.95 a year). Payout account through
+   Hyperwallet, set up Nov 17, 2026.
 2. In the seller dashboard, Add New Product, product type
    Digital Download.
-3. Upload `hide-zero-cards-place-value-lesson.pdf` as the main
-   file.
+3. Upload `hide-zero-cards-tpt-folder.zip` as the main file.
 4. Paste the title, description, grades, subjects, and resource
    type above. Set the price to Free.
-5. Upload `tpt-cover.png` as the cover image and thumbnails.
+5. Upload `tpt-cover.png` as the cover image and the teacher
+   instructions and color cards pages as preview thumbnails.
    Make the listing active.
 6. Log the listing URL in `feedback-log.md`, with the date it
    went live.
