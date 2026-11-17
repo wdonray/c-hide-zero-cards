@@ -16,27 +16,31 @@ rust-red section headings, footer attribution). Card colors are the
 app's production place-value paint from lib/constants.ts CARD_PAINT;
 nothing here invents a new color.
 
-The cards are place value arrow cards, measured from the photo
-Chaley sent (270x350 px): a ones card is 41 px wide, a tens card
-103 px, so tens are 2.5x ones, and the digits sit on a fixed pitch
-of 36.5 px, about 0.89x the ones width, centered as a group in the
-card. Widths extend linearly, 1 : 2.5 : 4 : 5.5 for ones, tens,
-hundreds, thousands, scaled to the largest size that fits US
-Letter: a ones card of 96 pt (1.33 in) puts the thousands card at
-528 pt, just inside the 540 pt usable width, and the card files
-run 6 pages (ones 1, tens 1, hundreds 2, thousands 2). A
-playing-card-sized ones card (180 pt) would make the thousands
-card 990 pt wide, so this is the max. That spacing is what makes
-the cards cover:
-slide the next card over the trailing zero until the digits line
-up, and the zero hides fully while the leading digit stays whole.
-The previous version used normal text spacing, which leaves only
-about a 4 pt window to place the card without clipping the leading
-digit or leaving a sliver of the zero; this spacing leaves about
-15 pt. Card values are plain digits with no comma: a comma on a
-thousands card cannot survive being covered by the next card, and
-the value is the same without it. Zero cards are "0", "00", "000",
-"0000".
+The cards are the app's own place value arrow cards, built with the
+app's math from lib/cardLayout.ts, so they stack exactly the way
+the on-screen fan does:
+- Card width is the natural text width of the full value, commas
+  included ("1,000", "0,000"), plus padding. The cards shrink-wrap
+  their text, like the app's absolutely-positioned cards.
+- Digits are letter-spaced at 0.3x the font size (the app uses
+  20 px letter-spacing at a 60 px font). The spacing puts a wide
+  band of whitespace between digits, so the covering card's edge
+  always lands in whitespace, never on ink.
+- Stacking is right-aligned (lib/cardLayout.ts
+  getRightAlignedFanPositions): lay the widest card down first,
+  then line up the right edges of the next card with it. The
+  visible peek of each card is the width difference to the next
+  card, which is exactly its leading digit, plus the comma for a
+  group-final card ("3,"), so the fan reads like the formatted
+  number ("3,743"). The comma survives because it sits in the
+  peek, not under the covering card.
+- The font size is the largest that fits US Letter: the thousands
+  card ("0,000") is the widest, and at 139 pt it is 539 pt, just
+  inside the 540 pt usable width. A playing-card-sized ones card
+  would make the thousands card about 14 in wide, so this is the
+  max. The card files run 6 pages (ones 1, tens 1, hundreds 2,
+  thousands 2). Zero cards are "0", "00", "000", "0,000", the
+  app's formatCardValue.
 
 No em dashes in any user-facing copy.
 """
@@ -101,13 +105,14 @@ PAGE_W, PAGE_H = LETTER
 
 
 def format_card_value(digit: int, place: int) -> str:
-    """Plain digits, no comma. The app's formatCardValue() in
-    lib/cardLayout.ts writes "1,000", but a comma on a printed
-    thousands card cannot survive being covered by the next card,
-    so the printed set writes "1000". Zero cards are all zeros."""
+    """The app's formatCardValue() in lib/cardLayout.ts, verbatim:
+    the full place value with a thousands comma ("1,000"), and a
+    zero card shows the place value with a leading zero ("0,000").
+    The comma survives stacking because it sits in the peek, not
+    under the covering card."""
     if digit == 0:
-        return "0" * NUM_DIGITS[place]
-    return str(digit * place)
+        return f"{place:,}".replace("1", "0", 1) if place > 1 else "0"
+    return f"{digit * place:,}"
 
 
 def hex_to_rgb(hex_color: str) -> tuple[float, float, float]:
@@ -314,9 +319,8 @@ def build_instructions(path: Path) -> None:
                 "along the grid lines. The cards touch, so each cut separates two "
                 "cards. The cards are arrow cards: wider for bigger places, so the "
                 "width tells you the place and the black and white set works without "
-                "color. Lay the widest card down first, then slide the next card over "
-                "its trailing zero until the digits line up: 20 with a 3 over the 0 "
-                "reads 23."
+                "color. Lay the widest card down first, then line up the right "
+                "edges of the next card with it: 20 with a 3 over the 0 reads 23."
             )
         ],
     )
@@ -345,19 +349,58 @@ MARGIN = 0.5 * inch
 HEADER_H = 52
 FOOTER_H = 30
 
-# Card widths in points, measured from Chaley's photo: ones 41 px,
-# tens 103 px, a 1 : 2.5 ratio, extended linearly to hundreds 4x
-# and thousands 5.5x the ones width. Scaled to the largest size
-# that fits US Letter: a ones card of 96 pt (1.33 in) puts the
-# thousands card at 528 pt, just inside the 540 pt usable width.
-# A playing-card-sized ones card (180 pt) would make the thousands
-# card 990 pt wide, so this is the max.
-CARD_W = {1: 96, 10: 240, 100: 384, 1000: 528}
-# Fixed pitch between digit centers, also from the photo: 36.5 px
-# on a 41 px ones card, about 0.89x the ones width.
-PITCH = 85
+# The app's card math, from lib/cardLayout.ts and
+# components/HomePageClient.tsx:
+# - Card width is the natural text width of the full value, commas
+#   included, plus padding on each side. The app measures each
+#   card's scrollWidth; here stringWidth is the same measurement.
+# - Letter-spacing is 0.3x the font size (the app uses 20 px at a
+#   60 px font, 0.3x on mobile). The spacing puts a wide band of
+#   whitespace between digits, so a covering card's edge always
+#   lands in whitespace, never on ink.
+# - The font size is the largest that fits US Letter: the thousands
+#   card ("0,000") is the widest, and at 139 pt it is 539 pt, just
+#   inside the 540 pt usable width. A playing-card-sized ones card
+#   would make the thousands card about 14 in wide, so this is
+#   the max.
+from reportlab.pdfbase.pdfmetrics import stringWidth
+
+PADDING = 12
+LETTER_SPACING_RATIO = 0.3
+
+
+def text_width(value: str, font_size: float) -> float:
+    """Natural text width of a card value at a font size, letter
+    spacing included: the sum of the character advances plus the
+    spacing between them."""
+    advances = sum(stringWidth(ch, "Helvetica-Bold", font_size) for ch in value)
+    gaps = LETTER_SPACING_RATIO * font_size * max(0, len(value) - 1)
+    return advances + gaps
+
+
+_FONT_UNIT = text_width("0,000", 100) / 100
+FONT_SIZE = int((PAGE_W - 2 * MARGIN - 2 * PADDING) // _FONT_UNIT)
+
+# Card widths in points, one per place. Every value in a place has
+# the same length and the same digit advances, so every card in a
+# place has the same width.
+CARD_W = {
+    place: 2 * PADDING + text_width(format_card_value(0, place), FONT_SIZE)
+    for place in (1, 10, 100, 1000)
+}
+# Vertical metrics, measured from Helvetica-Bold (a comma and a
+# digit rendered at 139 pt and measured in pixels; the test PDF is
+# /tmp/hzc-arrow-render/comma-test.pdf): cap height 97.2 pt and
+# comma descent 21.2 pt below the baseline. The digits sit on one
+# baseline across every place, the way the app's line box does,
+# and the baseline is placed so the full ink extent (cap height
+# plus comma descent) is centered in the card: the comma fits
+# inside its own card instead of crossing the cut line below.
+CAP_RATIO = 0.70
+COMMA_DESCENT_RATIO = 0.153
+INK_H = (CAP_RATIO + COMMA_DESCENT_RATIO) * FONT_SIZE
 CARD_H = 126
-FONT_SIZE = 100
+BASELINE_FROM_BOTTOM = (CARD_H - INK_H) / 2 + COMMA_DESCENT_RATIO * FONT_SIZE
 
 # Digits per place.
 NUM_DIGITS = {1: 1, 10: 2, 100: 3, 1000: 4}
@@ -375,9 +418,10 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
 
     Square corners, no stroke, no gap to the next card: the grid lines
     drawn over the block are the shared cut lines, so one cut
-    separates two cards. The value reads as a normal number, centered
-    in the card. No place label: the width is the place, like the
-    physical cards teachers already use.
+    separates two cards. The value is the full place value with its
+    comma, letter-spaced at 0.3x the font size and left-aligned at
+    the padding, exactly as the app renders it. No place label: the
+    width is the place, like the physical cards teachers already use.
     """
     c.saveState()
     if color:
@@ -399,18 +443,20 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
     else:
         text_color = HexColor("#1A1A1A")
 
-    # Card value, one digit at a time on the fixed pitch, the group
-    # centered in the card. This is the spacing that lets a narrower
-    # card cover the trailing zero exactly: the digits sit far enough
-    # apart that the covering card hides the zero without clipping
-    # the leading digit.
+    # Card value, one character at a time with the app's
+    # letter-spacing, left-aligned at the padding. The spacing is
+    # what makes stacking work: the covering card's edge lands in
+    # the whitespace between digits, so the leading digit and the
+    # comma stay whole and the trailing zero hides fully.
     c.setFillColor(text_color)
     font_size = FONT_SIZE
     c.setFont("Helvetica-Bold", font_size)
-    n = len(value)
-    for i, ch in enumerate(value):
-        cx = x + w / 2 + (i - (n - 1) / 2) * PITCH
-        c.drawCentredString(cx, y + h / 2 - font_size * 0.36, ch)
+    baseline = y + BASELINE_FROM_BOTTOM
+    pen = x + PADDING
+    for ch in value:
+        c.drawString(pen, baseline, ch)
+        pen += stringWidth(ch, "Helvetica-Bold", font_size)
+        pen += LETTER_SPACING_RATIO * font_size
     c.restoreState()
 
 
