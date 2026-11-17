@@ -64,6 +64,36 @@ Other TpT rules that matter, checked Nov 10, 2026:
   before and after, so the cards did not move. Use it as the
   cover and as the thumbnails.
 
+## Folder version (in progress, not uploaded yet)
+
+Chaley suggested TpT resources should be a folder: instructions
+first, then printable versions. The folder replaces the single
+one-page PDF above when Donray approves it. All three PDFs are
+US Letter, built by `generate-tpt-pdfs.py` in this folder
+(ReportLab, same style as the original lesson PDF), and zipped
+as `hide-zero-cards-tpt-folder.zip` for upload.
+
+- `01-Teacher-Instructions-Hide-Zero-Cards.pdf` (1 page):
+  the lesson reworked website-first. Leads with
+  hidezerocards.org as the easier path (no printing or cutting
+  needed), then the 10-minute lesson steps, the "Try these
+  numbers" examples, talk prompts, and the feedback email.
+- `02-Print-and-Cut-Cards-Black-and-White.pdf` (4 pages):
+  Hide Zero Cards to 1,000, ones, tens, hundreds, thousands,
+  digits 0-9, 40 cards. Grayscale throughout. Each card is
+  labelled with its place, since there is no color to tell
+  places apart.
+- `03-Print-and-Cut-Cards-Color.pdf` (4 pages): the same 40
+  cards in the app's production card colors from
+  `lib/constants.ts` CARD_PAINT (ones #DC2626, tens #B91C1C,
+  hundreds #991B1B, thousands #A16207, each with its darker
+  gradient stop). Card values follow the app's
+  `formatCardValue()`, including the leading-zero form of zero
+  cards ("00", "000", "0,000").
+
+Upload the zip as the main file when the folder goes live, and
+update the listing description to name the three files inside.
+
 ## Listing copy
 
 Title: Hide the Zeros: A 10-Minute Place Value Lesson with a Free Digital Tool
