@@ -101,13 +101,24 @@ the original lesson PDF), and zipped as
   hidezerocards.org as the easier path (no printing or cutting
   needed), then the 10-minute lesson steps, the "Try these
   numbers" examples, talk prompts, and the feedback email.
-- `02-Print-and-Cut-Cards-Black-and-White.pdf` (4 pages):
+- `02-Print-and-Cut-Cards-Black-and-White.pdf` (6 pages):
   Hide Zero Cards to 1,000, ones, tens, hundreds, thousands,
-  digits 0-9, 40 cards. Grayscale throughout. Each card is
-  labelled with its place, since there is no color to tell
-  places apart.
-- `03-Print-and-Cut-Cards-Color.pdf` (4 pages): the same 40
-  cards in the app's production card colors from
+  digits 0-9, 40 cards. Grayscale throughout. The cards use the
+  app's own math from `lib/cardLayout.ts`: each card is the
+  natural text width of the full value, commas included, and the
+  digits are letter-spaced at 0.3x the font size, so the covering
+  card's edge always lands in whitespace. Stack them by lining
+  up the right edges, widest card first, and the peek of each
+  card is exactly its leading digit, plus the comma for a
+  group-final card, so the fan reads like the formatted number
+  ("3,743"). Scaled to the largest size that fits US Letter (a
+  ones card of about 1.4 in; a playing-card-sized ones card
+  would make the thousands card 14 in wide). Six pages: ones 1,
+  tens 1, hundreds 2, thousands 2. Card values follow the app's
+  `formatCardValue()`, including the comma ("1,000") and the
+  leading-zero form of zero cards ("00", "000", "0,000").
+- `03-Print-and-Cut-Cards-Color.pdf` (6 pages): the same 40
+  arrow cards in the app's production card colors from
   `lib/constants.ts` CARD_PAINT (ones #DC2626, tens #B91C1C,
   hundreds #991B1B, thousands #A16207, each with its darker
   gradient stop). Card values follow the app's

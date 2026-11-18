@@ -14,9 +14,37 @@ Requires: reportlab (pip install reportlab)
 Style matches the original one-page lesson PDF (ReportLab, Helvetica,
 rust-red section headings, footer attribution). Card colors are the
 app's production place-value paint from lib/constants.ts CARD_PAINT;
-nothing here invents a new color. Card values follow the app's
-formatCardValue() in lib/cardLayout.ts, including the leading-zero
-form of zero cards ("00", "000", "0,000").
+nothing here invents a new color.
+
+The cards are the app's own place value arrow cards, built with the
+app's math from lib/cardLayout.ts, so they stack exactly the way
+the on-screen fan does:
+- Card width is the natural text width of the full value, commas
+  included ("1,000", "0,000"), plus padding. The cards shrink-wrap
+  their text, like the app's absolutely-positioned cards.
+- Digits are letter-spaced at 0.3x the font size (the app uses
+  20 px letter-spacing at a 60 px font). The spacing puts a wide
+  band of whitespace between digits, so the covering card's edge
+  always lands in whitespace, never on ink.
+- Stacking is right-aligned (lib/cardLayout.ts
+  getRightAlignedFanPositions): lay the widest card down first,
+  then line up the right edges of the next card with it. The
+  visible peek of each card is the width difference to the next
+  card, which is exactly its leading digit, plus the comma for a
+  group-final card ("3,"), so the fan reads like the formatted
+  number ("3,743"). The comma survives because it sits in the
+  peek, not under the covering card.
+- The font size is set by the vertical layout, not the width: the
+  digits are centered in the card the way the website centers
+  them (measured from the site: the digit ink sits with about a
+  third of the card height above and below it), and the comma
+  still fits inside its own card. At 118 pt with a 127 pt card
+  the digits sit centered with equal space above and below, and
+  the comma clears the card bottom by about 4 pt. A larger font
+  would push the digits to the top of the card or the comma out
+  the bottom. The card files run 6 pages (ones 1, tens 1,
+  hundreds 2, thousands 2). Zero cards are "0", "00", "000",
+  "0,000", the app's formatCardValue.
 
 No em dashes in any user-facing copy.
 """
@@ -81,7 +109,11 @@ PAGE_W, PAGE_H = LETTER
 
 
 def format_card_value(digit: int, place: int) -> str:
-    """Mirror lib/cardLayout.ts formatCardValue()."""
+    """The app's formatCardValue() in lib/cardLayout.ts, verbatim:
+    the full place value with a thousands comma ("1,000"), and a
+    zero card shows the place value with a leading zero ("0,000").
+    The comma survives stacking because it sits in the peek, not
+    under the covering card."""
     if digit == 0:
         return f"{place:,}".replace("1", "0", 1) if place > 1 else "0"
     return f"{digit * place:,}"
@@ -288,10 +320,11 @@ def build_instructions(path: Path) -> None:
         [
             p(
                 "Print file 02 or 03 on US Letter paper, one set per group, and cut "
-                "along the dashed lines. Each card is labelled with its place (ones, "
-                "tens, hundreds, thousands), so the black and white set works without "
-                "color. Line the cards up in place value order to build a number, then "
-                "pull one card out to show what its digit is worth, just like the tool."
+                "along the grid lines. The cards touch, so each cut separates two "
+                "cards. The cards are arrow cards: wider for bigger places, so the "
+                "width tells you the place and the black and white set works without "
+                "color. Lay the widest card down first, then line up the right "
+                "edges of the next card with it: 20 with a 3 over the 0 reads 23."
             )
         ],
     )
@@ -316,19 +349,81 @@ def build_instructions(path: Path) -> None:
 # Docs 2 and 3: Print and cut cards
 # ---------------------------------------------------------------------------
 
-CARD_COLS = 2
-CARD_ROWS = 5
-GAP_X = 18
-GAP_Y = 12
 MARGIN = 0.5 * inch
 HEADER_H = 52
 FOOTER_H = 30
 
+# The app's card math, from lib/cardLayout.ts and
+# components/HomePageClient.tsx:
+# - Card width is the natural text width of the full value, commas
+#   included, plus padding on each side. The app measures each
+#   card's scrollWidth; here stringWidth is the same measurement.
+# - Letter-spacing is 0.3x the font size (the app uses 20 px at a
+#   60 px font, 0.3x on mobile). The spacing puts a wide band of
+#   whitespace between digits, so a covering card's edge always
+#   lands in whitespace, never on ink.
+# - Padding is 0.15x the font size (the app's mobile horizontal
+#   padding), rounded.
+from reportlab.pdfbase.pdfmetrics import stringWidth
+
+LETTER_SPACING_RATIO = 0.3
+FONT_SIZE = 118
+PADDING = round(0.15 * FONT_SIZE)
+
+
+def text_width(value: str, font_size: float) -> float:
+    """Natural text width of a card value at a font size, letter
+    spacing included: the sum of the character advances plus the
+    spacing between them."""
+    advances = sum(stringWidth(ch, "Helvetica-Bold", font_size) for ch in value)
+    gaps = LETTER_SPACING_RATIO * font_size * max(0, len(value) - 1)
+    return advances + gaps
+
+# Card widths in points, one per place. Every value in a place has
+# the same length and the same digit advances, so every card in a
+# place has the same width.
+CARD_W = {
+    place: 2 * PADDING + text_width(format_card_value(0, place), FONT_SIZE)
+    for place in (1, 10, 100, 1000)
+}
+# Vertical metrics, measured from Helvetica-Bold (a comma and a
+# digit rendered at 139 pt and measured in pixels; the test PDF is
+# /tmp/hzc-arrow-render/comma-test.pdf): cap height 97.2 pt and
+# comma descent 21.2 pt below the baseline, ratios 0.70 and 0.153
+# of the font size. The digits sit on one baseline across every
+# place, the way the app's line box does, and the baseline centers
+# the digits in the card the way the website does (measured from
+# the site: about a third of the card height above and below the
+# digit ink). The card is tall enough that the comma still clears
+# the card bottom by about 4 pt, so it stays inside its own card
+# instead of crossing the cut line below. A larger font would
+# push the digits to the top or the comma out the bottom.
+CAP_RATIO = 0.70
+COMMA_DESCENT_RATIO = 0.153
+CARD_H = 127
+BASELINE_FROM_BOTTOM = (CARD_H - CAP_RATIO * FONT_SIZE) / 2
+
+# Digits per place.
+NUM_DIGITS = {1: 1, 10: 2, 100: 3, 1000: 4}
+
+# Cards per row, so each place forms one tight grid: ones 5 across,
+# tens 2 across, hundreds 1 across, thousands 1 across. Hundreds
+# and thousands span two pages each, so the card files are 6 pages:
+# ones 1, tens 1, hundreds 2, thousands 2.
+PER_ROW = {1: 5, 10: 2, 100: 1, 1000: 1}
+
 
 def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
               value: str, place: int, color: bool) -> None:
-    """Draw one card. (x, y) is the lower-left corner of the card face."""
-    cut = 4  # dashed cut line sits outside the card face
+    """Draw one arrow card face. (x, y) is the lower-left corner.
+
+    Square corners, no stroke, no gap to the next card: the grid lines
+    drawn over the block are the shared cut lines, so one cut
+    separates two cards. The value is the full place value with its
+    comma, letter-spaced at 0.3x the font size and left-aligned at
+    the padding, exactly as the app renders it. No place label: the
+    width is the place, like the physical cards teachers already use.
+    """
     c.saveState()
     if color:
         top = hex_to_rgb(CARD_PAINT[place][0])
@@ -337,9 +432,6 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
         # matching the app's card paint.
         bands = 48
         band_h = h / bands
-        path = c.beginPath()
-        path.roundRect(x, y, w, h, 14)
-        c.clipPath(path, stroke=0, fill=0)
         for i in range(bands):
             t = i / (bands - 1)
             c.setFillColorRGB(
@@ -349,34 +441,41 @@ def draw_card(c: canvas.Canvas, x: float, y: float, w: float, h: float,
             )
             c.rect(x, y + h - (i + 1) * band_h, w, band_h + 0.5, stroke=0, fill=1)
         text_color = HexColor("#FFFFFF")
-        label_color = HexColor("#FFFFFF")
     else:
-        c.setFillColor(HexColor("#FFFFFF"))
-        c.setStrokeColor(HexColor("#BBBBBB"))
-        c.setLineWidth(0.75)
-        c.roundRect(x, y, w, h, 14, stroke=1, fill=1)
         text_color = HexColor("#1A1A1A")
-        label_color = HexColor("#555555")
 
-    # Place label, small caps at the top of the card.
-    label = PLACE_NAMES[place].upper()
-    c.setFillColor(label_color)
-    c.setFont("Helvetica-Bold", 11)
-    c.drawCentredString(x + w / 2, y + h - 24, label)
-
-    # Card value, large and centered.
+    # Card value, one character at a time with the app's
+    # letter-spacing, left-aligned at the padding. The spacing is
+    # what makes stacking work: the covering card's edge lands in
+    # the whitespace between digits, so the leading digit and the
+    # comma stay whole and the trailing zero hides fully.
     c.setFillColor(text_color)
-    font_size = 44 if len(value) <= 4 else 36
+    font_size = FONT_SIZE
     c.setFont("Helvetica-Bold", font_size)
-    c.drawCentredString(x + w / 2, y + h / 2 - font_size * 0.36, value)
+    baseline = y + BASELINE_FROM_BOTTOM
+    pen = x + PADDING
+    for ch in value:
+        c.drawString(pen, baseline, ch)
+        pen += stringWidth(ch, "Helvetica-Bold", font_size)
+        pen += LETTER_SPACING_RATIO * font_size
     c.restoreState()
 
-    # Dashed cut line around the card face.
+
+def draw_grid(c: canvas.Canvas, x: float, y: float, w: float, h: float,
+              cols: int, rows: int) -> None:
+    """Straight-edged grid over a card block: one shared cut line
+    between neighbors, outer border included. Empty cells get borders
+    too, so the block stays a clean rectangle."""
     c.saveState()
-    c.setStrokeColor(HexColor("#666666"))
-    c.setLineWidth(0.75)
-    c.setDash(6, 4)
-    c.roundRect(x - cut, y - cut, w + 2 * cut, h + 2 * cut, 16, stroke=1, fill=0)
+    c.setStrokeColor(INK)
+    c.setLineWidth(1)
+    c.rect(x, y, w, h, stroke=1, fill=0)
+    for i in range(1, cols):
+        vx = x + i * w / cols
+        c.line(vx, y, vx, y + h)
+    for j in range(1, rows):
+        hy = y + j * h / rows
+        c.line(x, hy, x + w, hy)
     c.restoreState()
 
 
@@ -387,16 +486,25 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
 
     usable_w = PAGE_W - 2 * MARGIN
     usable_h = PAGE_H - MARGIN - HEADER_H - FOOTER_H - MARGIN
-    card_w = (usable_w - (CARD_COLS - 1) * GAP_X) / CARD_COLS
-    card_h = (usable_h - (CARD_ROWS - 1) * GAP_Y) / CARD_ROWS
+    card_h = CARD_H
     top_y = PAGE_H - MARGIN - HEADER_H
 
     places = [1, 10, 100, 1000]
-    page = 0
-    total_pages = len(places)
-
+    rows_per_page = int(usable_h // card_h)  # 5 at the max size
+    # Chunk each place's ten cards into pages. Ones and tens fit on
+    # one page each; hundreds and thousands take two.
+    chunks = []  # (place, [digits on this page])
     for place in places:
-        page += 1
+        per_row = PER_ROW[place]
+        rows = (10 + per_row - 1) // per_row
+        for start in range(0, rows, rows_per_page):
+            chunk_rows = min(rows_per_page, rows - start)
+            first = start * per_row
+            last = min(10, first + chunk_rows * per_row)
+            chunks.append((place, list(range(first, last))))
+    total_pages = len(chunks)
+
+    for page, (place, digits) in enumerate(chunks, start=1):
         # Header
         c.setFillColor(INK)
         c.setFont("Helvetica-Bold", 15)
@@ -406,7 +514,7 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
         c.setFont("Helvetica", 10.5)
         c.drawString(
             MARGIN, PAGE_H - MARGIN - 32,
-            "Hide Zero Cards to 1,000  -  Print on US Letter paper, then cut along the dashed lines.",
+            "Hide Zero Cards to 1,000  -  Print on US Letter paper, then cut along the grid lines.",
         )
         c.setFont("Helvetica", 10.5)
         c.drawRightString(PAGE_W - MARGIN, PAGE_H - MARGIN - 16, f"Page {page} of {total_pages}")
@@ -414,14 +522,25 @@ def build_cards(path: Path, *, color: bool, title: str) -> None:
         c.setLineWidth(1.2)
         c.line(MARGIN, PAGE_H - MARGIN - 40, PAGE_W - MARGIN, PAGE_H - MARGIN - 40)
 
-        # Ten cards: digits 0-9 for this place.
-        for i, digit in enumerate(range(10)):
-            col = i % CARD_COLS
-            row = i // CARD_COLS
-            x = MARGIN + col * (card_w + GAP_X)
-            y_top = top_y - row * (card_h + GAP_Y)
+        # Arrow cards for this page. Cards touch on a straight-edged
+        # grid, one shared cut line between neighbors.
+        card_w = CARD_W[place]
+        per_row = PER_ROW[place]
+        rows = (len(digits) + per_row - 1) // per_row
+        block_w = per_row * card_w
+        block_h = rows * card_h
+        # Center the block on the page.
+        block_x = MARGIN + (usable_w - block_w) / 2
+        grid_top = top_y - (usable_h - block_h) / 2
+        for i, digit in enumerate(digits):
+            col = i % per_row
+            row = i // per_row
+            x = block_x + col * card_w
+            y_top = grid_top - row * card_h
             draw_card(c, x, y_top - card_h, card_w, card_h,
                       format_card_value(digit, place), place, color)
+        draw_grid(c, block_x, grid_top - block_h, block_w, block_h,
+                  per_row, rows)
 
         # Footer
         c.setStrokeColor(FOOTER_RULE)
