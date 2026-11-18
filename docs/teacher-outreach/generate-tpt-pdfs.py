@@ -34,13 +34,17 @@ the on-screen fan does:
   group-final card ("3,"), so the fan reads like the formatted
   number ("3,743"). The comma survives because it sits in the
   peek, not under the covering card.
-- The font size is the largest that fits US Letter: the thousands
-  card ("0,000") is the widest, and at 139 pt it is 539 pt, just
-  inside the 540 pt usable width. A playing-card-sized ones card
-  would make the thousands card about 14 in wide, so this is the
-  max. The card files run 6 pages (ones 1, tens 1, hundreds 2,
-  thousands 2). Zero cards are "0", "00", "000", "0,000", the
-  app's formatCardValue.
+- The font size is set by the vertical layout, not the width: the
+  digits are centered in the card the way the website centers
+  them (measured from the site: the digit ink sits with about a
+  third of the card height above and below it), and the comma
+  still fits inside its own card. At 118 pt with a 127 pt card
+  the digits sit centered with equal space above and below, and
+  the comma clears the card bottom by about 4 pt. A larger font
+  would push the digits to the top of the card or the comma out
+  the bottom. The card files run 6 pages (ones 1, tens 1,
+  hundreds 2, thousands 2). Zero cards are "0", "00", "000",
+  "0,000", the app's formatCardValue.
 
 No em dashes in any user-facing copy.
 """
@@ -358,15 +362,13 @@ FOOTER_H = 30
 #   60 px font, 0.3x on mobile). The spacing puts a wide band of
 #   whitespace between digits, so a covering card's edge always
 #   lands in whitespace, never on ink.
-# - The font size is the largest that fits US Letter: the thousands
-#   card ("0,000") is the widest, and at 139 pt it is 539 pt, just
-#   inside the 540 pt usable width. A playing-card-sized ones card
-#   would make the thousands card about 14 in wide, so this is
-#   the max.
+# - Padding is 0.15x the font size (the app's mobile horizontal
+#   padding), rounded.
 from reportlab.pdfbase.pdfmetrics import stringWidth
 
-PADDING = 12
 LETTER_SPACING_RATIO = 0.3
+FONT_SIZE = 118
+PADDING = round(0.15 * FONT_SIZE)
 
 
 def text_width(value: str, font_size: float) -> float:
@@ -376,10 +378,6 @@ def text_width(value: str, font_size: float) -> float:
     advances = sum(stringWidth(ch, "Helvetica-Bold", font_size) for ch in value)
     gaps = LETTER_SPACING_RATIO * font_size * max(0, len(value) - 1)
     return advances + gaps
-
-
-_FONT_UNIT = text_width("0,000", 100) / 100
-FONT_SIZE = int((PAGE_W - 2 * MARGIN - 2 * PADDING) // _FONT_UNIT)
 
 # Card widths in points, one per place. Every value in a place has
 # the same length and the same digit advances, so every card in a
@@ -391,16 +389,19 @@ CARD_W = {
 # Vertical metrics, measured from Helvetica-Bold (a comma and a
 # digit rendered at 139 pt and measured in pixels; the test PDF is
 # /tmp/hzc-arrow-render/comma-test.pdf): cap height 97.2 pt and
-# comma descent 21.2 pt below the baseline. The digits sit on one
-# baseline across every place, the way the app's line box does,
-# and the baseline is placed so the full ink extent (cap height
-# plus comma descent) is centered in the card: the comma fits
-# inside its own card instead of crossing the cut line below.
+# comma descent 21.2 pt below the baseline, ratios 0.70 and 0.153
+# of the font size. The digits sit on one baseline across every
+# place, the way the app's line box does, and the baseline centers
+# the digits in the card the way the website does (measured from
+# the site: about a third of the card height above and below the
+# digit ink). The card is tall enough that the comma still clears
+# the card bottom by about 4 pt, so it stays inside its own card
+# instead of crossing the cut line below. A larger font would
+# push the digits to the top or the comma out the bottom.
 CAP_RATIO = 0.70
 COMMA_DESCENT_RATIO = 0.153
-INK_H = (CAP_RATIO + COMMA_DESCENT_RATIO) * FONT_SIZE
-CARD_H = 126
-BASELINE_FROM_BOTTOM = (CARD_H - INK_H) / 2 + COMMA_DESCENT_RATIO * FONT_SIZE
+CARD_H = 127
+BASELINE_FROM_BOTTOM = (CARD_H - CAP_RATIO * FONT_SIZE) / 2
 
 # Digits per place.
 NUM_DIGITS = {1: 1, 10: 2, 100: 3, 1000: 4}
