@@ -64,8 +64,9 @@ Other TpT rules that matter, checked Nov 10, 2026:
 
 ## Files to upload
 
-- Main file: `hide-zero-cards-tpt-folder.zip`, 28.08 kB on TpT,
-  uploaded Nov 17, 2026. One zip holding the three US Letter
+- Main file: `hide-zero-cards-tpt-folder.zip`, 22.32 kB on TpT
+  (22,855 bytes, verified by free download), uploaded Nov 17,
+  2026, 7:08 PM EST. One zip holding the three US Letter
   PDFs in "Folder version" below. The single-page
   `hide-zero-cards-place-value-lesson.pdf` it replaced is still
   in this folder, superseded; it was built from `tpt-lesson.md`.
@@ -83,7 +84,7 @@ Other TpT rules that matter, checked Nov 10, 2026:
   before and after, so the cards did not move. Use it as the
   cover. The preview thumbnails are the cover, the teacher
   instructions page, and the color cards page (rendered from
-  the PDFs; the PNGs are not committed in this repo).
+  the PDFs; the PNGs are committed in this folder).
 
 ## Folder version (live Nov 17, 2026)
 
@@ -91,10 +92,12 @@ Chaley suggested TpT resources should be a folder: instructions
 first, then printable versions. The folder replaced the single
 one-page PDF above when Donray approved it Nov 17, 2026, and
 was uploaded as the main file the same day, 10:13 AM EST,
-28.08 kB on TpT. All three PDFs are US Letter, built by
-`generate-tpt-pdfs.py` in this folder (ReportLab, same style as
-the original lesson PDF), and zipped as
-`hide-zero-cards-tpt-folder.zip` for upload.
+28.08 kB on TpT. It was replaced Nov 17, 2026, 7:08 PM EST
+with the arrow-card version below, 22.32 kB on TpT (22,855
+bytes, verified by free download). All three PDFs are US
+Letter, built by `generate-tpt-pdfs.py` in this folder
+(ReportLab, same style as the original lesson PDF), and zipped
+as `hide-zero-cards-tpt-folder.zip` for upload.
 
 - `01-Teacher-Instructions-Hide-Zero-Cards.pdf` (1 page):
   the lesson reworked website-first. Leads with
@@ -111,9 +114,10 @@ the original lesson PDF), and zipped as
   up the right edges, widest card first, and the peek of each
   card is exactly its leading digit, plus the comma for a
   group-final card, so the fan reads like the formatted number
-  ("3,743"). Scaled to the largest size that fits US Letter (a
-  ones card of about 1.4 in; a playing-card-sized ones card
-  would make the thousands card 14 in wide). Six pages: ones 1,
+  ("3,743"). The font is set by the vertical layout: the digits
+  are centered in the card the way the website centers them,
+  and the comma still fits inside its own card (118 pt font,
+  127 pt card). A ones card is about 1.4 in. Six pages: ones 1,
   tens 1, hundreds 2, thousands 2. Card values follow the app's
   `formatCardValue()`, including the comma ("1,000") and the
   leading-zero form of zero cards ("00", "000", "0,000").
