@@ -15,8 +15,7 @@ subject), tags Activities, Centers, Internet Activities,
 Lessons (no Lesson Plan or Interactive Whiteboard tag exists),
 Teaching Duration N/A (no 10-minute option), custom category
 Place Value, featured. Main file is the folder zip (see below),
-uploaded Nov 17, 2026, 28.08 kB on TpT. Previews: cover,
-teacher instructions page, color cards page.
+uploaded Nov 17, 2026, 28.08 kB on TpT. Previews (v2, uploaded Nov 18, 2026): cover, what's included, how to use it, free digital tool. Files: tpt-preview-v2-1-cover.png, tpt-preview-v2-2-included.png, tpt-preview-v2-3-howto.png, tpt-preview-v2-4-digital.png. These supersede the v1 previews (cover, teacher instructions page, color cards page).
 Store profile: banner and profile photo set. About bio names
 both free tools (hidezerocards.org and patternspell.org).
 Experience and Teaching style sections filled Nov 17, 2026;
